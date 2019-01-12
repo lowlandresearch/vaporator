@@ -1,3 +1,7 @@
+#------------------------------------------
+# Python
+#------------------------------------------
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -102,3 +106,28 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+#------------------------------------------
+# Elixir
+#------------------------------------------
+
+/_build
+/cover
+/deps
+/doc
+/.fetch
+erl_crash.dump
+*.ez
+*.beam
+/config/*.secret.exs
+.elixir_ls/
+
+#------------------------------------------
+# Misc
+#------------------------------------------
+
+# Emacs/vim
+*~
+
+# macOS
+.DS_Store
