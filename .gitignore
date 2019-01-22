@@ -138,6 +138,8 @@ vaporator-*.tar
 
 # Emacs/vim
 *~
+#*#
+.#*
 
 # macOS
 .DS_Store
