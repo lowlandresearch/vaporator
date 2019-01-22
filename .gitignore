@@ -18,7 +18,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/
 lib64/
 parts/
 sdist/
@@ -138,8 +138,6 @@ vaporator-*.tar
 
 # Emacs/vim
 *~
-#*#
-.#*
 
 # macOS
 .DS_Store
