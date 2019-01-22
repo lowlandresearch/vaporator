@@ -14,10 +14,3 @@ script:
   # - if [[ `elixir -v` = *"1.8"* ]]; then
   #     travis_wait 30 mix dialyzer --halt-exit-status --format term;
   #   fi
-
-# matrix:
-#   exclude:
-#     - elixir: 1.5
-#       otp_release: 21.0
-#     - elixir: 1.8
-#       otp_release: 19.3

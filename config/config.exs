@@ -34,8 +34,3 @@ config :vaporator, content_url: "https://content.dropboxapi.com/2/"
 
 config :logger,
   level: :info
-  # backends: [:console],
-  # compile_time_purge_matching: [
-  #   [level_lower_than: :info]
-  # ]
- 
