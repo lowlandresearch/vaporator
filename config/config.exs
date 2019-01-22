@@ -28,3 +28,14 @@ use Mix.Config
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env()}.exs"
+
+config :vaporator, api_url: "https://api.dropboxapi.com/2"
+config :vaporator, content_url: "https://content.dropboxapi.com/2/"
+
+config :logger,
+  level: :info,
+  # backends: [:console],
+  # compile_time_purge_matching: [
+  #   [level_lower_than: :info]
+  # ]
+ 
