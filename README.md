@@ -1,4 +1,4 @@
-# Vaporator
+# Vaporator [![Build Status](https://travis-ci.org/lowlandresearch/vaporator.svg?branch=master)](https://travis-ci.org/lowlandresearch/vaporator)
 
 Secure ETL of scientific data in ze kloud
 
