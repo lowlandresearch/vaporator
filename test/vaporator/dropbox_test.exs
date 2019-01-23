@@ -1,8 +1,8 @@
 defmodule Vaporator.DropboxTest do
-  use ExUnit.Case, async: true
-  doctest Vaporator
+  use ExUnit.Case, async: false
 
   @dbx %Vaporator.Dropbox{access_token: System.get_env("DROPBOX_ACCESS_TOKEN")}
+
 
   test "lists the root directory" do
     assert length(Map.keys(Vaporator.Cloud.list_folder(@dbx, "/"))) > 0
@@ -135,6 +135,21 @@ defmodule Vaporator.DropboxTest do
     response = Vaporator.Dropbox.process_response(response)
     {:error, {reason, _, _}} = response
     assert reason == :unhandled_status
+  end
+
+  test "post_request: successful response" do
+    api_url = Application.get_env(:vaporator, :api_url)
+    body = %{"path" => ""}
+
+    response = Vaporator.Dropbox.post_request(
+      @dbx,
+      "#{api_url}/files/list_folder",
+      Poison.Encoder.encode(body, %{}),
+      Vaporator.Dropbox.json_headers
+    )
+    {status, _} = response
+    assert status == :ok
+    
   end
 
 end
