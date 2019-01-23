@@ -6,7 +6,6 @@ defmodule Vaporator.MixProject do
       app: :vaporator,
       version: "0.0.1",
       elixir: "~> 1.8",
-      test_coverage: [tool: ExCoveralls],
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
@@ -32,7 +31,7 @@ defmodule Vaporator.MixProject do
       {:httpoison, "~> 1.5.0"},
       {:poison, "~> 4.0.1"},
       {:json, "~> 1.2.1"},
-      {:excoveralls, "~> 0.10"},
+      {:excoveralls, "~> 0.10", only: :test}
     ]
   end
 end
