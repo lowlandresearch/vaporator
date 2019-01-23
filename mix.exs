@@ -6,6 +6,7 @@ defmodule Vaporator.MixProject do
       app: :vaporator,
       version: "0.0.1",
       elixir: "~> 1.8",
+      test_coverage: [tool: ExCoveralls],
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
