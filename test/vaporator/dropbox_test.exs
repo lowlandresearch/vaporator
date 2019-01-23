@@ -1,5 +1,5 @@
 defmodule Vaporator.DropboxTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest Vaporator
 
   @dbx %Vaporator.Dropbox{access_token: System.get_env("DROPBOX_ACCESS_TOKEN")}
@@ -39,9 +39,7 @@ defmodule Vaporator.DropboxTest do
     assert String.contains?(reason, "Unknown API")
   end
 
-  test "post_api: No body supplied" do
-    body = %{"path" => ""}
-    result = to_string(Poison.Encoder.encode(body, %{}))
+  test "post_api: no body supplied" do
     response = Vaporator.Dropbox.post_api(
       @dbx,
       "/files/list_folder"
@@ -60,6 +58,83 @@ defmodule Vaporator.DropboxTest do
     )
     {:error,{_,_,{_,{_,reason}}}} = response
     assert String.contains?(reason, "token is malformed")
+  end
+
+  test "download_response: good status_code" do
+    body = %{"test" => "data"}
+    code = 200
+
+    response = %HTTPoison.Response{
+      status_code: code,
+      body: Poison.Encoder.encode(body, %{}),
+      headers: %{header: "setting"}
+    }
+
+    response = Vaporator.Dropbox.download_response(response)
+    %{body: return_body, headers: return_headers} = response
+    assert return_body == response.body
+    assert return_headers == response.headers
+  end
+
+  test "download_response: bad status_code returns json decoded body" do
+    body = %{"test" => "data"}
+    code = 400
+
+    response = %HTTPoison.Response{
+      status_code: code,
+      body: Poison.Encoder.encode(body, %{})
+    }
+
+    response = Vaporator.Dropbox.download_response(response)
+    {{:status_code, return_code}, {:ok, decoded_body}} = response
+    assert return_code == code
+    assert decoded_body == body
+  end
+
+  test "process_response: good status_code with successful decode" do
+    body = %{"test" => "data"}
+    code = 200
+
+    response = %HTTPoison.Response{
+      status_code: code,
+      body: Poison.Encoder.encode(body, %{})
+    }
+
+    response = Vaporator.Dropbox.process_response(response)
+    {:ok, decoded_body} = response
+    assert decoded_body == body
+  end
+
+  test "process_response: good status_code with bad decode" do
+    # TODO: Figure out how to trigger a Poison.DecodeError
+  end
+
+  test "process_response: bad status_code returns error" do
+    body = %{"test" => "data"}
+    code = 400
+
+    response = %HTTPoison.Response{
+      status_code: code,
+      body: Poison.Encoder.encode(body, %{})
+    }
+
+    response = Vaporator.Dropbox.process_response(response)
+    {:error, {reason, _, _}} = response
+    assert reason == :bad_status
+  end
+
+  test "process_response: unhandled status_code returns error" do
+    body = %{"test" => "data"}
+    code = 301
+
+    response = %HTTPoison.Response{
+      status_code: code,
+      body: Poison.Encoder.encode(body, %{})
+    }
+
+    response = Vaporator.Dropbox.process_response(response)
+    {:error, {reason, _, _}} = response
+    assert reason == :unhandled_status
   end
 
 end
