@@ -10,7 +10,11 @@ cache:
     - deps
 script:
   - mix test
+  - MIX_ENV=test mix do compile --warnings-as-errors, coveralls.json
   # - if [[ `elixir -v` = *"1.8"* ]]; then mix format --check-formatted; fi
   # - if [[ `elixir -v` = *"1.8"* ]]; then
   #     travis_wait 30 mix dialyzer --halt-exit-status --format term;
   #   fi
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
