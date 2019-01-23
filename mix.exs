@@ -24,6 +24,7 @@ defmodule Vaporator.MixProject do
       {:httpoison, "~> 1.5.0"},
       {:poison, "~> 4.0.1"},
       {:json, "~> 1.2.1"},
+      {:excoveralls, "~> 0.10.4"},
     ]
   end
 end
