@@ -1,0 +1,34 @@
+[
+  {
+    "request": {
+      "body": "{\"path\":\"/vaporator/test/test.txt\"}",
+      "headers": {
+        "Authorization": "<<DROPBOX_ACCESS_TOKEN>>",
+        "Content-Type": "application/json"
+      },
+      "method": "post",
+      "options": [],
+      "request_body": "",
+      "url": "https://api.dropboxapi.com/2/files/get_metadata"
+    },
+    "response": {
+      "binary": false,
+      "body": "{\".tag\": \"file\", \"name\": \"test.txt\", \"path_lower\": \"/vaporator/test/test.txt\", \"path_display\": \"/vaporator/test/test.txt\", \"parent_shared_folder_id\": \"4778881600\", \"id\": \"id:x6l0-pRfLB4AAAAAAAACFA\", \"client_modified\": \"2019-01-24T13:27:29Z\", \"server_modified\": \"2019-01-24T13:27:29Z\", \"rev\": \"015000000011cd7f240\", \"size\": 9, \"sharing_info\": {\"read_only\": false, \"parent_shared_folder_id\": \"4778881600\", \"modified_by\": \"dbid:AACwr4JNsAU6W_XvT98U7oG6lipM2LoOgYc\"}, \"content_hash\": \"149078105941cd1edda0ec5a568fc1d178661b6441831c3647d88f41f7dfc886\"}",
+      "headers": {
+        "Server": "nginx",
+        "Date": "Thu, 24 Jan 2019 14:30:18 GMT",
+        "Content-Type": "application/json",
+        "Transfer-Encoding": "chunked",
+        "Connection": "keep-alive",
+        "Vary": "Accept-Encoding",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-Server-Response-Time": "139"
+      },
+      "status_code": 200,
+      "type": "ok"
+    }
+  }
+]

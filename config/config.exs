@@ -32,5 +32,16 @@ use Mix.Config
 config :vaporator, api_url: "https://api.dropboxapi.com/2"
 config :vaporator, content_url: "https://content.dropboxapi.com/2/"
 
+config :exvcr, [
+  vcr_cassette_library_dir: "test/vaporator/fixture/vcr_cassettes",
+  custom_cassette_library_dir: "test/vaporator/fixture/custom_cassettes",
+  filter_sensitive_data: [
+    [pattern: "Bearer .+", placeholder: "<<DROPBOX_ACCESS_TOKEN>>"]
+  ],
+  filter_url_params: false,
+  filter_request_headers: [],
+  response_headers_blacklist: ["X-Dropbox-Request-Id"]
+]
+
 config :logger,
   level: :info

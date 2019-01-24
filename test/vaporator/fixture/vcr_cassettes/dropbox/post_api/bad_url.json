@@ -1,0 +1,32 @@
+[
+  {
+    "request": {
+      "body": "{\"path\":\"\"}",
+      "headers": {
+        "Authorization": "<<DROPBOX_ACCESS_TOKEN>>",
+        "Content-Type": "application/json"
+      },
+      "method": "post",
+      "options": [],
+      "request_body": "",
+      "url": "https://api.dropboxapi.com/2/bogus/url"
+    },
+    "response": {
+      "binary": false,
+      "body": "Unknown API function: \"bogus/url\".",
+      "headers": {
+        "Server": "nginx",
+        "Date": "Thu, 24 Jan 2019 14:30:17 GMT",
+        "Content-Type": "text/plain; charset=utf-8",
+        "Transfer-Encoding": "chunked",
+        "Connection": "keep-alive",
+        "Content-Security-Policy": "sandbox; frame-ancestors 'none'",
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff",
+        "Content-Disposition": "attachment; filename='error'"
+      },
+      "status_code": 400,
+      "type": "ok"
+    }
+  }
+]
