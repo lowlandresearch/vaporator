@@ -13,7 +13,11 @@ defmodule Vaporator.MixProject do
         coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.post": :test,
-        "coveralls.html": :test
+        "coveralls.html": :test,
+        vcr: :test,
+        "vcr.delete": :test,
+        "vcr.check": :test,
+        "vcr.show": :test
       ]
     ]
   end
@@ -31,7 +35,8 @@ defmodule Vaporator.MixProject do
       {:httpoison, "~> 1.5.0"},
       {:poison, "~> 4.0.1"},
       {:json, "~> 1.2.1"},
-      {:excoveralls, "~> 0.10", only: :test}
+      {:excoveralls, "~> 0.10", only: :test},
+      {:exvcr, "~> 0.10", only: :test}
     ]
   end
 end
