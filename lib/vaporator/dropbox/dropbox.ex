@@ -72,23 +72,29 @@ defmodule Vaporator.Dropbox do
     end
   end
 
+  def dropbox_meta_to_cloudfs(meta) do
+    %Vaporator.CloudFs.Meta{
+      meta: meta,
+      type: String.to_atom(meta[".tag"]),
+      name: meta["name"],
+      path: meta["path_display"],
+    }
+  end
+
 end
 
-defimpl Vaporator.Cloud, for: Vaporator.Dropbox do
-  import Vaporator.Dropbox, only: [post_api: 3]
+defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
+  import Vaporator.Dropbox, only: [post_api: 3, dropbox_meta_to_cloudfs: 1]
 
-  def list_folder(dbx, "/"), do: list_folder(dbx, "")
-  def list_folder(dbx, path) do
-    body = %{"path" => path}
+  use Vaporator.CloudFs.Alias2to3 # to add /2 variants
+
+  def list_folder(dbx, path, args) do
+    body = Map.merge(%{"path" => path}, args)
     result = to_string(Poison.Encoder.encode(body, %{}))
     case post_api(dbx, "/files/list_folder", result) do
       {:ok, %{"entries" => entries}} ->
-        for meta <- entries, into: %{} do
-          { meta["name"],
-            %{meta: Enum.map(meta, fn {k, v} -> {String.to_atom(k), v} end),
-              path: meta["path_display"]} }
-        end
-      _ -> nil
+        for meta <- entries, do: dropbox_meta_to_cloudfs(meta)
+      _ -> []
     end
   end
 
@@ -97,8 +103,9 @@ defimpl Vaporator.Cloud, for: Vaporator.Dropbox do
     body = Map.merge(%{"path" => path}, args)
     result = to_string(Poison.Encoder.encode(body, %{}))
     case post_api(dbx, "/files/get_metadata", result) do
-      {:ok, meta} -> meta
+      {:ok, meta} -> dropbox_meta_to_cloudfs(meta)
       _ -> nil
     end
   end
+
 end
