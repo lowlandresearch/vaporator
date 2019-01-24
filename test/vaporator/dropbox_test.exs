@@ -3,7 +3,6 @@ defmodule Vaporator.DropboxTest do
 
   @dbx %Vaporator.Dropbox{access_token: System.get_env("DROPBOX_ACCESS_TOKEN")}
 
-
   test "lists the root directory" do
     assert length(Map.keys(Vaporator.Cloud.list_folder(@dbx, "/"))) > 0
   end
