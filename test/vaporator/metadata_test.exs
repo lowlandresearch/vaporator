@@ -5,7 +5,7 @@ defmodule Vaporator.DropboxTestTwo do
     access_token: System.get_env("DROPBOX_ACCESS_TOKEN")
   }
 
-  @test_dir "/test"
+  @test_dir "/vaporator/test"
   @test_file "#{@test_dir}/test.txt"
 
   setup_all do
