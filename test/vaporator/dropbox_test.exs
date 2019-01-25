@@ -6,10 +6,6 @@ defmodule Vaporator.DropboxTest do
     access_token: System.get_env("DROPBOX_ACCESS_TOKEN")
   }
 
-  def setup_all do
-    HTTPoison.start
-  end
-
   test "lists the root directory" do
     use_cassette "cloudfs/list_folder/root_dir" do
       assert length(
