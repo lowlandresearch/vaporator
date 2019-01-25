@@ -1,4 +1,4 @@
-defmodule Vaporator.DropboxFileDownloadTest do
+defmodule Vaporator.DropboxFileUploadTest do
   use ExUnit.Case
 
   @dbx %Vaporator.Dropbox{access_token: System.get_env("DROPBOX_ACCESS_TOKEN")}

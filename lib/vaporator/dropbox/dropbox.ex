@@ -1,4 +1,5 @@
 defmodule Vaporator.Dropbox do
+  use Timex
   require Logger
   @moduledoc """
   REST API Interface with Dropbox
@@ -26,8 +27,17 @@ defmodule Vaporator.Dropbox do
     %{"Authorization" => "Bearer #{dbx.access_token}"}
   end
 
-  def post_api(dbx, url_path, body \\ "") do
-    post_request(dbx, "#{@api_url}#{url_path}", body, json_headers())
+  def post_api(dbx, url_path, body \\ %{}) do
+    case Poison.encode(body) do
+      {:ok, encoded_body} ->
+        post_request(
+          dbx, "#{@api_url}#{url_path}", encoded_body,
+          json_headers()
+        )
+      {:error, error} ->
+        Logger.error("Error in Poison encoding: {#error}")
+        {:error, {:bad_encode, error}}
+    end
   end
 
   @doc """
@@ -139,6 +149,28 @@ defmodule Vaporator.Dropbox do
     end
   end
 
+  def process_bad_response(%HTTPoison.Response{status_code: status_code,
+                                                    body: body}) do
+    case {status_code, JSON.decode(body)} do
+      # File not found
+      {409, {:ok, %{"error_summary" => summary,
+                    "error" => %{".tag" => "path",
+                                 "path" => %{".tag" => "not_found"}}}}}
+        -> {:error, {:path_not_found, summary}}
+      {409, {:ok, %{"error_summary" => summary,
+                    "error" => %{".tag" => "path_lookup",
+                                 "path_lookup" => %{".tag" => "not_found"}}}}}
+        -> {:error, {:path_not_found, summary}}
+      # Something else API-related happened
+      {status_code, {:ok, body}} when status_code in 400..599 ->
+        {:error, {:bad_status,
+                  {:status_code, status_code}, body}}
+      # No idea
+      _ ->
+        {:error, {:unhandled_status, {:status_code, status_code}, body}}
+    end
+  end
+
   @doc """
   Process a JSON response from the REST API
 
@@ -157,19 +189,12 @@ defmodule Vaporator.Dropbox do
       {:error, error} -> {:error, {:bad_decode, error}}
     end
   end
-  def process_json_response(%HTTPoison.Response{status_code: status_code,
-                                           body: body}) do
-    cond do
-      status_code in 400..599 ->
-        {:error, {:bad_status,
-                  {:status_code, status_code}, JSON.decode(body)}}
-      true ->
-        {:error, {:unhandled_status, {:status_code, status_code}, body}}
-    end
+  def process_json_response(response) do
+    process_bad_response(response)
   end
 
   @doc """
-  Process a JSON response from the REST API
+  Process a binary response from the REST API for downloaded files
 
   - Decodes and returns body binary content and headers (as
     Vaporator.CloudFs.FileContent) if status code is 200
@@ -183,15 +208,8 @@ defmodule Vaporator.Dropbox do
                                                     headers: headers}) do
     {:ok, %Vaporator.CloudFs.FileContent{content: body, headers: headers}}
   end    
-  def process_download_response(%HTTPoison.Response{status_code: status_code,
-                                                    body: body}) do
-    cond do
-      status_code in 400..599 ->
-        {:error, {:bad_status,
-                  {:status_code, status_code}, JSON.decode(body)}}
-      true ->
-        {:error, {:unhandled_status, {:status_code, status_code}, body}}
-    end
+  def process_download_response(response) do
+    process_bad_response(response)
   end
 
   @doc """
@@ -201,9 +219,10 @@ defmodule Vaporator.Dropbox do
   def dropbox_meta_to_cloudfs(meta) do
     %Vaporator.CloudFs.Meta{
       meta: meta,
-      type: String.to_atom(meta[".tag"]),
+      type: meta |> Map.get(".tag", "none") |> String.to_atom,
       name: meta["name"],
       path: meta["path_display"],
+      modify_time: Timex.parse(meta["server_modified"], "{ISO:Extended}"),
     }
   end
 
@@ -252,40 +271,27 @@ defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
 
   def list_folder(dbx, path, args \\ %{}) do
     body = Map.merge(%{:path => prep_path(path)}, args)
-    case Poison.encode(body) do
-      {:ok, encoded_body} -> 
-        case post_api(dbx, "/files/list_folder", encoded_body) do
-          {:ok, result_meta=%{"entries" => entries}} ->
-            results = for meta <- entries do
-                dropbox_meta_to_cloudfs(meta)
-              end
-            {:ok, %Vaporator.CloudFs.ResultsMeta{results: results,
-                                                 meta: result_meta}}
-          {:ok, _} ->
-            Logger.error("No entries listed in response object")
-            {:error, "No entries listed in response object"}
-          {:error, error} ->
-            Logger.error("Error in API POST: #{error}")
-            {:error, error}
-        end
-
+    case post_api(dbx, "/files/list_folder", body) do
+      {:ok, result_meta=%{"entries" => entries}} ->
+        results = for meta <- entries do
+            dropbox_meta_to_cloudfs(meta)
+          end
+        {:ok, %Vaporator.CloudFs.ResultsMeta{results: results,
+                                             meta: result_meta}}
+      {:ok, _} ->
+        Logger.error("No entries listed in response object")
+        {:error, {:no_entries, "No entries listed in response object"}}
       {:error, error} ->
-        Logger.error("Error with Poison encoding: #{error}")
+        Logger.error("Error in API POST: #{error}")
         {:error, error}
     end
   end
 
   def get_metadata(dbx, path, args \\ %{}) do
     body = Map.merge(%{:path => prep_path(path)}, args)
-    case Poison.encode(body) do
-      {:ok, encoded_body} ->
-        case post_api(dbx, "/files/get_metadata", encoded_body) do
-          {:ok, meta} -> dropbox_meta_to_cloudfs(meta)
-          {:error, error} -> {:error, error}
-        end
-      {:error, error} ->
-        Logger.error("Error in Poison encoding: {#error}")
-        {:error, error}
+    case post_api(dbx, "/files/get_metadata", body) do
+      {:ok, meta} -> dropbox_meta_to_cloudfs(meta)
+      {:error, error} -> {:error, error}
     end
   end
 
@@ -294,14 +300,40 @@ defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
   end
 
   def file_upload(dbx, local_path, dbx_path, args \\ %{}) do
-    post_upload(
-      dbx, "files/upload", local_path,
-      Map.merge(%{:path => prep_dbx_path(local_path, dbx_path),
-                  :mode => "overwrite",
-                  :autorename => true,
-                  :mute => false}, args),
-      %{}
-    )
+    case post_upload(
+          dbx, "files/upload", local_path,
+          Map.merge(%{:path => prep_dbx_path(local_path, dbx_path),
+                      :mode => "overwrite",
+                      :autorename => true,
+                      :mute => false}, args),
+          %{}
+        ) do
+      {:ok, meta} -> {:ok, dropbox_meta_to_cloudfs(meta)}
+      {:error, error} -> {:error, error}
+    end
   end
+
+  def file_remove(dbx, path, args \\ %{}) do
+    case post_api(
+          dbx, "/files/delete_v2",
+          Map.merge(%{"path" => path}, args)) do
+      {:ok, %{"metadata" => meta}} -> {:ok, dropbox_meta_to_cloudfs(meta)}
+      {:error, error} -> {:error, error}
+    end
+  end
+  def folder_remove(dbx, path, args \\ %{}), do: file_remove(dbx, path, args)
+
+  # # copy
+  # body = %{"from_path" => from_path, "to_path" => to_path}
+  # result = to_string(Poison.Encoder.encode(body, []))
+  # post(client, "/files/copy_v2", result)
+  # # move
+  # body = %{"from_path" => from_path, "to_path" => to_path}
+  # result = to_string(Poison.Encoder.encode(body, []))
+  # post(client, "/files/move", result)
+  # # delete (file or folder)
+  # body = %{"path" => path}
+  # result = to_string(Poison.Encoder.encode(body, []))
+  # post(client, "/files/delete_v2", result)
 
 end
