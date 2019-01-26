@@ -80,6 +80,9 @@ defprotocol Vaporator.CloudFs do
   # Need to be able to upload binary content of a file on the local
   # file system to a particular path on the cloud file system.
   # 
+  # The file should always be transferred and should overwrite
+  # whatever is (might be) already there.
+  # 
   # Args:
   # - fs (Vaporator.CloudFs impl): Cloud file system
   # - local_path (binary): Path of file on local file system to upload
@@ -90,12 +93,40 @@ defprotocol Vaporator.CloudFs do
   #     underlying subsystem. 
   # 
   # Returns:
-  #   {:ok, Vaporator.CloudFs.FileContent}
+  #   {:ok, Vaporator.CloudFs.Meta}
   #     or
+  #   {:error, {:bad_decode, decode error (any)}
+  #     or 
   #   {:error, {:bad_status, {:status_code, code (int)}, JSON (Map)}}
   #     or 
   #   {:error, {:unhandled_status, {:status_code, code (int)}, body (binary)}}
   def file_upload(fs, local_path, fs_path, args \\ %{})
+
+  # Need to be able to update binary content of a file on the cloud
+  # file system to the version on the local file system.
+  #
+  # In the case of file_upload, the file is always transferred. In the
+  # case of file_update, the file transfer only happens if the cloud
+  # content is different from the local content.
+  # 
+  # Args:
+  # - fs (Vaporator.CloudFs impl): Cloud file system
+  # - local_path (binary): Path of file on local file system to upload
+  # - fs_path (binary): Path on cloud file system to place uploaded
+  #     content. If this path ends with a "/" then it should be
+  #     treated as a directory in which to place the local_path
+  # - args (Map): File-system-specific arguments to pass to the
+  #     underlying subsystem. 
+  # 
+  # Returns:
+  #   {:ok, Vaporator.CloudFs.Meta}
+  #     or
+  #   {:error, {:bad_decode, decode error (any)}
+  #     or 
+  #   {:error, {:bad_status, {:status_code, code (int)}, JSON (Map)}}
+  #     or 
+  #   {:error, {:unhandled_status, {:status_code, code (int)}, body (binary)}}
+  def file_update(fs, local_path, fs_path, args \\ %{})
 
   # Need to be able to remove a file or folder on the cloud file
   # system.
