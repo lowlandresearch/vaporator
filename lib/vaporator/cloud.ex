@@ -24,6 +24,8 @@ defprotocol Vaporator.CloudFs do
   # Returns:
   #   {:ok, Vaporator.CloudFs.ResultsMeta}
   #     or
+  #   {:error, {:path_not_found, path error (binary)}
+  #     or 
   #   {:error, {:bad_decode, decode error (any)}
   #     or 
   #   {:error, {:bad_status, {:status_code, code (int)}, JSON (Map)}}
@@ -39,12 +41,13 @@ defprotocol Vaporator.CloudFs do
   # - path (binary): Path of file/folder on cloud file system to get
   #     metadata for
   # - args (Map): File-system-specific arguments to pass to the
-  #     underlying subsystem. In a perfect world, this would be
-  #     unnecessary, but "let it fail..." and all that.
+  #     underlying subsystem. 
   # 
   # Returns:
   #   {:ok, Vaporator.CloudFS.Meta}
   #     or
+  #   {:error, {:path_not_found, path error (binary)}
+  #     or 
   #   {:error, {:bad_decode, decode error (any)}
   #     or 
   #   {:error, {:bad_status, {:status_code, code (int)}, JSON (Map)}}
@@ -60,12 +63,15 @@ defprotocol Vaporator.CloudFs do
   # - fs (Vaporator.CloudFs impl): Cloud file system
   # - path (binary): Path of file on cloud file system to download
   # - args (Map): File-system-specific arguments to pass to the
-  #     underlying subsystem. In a perfect world, this would be
-  #     unnecessary, but "let it fail..." and all that.
+  #     underlying subsystem. 
   # 
   # Returns:
   #   {:ok, Vaporator.CloudFs.FileContent}
   #     or
+  #   {:error, {:path_not_found, path error (binary)}
+  #     or 
+  #   {:error, {:bad_decode, decode error (any)}
+  #     or 
   #   {:error, {:bad_status, {:status_code, code (int)}, JSON (Map)}}
   #     or 
   #   {:error, {:unhandled_status, {:status_code, code (int)}, body (binary)}}
@@ -81,8 +87,7 @@ defprotocol Vaporator.CloudFs do
   #     content. If this path ends with a "/" then it should be
   #     treated as a directory in which to place the local_path
   # - args (Map): File-system-specific arguments to pass to the
-  #     underlying subsystem. In a perfect world, this would be
-  #     unnecessary, but "let it fail..." and all that.
+  #     underlying subsystem. 
   # 
   # Returns:
   #   {:ok, Vaporator.CloudFs.FileContent}
@@ -91,6 +96,28 @@ defprotocol Vaporator.CloudFs do
   #     or 
   #   {:error, {:unhandled_status, {:status_code, code (int)}, body (binary)}}
   def file_upload(fs, local_path, fs_path, args \\ %{})
+
+  # Need to be able to remove a file or folder on the cloud file
+  # system.
+  # 
+  # Args:
+  # - fs (Vaporator.CloudFs impl): Cloud file system
+  # - path (binary): Path on cloud file system to remove. 
+  # - args (Map): File-system-specific arguments to pass to the
+  #     underlying subsystem. 
+  # 
+  # Returns:
+  #   {:ok, Vaporator.CloudFs.FileContent}
+  #     or
+  #   {:error, {:path_not_found, path error (binary)}
+  #     or 
+  #   {:error, {:bad_decode, decode error (any)}
+  #     or 
+  #   {:error, {:bad_status, {:status_code, code (int)}, JSON (Map)}}
+  #     or 
+  #   {:error, {:unhandled_status, {:status_code, code (int)}, body (binary)}}
+  def file_remove(fs, path, args \\ %{})
+  def folder_remove(fs, path, args \\ %{})
 end
 
 defmodule Vaporator.CloudFs.Meta do
@@ -99,9 +126,9 @@ defmodule Vaporator.CloudFs.Meta do
   """
   # Every file on any file-system (Dropbox, GDrive, S3, etc.) should
   # have at least these attributes
-  @enforce_keys [:type, :name, :path]
+  @enforce_keys [:type, :path]
   defstruct [
-    :type,                      # :file or :folder?
+    :type,                      # :file, :folder, or :none?
 
     :name,                      # file name (w/o path)
 

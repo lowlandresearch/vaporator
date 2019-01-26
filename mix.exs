@@ -35,6 +35,7 @@ defmodule Vaporator.MixProject do
       {:httpoison, "~> 1.5.0"},
       {:poison, "~> 4.0.1"},
       {:json, "~> 1.2.1"},
+      {:timex, "~> 3.1"},
       {:excoveralls, "~> 0.10", only: :test},
       {:exvcr, "~> 0.10", only: :test}
     ]
