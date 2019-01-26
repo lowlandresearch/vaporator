@@ -34,7 +34,7 @@ defmodule Vaporator.DropboxFsOpsTest do
 
   test "get_metadata from dropbox folder that exists" do
     use_cassette "cloudfs/get_metadata/folder" do
-      meta = Vaporator.CloudFs.get_metadata(
+      {:ok, meta} = Vaporator.CloudFs.get_metadata(
         @dbx,
         @test_dir
       )
@@ -44,7 +44,7 @@ defmodule Vaporator.DropboxFsOpsTest do
 
   test "get_metadata from dropbox file that exists" do
     use_cassette "cloudfs/get_metadata/file" do
-      meta = Vaporator.CloudFs.get_metadata(
+      {:ok, meta} = Vaporator.CloudFs.get_metadata(
         @dbx,
         @test_file_path
       )
