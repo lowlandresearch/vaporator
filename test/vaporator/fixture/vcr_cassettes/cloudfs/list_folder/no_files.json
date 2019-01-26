@@ -1,7 +1,7 @@
 [
   {
     "request": {
-      "body": "{\"path\":\"/vaporator/test\"}",
+      "body": "{\"path\":\"/vaporator/empty\"}",
       "headers": {
         "Authorization": "<<DROPBOX_ACCESS_TOKEN>>",
         "Content-Type": "application/json"
@@ -9,14 +9,14 @@
       "method": "post",
       "options": [],
       "request_body": "",
-      "url": "https://api.dropboxapi.com/2/files/get_metadata"
+      "url": "https://api.dropboxapi.com/2/files/list_folder"
     },
     "response": {
       "binary": false,
-      "body": "{\".tag\": \"folder\", \"name\": \"test\", \"path_lower\": \"/vaporator/test\", \"path_display\": \"/vaporator/test\", \"parent_shared_folder_id\": \"4778881600\", \"id\": \"id:x6l0-pRfLB4AAAAAAAACEQ\", \"sharing_info\": {\"read_only\": false, \"parent_shared_folder_id\": \"4778881600\", \"traverse_only\": false, \"no_access\": false}}",
+      "body": "{\"entries\": [], \"cursor\": \"AAFiyKCC2i6edLic7UtJFm8w-WVL1_QvGzHwqJceanTxaR39Vetuu3m-zb-ofxaa-WGlK50kyCSVtu27FbV7MVoy0iZkHiRoWye57B7_I1LF8OwQJWPIFRT0FaTAqFzmjIbsbNMIwZD1Vp8EBHnO_a5-1P1K8gUzwddEivs0IRJpv3T1cjALlFBihcjf8PABJx1fAJAS9PqOOJnrSfR5-G3qkcvBs9zz7WRm4ZmzEvcOOZDcTJwXpjs3tdl8D31Btds\", \"has_more\": false}",
       "headers": {
         "Server": "nginx",
-        "Date": "Sat, 26 Jan 2019 04:19:24 GMT",
+        "Date": "Sat, 26 Jan 2019 04:19:26 GMT",
         "Content-Type": "application/json",
         "Transfer-Encoding": "chunked",
         "Connection": "keep-alive",
@@ -25,7 +25,7 @@
         "Pragma": "no-cache",
         "X-Content-Type-Options": "nosniff",
         "X-Frame-Options": "SAMEORIGIN",
-        "X-Server-Response-Time": "120"
+        "X-Server-Response-Time": "377"
       },
       "status_code": 200,
       "type": "ok"
