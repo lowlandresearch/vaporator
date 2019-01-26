@@ -272,7 +272,7 @@ defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
   def list_folder(dbx, path, args \\ %{}) do
     body = Map.merge(%{:path => prep_path(path)}, args)
     case post_api(dbx, "/files/list_folder", body) do
-      {:ok, result_meta=%{"entries" => entries}} ->
+      {:ok, result_meta=%{"entries" => entries}} when entries != [] ->
         results = for meta <- entries do
             dropbox_meta_to_cloudfs(meta)
           end
@@ -282,7 +282,6 @@ defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
         Logger.error("No entries listed in response object")
         {:error, {:no_entries, "No entries listed in response object"}}
       {:error, error} ->
-        Logger.error("Error in API POST: #{error}")
         {:error, error}
     end
   end

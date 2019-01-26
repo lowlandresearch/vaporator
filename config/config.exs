@@ -31,6 +31,8 @@ use Mix.Config
 
 config :vaporator, api_url: "https://api.dropboxapi.com/2"
 config :vaporator, content_url: "https://content.dropboxapi.com/2/"
+config :vaporator, test_dir: "/vaporator/test/"
+config :vaporator, test_file: "test.txt"
 
 config :exvcr, [
   vcr_cassette_library_dir: "test/vaporator/fixture/vcr_cassettes",

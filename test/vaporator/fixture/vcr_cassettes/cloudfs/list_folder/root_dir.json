@@ -13,10 +13,10 @@
     },
     "response": {
       "binary": false,
-      "body": "{\"entries\": [{\".tag\": \"folder\", \"name\": \"Photos\", \"path_lower\": \"/photos\", \"path_display\": \"/Photos\", \"id\": \"id:29RpN4X4YUsAAAAAAAAEIg\"}, {\".tag\": \"folder\", \"name\": \"Public\", \"path_lower\": \"/public\", \"path_display\": \"/Public\", \"id\": \"id:29RpN4X4YUsAAAAAAAAEIQ\"}, {\".tag\": \"folder\", \"name\": \"Camera Uploads\", \"path_lower\": \"/camera uploads\", \"path_display\": \"/Camera Uploads\", \"id\": \"id:29RpN4X4YUsAAAAAAAAAaQ\"}, {\".tag\": \"folder\", \"name\": \"Apps\", \"path_lower\": \"/apps\", \"path_display\": \"/Apps\", \"id\": \"id:29RpN4X4YUsAAAAAAAAFUg\"}, {\".tag\": \"folder\", \"name\": \"vaporator\", \"path_lower\": \"/vaporator\", \"path_display\": \"/vaporator\", \"id\": \"id:29RpN4X4YUsAAAAAAAAFWw\", \"shared_folder_id\": \"4778881600\", \"sharing_info\": {\"read_only\": false, \"shared_folder_id\": \"4778881600\", \"traverse_only\": false, \"no_access\": false}}], \"cursor\": \"AAGjQ9wh71n4IrzLfis14NqvU5ci4F_s-sZtNbFGQrE35rey3QNvwFnZ53IwL9mq1D40xQBHL6zmKaut2Vjm-IBlUuWg7_3EmlZCsdPci0XCt0nHmD8j88qX4B3z71IbsJZggfq1TMkpYCbJ61mHLpy-c9jghxtYhSFR12bLBmZZ602MS2objocMgvkA1WnXLCQ\", \"has_more\": false}",
+      "body": "{\"entries\": [{\".tag\": \"folder\", \"name\": \"Photos\", \"path_lower\": \"/photos\", \"path_display\": \"/Photos\", \"id\": \"id:29RpN4X4YUsAAAAAAAAEIg\"}, {\".tag\": \"folder\", \"name\": \"Public\", \"path_lower\": \"/public\", \"path_display\": \"/Public\", \"id\": \"id:29RpN4X4YUsAAAAAAAAEIQ\"}, {\".tag\": \"folder\", \"name\": \"Camera Uploads\", \"path_lower\": \"/camera uploads\", \"path_display\": \"/Camera Uploads\", \"id\": \"id:29RpN4X4YUsAAAAAAAAAaQ\"}, {\".tag\": \"folder\", \"name\": \"Apps\", \"path_lower\": \"/apps\", \"path_display\": \"/Apps\", \"id\": \"id:29RpN4X4YUsAAAAAAAAFUg\"}, {\".tag\": \"folder\", \"name\": \"vaporator\", \"path_lower\": \"/vaporator\", \"path_display\": \"/vaporator\", \"id\": \"id:29RpN4X4YUsAAAAAAAAFWw\", \"shared_folder_id\": \"4778881600\", \"sharing_info\": {\"read_only\": false, \"shared_folder_id\": \"4778881600\", \"traverse_only\": false, \"no_access\": false}}], \"cursor\": \"AAEbQwoEyAvSyBBruA8_TxmyL2UYTrKcBxcfhV7hr8dj3m5e04hLlTLGIio8mmkToSM3s_iiZZrqx-987dA16SYPgThre2fW-RUc5AWwcOt0aABGV-zGoyHd3cMHtXUoNzqmkBCiPbq8LRodCt7t8B5Jojyk2GfhtaweRkheNjXKHfdD8IzcZfzzkLkBmrIDvco\", \"has_more\": false}",
       "headers": {
         "Server": "nginx",
-        "Date": "Thu, 24 Jan 2019 14:30:16 GMT",
+        "Date": "Sat, 26 Jan 2019 04:19:25 GMT",
         "Content-Type": "application/json",
         "Transfer-Encoding": "chunked",
         "Connection": "keep-alive",
@@ -25,7 +25,7 @@
         "Pragma": "no-cache",
         "X-Content-Type-Options": "nosniff",
         "X-Frame-Options": "SAMEORIGIN",
-        "X-Server-Response-Time": "170"
+        "X-Server-Response-Time": "253"
       },
       "status_code": 200,
       "type": "ok"

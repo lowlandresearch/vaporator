@@ -1,7 +1,7 @@
 [
   {
     "request": {
-      "body": "{\"path\":\"\"}",
+      "body": "{\"path\":\"/fake\"}",
       "headers": {
         "Authorization": "<<DROPBOX_ACCESS_TOKEN>>",
         "Content-Type": "application/json"
@@ -9,15 +9,15 @@
       "method": "post",
       "options": [],
       "request_body": "",
-      "url": "https://api.dropboxapi.com/2/bogus/url"
+      "url": "https://api.dropboxapi.com/2/files/list_folder"
     },
     "response": {
       "binary": false,
-      "body": "Unknown API function: \"bogus/url\".",
+      "body": "{\"error_summary\": \"path/not_found/..\", \"error\": {\".tag\": \"path\", \"path\": {\".tag\": \"not_found\"}}}",
       "headers": {
         "Server": "nginx",
-        "Date": "Thu, 24 Jan 2019 14:30:17 GMT",
-        "Content-Type": "text/plain; charset=utf-8",
+        "Date": "Sat, 26 Jan 2019 04:19:26 GMT",
+        "Content-Type": "application/json",
         "Transfer-Encoding": "chunked",
         "Connection": "keep-alive",
         "Content-Security-Policy": "sandbox; frame-ancestors 'none'",
@@ -25,7 +25,7 @@
         "X-Content-Type-Options": "nosniff",
         "Content-Disposition": "attachment; filename='error'"
       },
-      "status_code": 400,
+      "status_code": 409,
       "type": "ok"
     }
   }

@@ -13,10 +13,10 @@
     },
     "response": {
       "binary": false,
-      "body": "{\"error_summary\": \"path/not_found/..\", \"error\": {\".tag\": \"path\", \"path\": {\".tag\": \"not_found\"}}}",
+      "body": "{\"error_summary\": \"path/not_found/\", \"error\": {\".tag\": \"path\", \"path\": {\".tag\": \"not_found\"}}}",
       "headers": {
         "Server": "nginx",
-        "Date": "Thu, 24 Jan 2019 14:30:18 GMT",
+        "Date": "Sat, 26 Jan 2019 04:19:24 GMT",
         "Content-Type": "application/json",
         "Transfer-Encoding": "chunked",
         "Connection": "keep-alive",
