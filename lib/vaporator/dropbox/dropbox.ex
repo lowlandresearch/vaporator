@@ -258,16 +258,17 @@ defmodule Vaporator.Dropbox do
     end
   end
 
-end
-
-defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
-  require Logger
-
-  import Vaporator.Dropbox, only: [post_api: 3,
-                                   prep_path: 1, prep_dbx_path: 2,
-                                   dropbox_meta_to_cloudfs: 1,
-                                   post_download: 5,
-                                   post_upload: 5]
+  @doc """
+  Get the metadata for the Dropbox file at path
+  
+  """
+  def get_metadata(dbx, path, args \\ %{}) do
+    body = Map.merge(%{:path => prep_path(path)}, args)
+    case post_api(dbx, "/files/get_metadata", body) do
+      {:ok, meta} -> {:ok, dropbox_meta_to_cloudfs(meta)}
+      {:error, error} -> {:error, error}
+    end
+  end
 
   def list_folder(dbx, path, args \\ %{}) do
     body = Map.merge(%{:path => prep_path(path)}, args)
@@ -283,14 +284,6 @@ defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
         {:error, {:no_entries, "No entries listed in response object"}}
       {:error, error} ->
         {:error, error}
-    end
-  end
-
-  def get_metadata(dbx, path, args \\ %{}) do
-    body = Map.merge(%{:path => prep_path(path)}, args)
-    case post_api(dbx, "/files/get_metadata", body) do
-      {:ok, meta} -> dropbox_meta_to_cloudfs(meta)
-      {:error, error} -> {:error, error}
     end
   end
 
@@ -312,6 +305,74 @@ defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
     end
   end
 
+  @chunk_size 4 * :math.pow(2, 20) |> floor
+
+  def sha256(s) do
+    :crypto.hash(:sha256, s)
+  end
+
+  @doc """
+  Calculate the Dropbox content hash of local file. This function
+  *assumes* that the given path exists and can be streamed.
+  """
+  def dbx_hash!(path) do
+    File.stream!(path, [], @chunk_size)
+    |> Enum.map(&sha256/1)
+    |> Enum.join
+    |> sha256
+    |> Base.encode16
+    |> String.downcase
+  end
+
+  @doc """
+  Does the file represented by dbx_meta have the same content as the
+  file at local_path?
+  
+  """
+  def same_content?(local_path, cfs_meta) do
+    dbx_hash!(local_path) == cfs_meta.meta["content_hash"]
+  end
+
+  @doc """
+  Need to be able to update binary content of a file on the cloud
+  file system to the version on the local file system.
+  
+  In the case of file_upload, the file is always transferred. In the
+  case of file_update, the file transfer only happens if the cloud
+  content is different from the local content.
+  
+  Args:
+  - fs (Vaporator.CloudFs impl): Cloud file system
+  - local_path (binary): Path of file on local file system to upload
+  - dbx_path (binary): Path on cloud file system to place uploaded
+      content. If this path ends with a "/" then it should be
+      treated as a directory in which to place the local_path
+  - args (Map): File-system-specific arguments to pass to the
+      underlying subsystem. 
+  
+  Returns:
+    {:ok, Vaporator.CloudFs.FileContent}
+      or
+    {:error, {:bad_decode, decode error (any)}
+      or 
+    {:error, {:bad_status, {:status_code, code (int)}, JSON (Map)}}
+      or 
+    {:error, {:unhandled_status, {:status_code, code (int)}, body (binary)}}
+  """
+  def file_update(dbx, local_path, dbx_path, args \\ %{}) do
+    case get_metadata(dbx, dbx_path) do
+      {:ok, cfs_meta} ->
+        if not same_content?(local_path, cfs_meta) do
+          file_upload(dbx, local_path, dbx_path, args)
+        else
+          {:ok, cfs_meta}
+        end
+      {:error, {:path_not_found, _}} ->
+        file_upload(dbx, local_path, dbx_path, args)
+      {:error, error} -> {:error, error}
+    end
+  end
+
   def file_remove(dbx, path, args \\ %{}) do
     case post_api(
           dbx, "/files/delete_v2",
@@ -319,6 +380,92 @@ defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
       {:ok, %{"metadata" => meta}} -> {:ok, dropbox_meta_to_cloudfs(meta)}
       {:error, error} -> {:error, error}
     end
+  end
+
+  def folder_remove(dbx, path, args \\ %{}) do
+    file_remove(dbx, path, args)
+  end
+
+end
+
+defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
+  require Logger
+
+  # import Vaporator.Dropbox, only: [
+  #   post_api: 3,
+  #   # prep_path: 1,
+  #   prep_dbx_path: 2,
+  #   dropbox_meta_to_cloudfs: 1,
+  #   post_download: 5,
+  #   post_upload: 5
+  # ]
+
+  def list_folder(dbx, path, args \\ %{}) do
+    Vaporator.Dropbox.list_folder(dbx, path, args)
+  end
+
+  def get_metadata(dbx, path, args \\ %{}) do
+    Vaporator.Dropbox.get_metadata(dbx, path, args)
+  end
+  
+  # def list_folder(dbx, path, args \\ %{}) do
+  #   body = Map.merge(%{:path => prep_path(path)}, args)
+  #   case post_api(dbx, "/files/list_folder", body) do
+  #     {:ok, result_meta=%{"entries" => entries}} when entries != [] ->
+  #       results = for meta <- entries do
+  #           dropbox_meta_to_cloudfs(meta)
+  #         end
+  #       {:ok, %Vaporator.CloudFs.ResultsMeta{results: results,
+  #                                            meta: result_meta}}
+  #     {:ok, _} ->
+  #       Logger.error("No entries listed in response object")
+  #       {:error, {:no_entries, "No entries listed in response object"}}
+  #     {:error, error} ->
+  #       {:error, error}
+  #   end
+  # end
+
+  # def get_metadata(dbx, path, args \\ %{}) do
+    
+  #   body = Map.merge(%{:path => prep_path(path)}, args)
+  #   case post_api(dbx, "/files/get_metadata", body) do
+  #     {:ok, meta} -> dropbox_meta_to_cloudfs(meta)
+  #     {:error, error} -> {:error, error}
+  #   end
+  # end
+
+  def file_download(dbx, path, dbx_api_args \\ %{}) do
+    Vaporator.Dropbox.file_download(dbx, path, dbx_api_args)
+    # post_download(dbx, "files/download", [], dbx_api_args, %{:path => path})
+  end
+
+  def file_upload(dbx, local_path, dbx_path, args \\ %{}) do
+    Vaporator.Dropbox.file_upload(dbx, local_path, dbx_path, args)
+    # case post_upload(
+    #       dbx, "files/upload", local_path,
+    #       Map.merge(%{:path => prep_dbx_path(local_path, dbx_path),
+    #                   :mode => "overwrite",
+    #                   :autorename => true,
+    #                   :mute => false}, args),
+    #       %{}
+    #     ) do
+    #   {:ok, meta} -> {:ok, dropbox_meta_to_cloudfs(meta)}
+    #   {:error, error} -> {:error, error}
+    # end
+  end
+
+  def file_update(dbx, local_path, dbx_path, args \\ %{}) do
+    Vaporator.Dropbox.file_update(dbx, local_path, dbx_path, args)
+  end
+
+  def file_remove(dbx, path, args \\ %{}) do
+    Vaporator.Dropbox.file_remove(dbx, path, args)
+    # case post_api(
+    #       dbx, "/files/delete_v2",
+    #       Map.merge(%{"path" => path}, args)) do
+    #   {:ok, %{"metadata" => meta}} -> {:ok, dropbox_meta_to_cloudfs(meta)}
+    #   {:error, error} -> {:error, error}
+    # end
   end
   def folder_remove(dbx, path, args \\ %{}), do: file_remove(dbx, path, args)
 
