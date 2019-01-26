@@ -36,6 +36,7 @@ defmodule Vaporator.MixProject do
       {:poison, "~> 4.0.1"},
       {:json, "~> 1.2.1"},
       {:timex, "~> 3.1"},
+      {:dir_walker, "~> 0.0.8"},
       {:excoveralls, "~> 0.10", only: :test},
       {:exvcr, "~> 0.10", only: :test}
     ]

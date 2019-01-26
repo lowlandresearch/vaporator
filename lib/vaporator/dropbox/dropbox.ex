@@ -386,19 +386,18 @@ defmodule Vaporator.Dropbox do
     file_remove(dbx, path, args)
   end
 
+  def sync_files(
+    dbx, local_path, dbx_path, file_regex, folder_regex, args \\ %{}
+  ) do
+    case DirWalker.start_link(local_path, [include_stat: true,
+                                           include_dir_names: true]) do
+      {:ok, walker} -> true
+    end
+  end
 end
 
 defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
   require Logger
-
-  # import Vaporator.Dropbox, only: [
-  #   post_api: 3,
-  #   # prep_path: 1,
-  #   prep_dbx_path: 2,
-  #   dropbox_meta_to_cloudfs: 1,
-  #   post_download: 5,
-  #   post_upload: 5
-  # ]
 
   def list_folder(dbx, path, args \\ %{}) do
     Vaporator.Dropbox.list_folder(dbx, path, args)
@@ -468,6 +467,14 @@ defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
     # end
   end
   def folder_remove(dbx, path, args \\ %{}), do: file_remove(dbx, path, args)
+
+  def sync_files(
+    dbx, local_path, dbx_path, file_regex, folder_regex, args \\ %{}
+  ) do
+    Vaporator.Dropbox.sync_files(
+      dbx, local_path, dbx_path, file_regex, folder_regex, args
+    )
+  end
 
   # # copy
   # body = %{"from_path" => from_path, "to_path" => to_path}
