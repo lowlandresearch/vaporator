@@ -19,10 +19,6 @@ defmodule Vaporator.Dropbox do
     %{"Content-Type" => "application/json"}
   end
 
-  # def auth_headers(auth) do
-  #   %{"Authorization" => "Bearer #{auth.access_token}"}
-  # end
-
   def auth_headers(dbx) do
     %{"Authorization" => "Bearer #{dbx.access_token}"}
   end
@@ -386,19 +382,66 @@ defmodule Vaporator.Dropbox do
     file_remove(dbx, path, args)
   end
 
+  def file_copy(dbx, from_path, to_path, args \\ %{}) do
+    case post_api(
+          dbx, "/files/copy_v2",
+          Map.merge(%{"from_path" => from_path,
+                      "to_path" => to_path}, args)) do
+      {:ok, %{"metadata" => meta}} -> {:ok, dropbox_meta_to_cloudfs(meta)}
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  def file_move(dbx, from_path, to_path, args \\ %{}) do
+    case post_api(
+          dbx, "/files/move",
+          Map.merge(%{"from_path" => from_path,
+                      "to_path" => to_path}, args)) do
+      {:ok, meta} -> {:ok, dropbox_meta_to_cloudfs(meta)}
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  @doc """
+  Given a local_root, the local_path within it, and a dbx_root, what
+  is the dbx_path?
+  """
+  def get_dbx_path(local_root, local_path, dbx_root) do
+    Path.join(
+      dbx_root,
+      Path.relative_to(
+        Path.expand(local_path),
+        Path.expand(local_root)
+      )
+    )
+  end
+
+  def sync_files(dbx, local_root, dbx_root, file_regex \\ nil, args \\ %{}) do
+    local_root = Path.absname(local_root)
+    case File.stat(local_root) do
+      {:ok, %{access: access}} when access in [:read_write, :read] ->
+        DirWalker.stream(local_root, [include_stat: true,
+                                      matching: file_regex])
+        |> Enum.map(
+          fn {path, _} ->
+            {path, get_dbx_path(local_root, path, dbx_root)} end
+        )
+        |> Enum.map(
+          fn {local_path, dbx_path} ->
+            file_upload(dbx, local_path, dbx_path, args) end
+        )
+      {:error, :enoent} -> {:error, :bad_local_path}
+    end
+  end
+
 end
+
+# ----------------------------------------------------------------------
+# CloudFs implementation
+# ----------------------------------------------------------------------
 
 defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
   require Logger
-
-  # import Vaporator.Dropbox, only: [
-  #   post_api: 3,
-  #   # prep_path: 1,
-  #   prep_dbx_path: 2,
-  #   dropbox_meta_to_cloudfs: 1,
-  #   post_download: 5,
-  #   post_upload: 5
-  # ]
 
   def list_folder(dbx, path, args \\ %{}) do
     Vaporator.Dropbox.list_folder(dbx, path, args)
@@ -408,50 +451,12 @@ defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
     Vaporator.Dropbox.get_metadata(dbx, path, args)
   end
   
-  # def list_folder(dbx, path, args \\ %{}) do
-  #   body = Map.merge(%{:path => prep_path(path)}, args)
-  #   case post_api(dbx, "/files/list_folder", body) do
-  #     {:ok, result_meta=%{"entries" => entries}} when entries != [] ->
-  #       results = for meta <- entries do
-  #           dropbox_meta_to_cloudfs(meta)
-  #         end
-  #       {:ok, %Vaporator.CloudFs.ResultsMeta{results: results,
-  #                                            meta: result_meta}}
-  #     {:ok, _} ->
-  #       Logger.error("No entries listed in response object")
-  #       {:error, {:no_entries, "No entries listed in response object"}}
-  #     {:error, error} ->
-  #       {:error, error}
-  #   end
-  # end
-
-  # def get_metadata(dbx, path, args \\ %{}) do
-    
-  #   body = Map.merge(%{:path => prep_path(path)}, args)
-  #   case post_api(dbx, "/files/get_metadata", body) do
-  #     {:ok, meta} -> dropbox_meta_to_cloudfs(meta)
-  #     {:error, error} -> {:error, error}
-  #   end
-  # end
-
   def file_download(dbx, path, dbx_api_args \\ %{}) do
     Vaporator.Dropbox.file_download(dbx, path, dbx_api_args)
-    # post_download(dbx, "files/download", [], dbx_api_args, %{:path => path})
   end
 
   def file_upload(dbx, local_path, dbx_path, args \\ %{}) do
     Vaporator.Dropbox.file_upload(dbx, local_path, dbx_path, args)
-    # case post_upload(
-    #       dbx, "files/upload", local_path,
-    #       Map.merge(%{:path => prep_dbx_path(local_path, dbx_path),
-    #                   :mode => "overwrite",
-    #                   :autorename => true,
-    #                   :mute => false}, args),
-    #       %{}
-    #     ) do
-    #   {:ok, meta} -> {:ok, dropbox_meta_to_cloudfs(meta)}
-    #   {:error, error} -> {:error, error}
-    # end
   end
 
   def file_update(dbx, local_path, dbx_path, args \\ %{}) do
@@ -460,26 +465,20 @@ defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
 
   def file_remove(dbx, path, args \\ %{}) do
     Vaporator.Dropbox.file_remove(dbx, path, args)
-    # case post_api(
-    #       dbx, "/files/delete_v2",
-    #       Map.merge(%{"path" => path}, args)) do
-    #   {:ok, %{"metadata" => meta}} -> {:ok, dropbox_meta_to_cloudfs(meta)}
-    #   {:error, error} -> {:error, error}
-    # end
   end
   def folder_remove(dbx, path, args \\ %{}), do: file_remove(dbx, path, args)
 
-  # # copy
-  # body = %{"from_path" => from_path, "to_path" => to_path}
-  # result = to_string(Poison.Encoder.encode(body, []))
-  # post(client, "/files/copy_v2", result)
-  # # move
-  # body = %{"from_path" => from_path, "to_path" => to_path}
-  # result = to_string(Poison.Encoder.encode(body, []))
-  # post(client, "/files/move", result)
-  # # delete (file or folder)
-  # body = %{"path" => path}
-  # result = to_string(Poison.Encoder.encode(body, []))
-  # post(client, "/files/delete_v2", result)
+  def sync_files(dbx, local_root, dbx_root, file_regex \\ nil, args \\ %{}) do
+    Vaporator.Dropbox.sync_files(
+      dbx, local_root, dbx_root, file_regex, args
+    )
+  end
 
+  def file_copy(dbx, from_path, to_path, args \\ %{}) do
+    Vaporator.Dropbox.file_copy(dbx, from_path, to_path, args)
+  end
+
+  def file_move(dbx, from_path, to_path, args \\ %{}) do
+    Vaporator.Dropbox.file_move(dbx, from_path, to_path, args)
+  end
 end

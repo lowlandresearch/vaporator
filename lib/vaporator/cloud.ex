@@ -149,6 +149,22 @@ defprotocol Vaporator.CloudFs do
   #   {:error, {:unhandled_status, {:status_code, code (int)}, body (binary)}}
   def file_remove(fs, path, args \\ %{})
   def folder_remove(fs, path, args \\ %{})
+
+  # Need to be able to sync a local folder with a cloud file system
+  # folder, making sure that all local files are uploaded to the cloud
+  # 
+  # Args:
+  # - fs (Vaporator.CloudFs impl): Cloud file system
+  # - local_root (binary): Path on local file system to sync
+  # - fs_root (binary): Path on cloud file system to put the content
+  # - file_regex (regex): Only file names matching the regex will be
+  #     synced
+  # - args (Map): File-system-specific arguments to pass to the
+  #     underlying subsystem.
+  #
+  # Returns:
+  #
+  def sync_files(dbx, local_root, fs_root, file_regex \\ nil, args \\ %{})
 end
 
 defmodule Vaporator.CloudFs.Meta do
