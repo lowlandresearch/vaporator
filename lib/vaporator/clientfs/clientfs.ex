@@ -5,17 +5,17 @@ defmodule Vaporator.ClientFs do
   @clientfs_path Application.get_env(:vaporator, :clientfs_path)
   @cloudfs_path Application.get_env(:vaporator, :cloudfs_path)
 
-  def start_link(args) do
-    GenServer.start_link(__MODULE__, args)
+  def start_link() do
+    GenServer.start_link(__MODULE__, [])
   end
 
-  def init(_args) do
+  def init(args) do
     {:ok, pid} = FileSystem.start_link(
       dirs: [@clientfs_path],
       recursive: true
     )
     FileSystem.subscribe(pid)
-    {:ok, %{watcher_pid: pid}}
+    {:ok, pid}
   end
 
   def handle_info({:file_event, _, {local_path, [event]}}, state) do
@@ -23,15 +23,21 @@ defmodule Vaporator.ClientFs do
     {:noreply, state}
   end
 
-  def handle_info({:file_event, _, :stop}, state) do
-    {:noreply, state}
-  end
-
   defp process_event(:created, local_path, cloudfs) do
     IO.puts("Created -> #{local_path}")
-    Vaporator.CloudFs.file_upload(
-      cloudfs, local_path, @cloudfs_path
-    )
+    case File.dir?(local_path) do
+      true ->
+        IO.puts("Create folder in CloudFs")
+        # TODO: Add folder creation to
+        # Vaporator.Dropbox
+      false ->
+        Vaporator.CloudFs.file_upload(
+          cloudfs,
+          local_path,
+          @cloudfs_path
+        )
+    end
+    
   end
 
   defp process_event(:modified, local_path, cloudfs) do
@@ -39,13 +45,13 @@ defmodule Vaporator.ClientFs do
     # Checking if created and modified time are the same
     # to determine if cloudfs needs to be updated
     stats = File.lstat!(local_path)
-    modified_event? = stats.ctime == stats.atime
+    modified_event? = stats.ctime == stats.mtime
     if not modified_event? do
       IO.puts("Modified -> #{local_path}")
       Vaporator.CloudFs.file_update(
         cloudfs,
         local_path,
-        "#{@cloudfs_path}#{Path.basename(local_path)}"
+        Path.join(@cloudfs_path, Path.basename(local_path))
       )
     end
   end
@@ -61,9 +67,15 @@ defmodule Vaporator.ClientFs do
     IO.puts("Deleted -> #{local_path}")
     case File.dir?(local_path) do
       true ->
-        Vaporator.CloudFs.folder_remove(cloudfs, local_path)
+        Vaporator.CloudFs.folder_remove(
+          cloudfs,
+          Path.join(@cloudfs_path, Path.dirname("#[local_path}/"))
+        )
       false ->
-        Vaporator.CloudFs.file_remove(cloudfs, local_path)
+        Vaporator.CloudFs.file_remove(
+          cloudfs,
+          Path.join(@cloudfs_path, Path.basename(local_path))
+        )
     end
   end
 
