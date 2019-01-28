@@ -37,6 +37,7 @@ defmodule Vaporator.MixProject do
       {:json, "~> 1.2.1"},
       {:timex, "~> 3.1"},
       {:dir_walker, "~> 0.0.8"},
+      {:file_system, "~> 0.2.6"},
       {:excoveralls, "~> 0.10", only: :test},
       {:exvcr, "~> 0.10", only: :test}
     ]
