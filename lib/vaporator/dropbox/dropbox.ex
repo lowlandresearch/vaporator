@@ -386,7 +386,7 @@ defmodule Vaporator.Dropbox do
     case post_api(
           dbx, "/files/copy_v2",
           Map.merge(%{"from_path" => from_path,
-                      "to_path" => to_path}, args)) do
+                      "to_path" => prep_dbx_path(from_path, to_path)}, args)) do
       {:ok, %{"metadata" => meta}} -> {:ok, dropbox_meta_to_cloudfs(meta)}
       {:error, error} -> {:error, error}
     end
@@ -396,7 +396,7 @@ defmodule Vaporator.Dropbox do
     case post_api(
           dbx, "/files/move",
           Map.merge(%{"from_path" => from_path,
-                      "to_path" => to_path}, args)) do
+                      "to_path" => prep_dbx_path(from_path, to_path)}, args)) do
       {:ok, meta} -> {:ok, dropbox_meta_to_cloudfs(meta)}
       {:error, error} -> {:error, error}
     end
