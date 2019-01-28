@@ -1,0 +1,8 @@
+/deps
+/test
+/_build
+README.md
+LICENCE
+.travis.yml
+.gitignore
+.formatter.exs
