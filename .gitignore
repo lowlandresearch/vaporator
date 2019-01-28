@@ -141,3 +141,16 @@ vaporator-*.tar
 
 # macOS
 .DS_Store
+
+IElixir/
+Pipfile
+Pipfile.lock
+copy-test.txt
+dbx-hash-test.txt
+jupyter-ielixir/
+move-test.txt
+remove-test.txt
+sync-test-dir/
+update-test.txt
+upload-test.txt
+upload-test2.txt

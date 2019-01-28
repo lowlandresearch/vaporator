@@ -5,21 +5,20 @@ defmodule Vaporator.DropboxFsOpsTest do
   @dbx %Vaporator.Dropbox{access_token: System.get_env("DROPBOX_ACCESS_TOKEN")}
   @test_dir Application.get_env(:vaporator, :test_dir)
   @test_file Application.get_env(:vaporator, :test_file)
-  @test_file_path "#{@test_dir}#{@test_file}"
+  @test_file_path Path.join(@test_dir, @test_file)
+  @local_test_path Path.join(".", @test_file)
 
   setup_all do
-    {:ok, fp} = File.open("./#{@test_file}", [:write])
-    IO.binwrite(fp, "upload test data")
-    File.close(fp)
+    File.write(@local_test_path, "upload test data")
 
     on_exit fn ->
-      File.rm("./#{@test_file}")
+      File.rm(@local_test_path)
     end
   end
 
   test "upload a file" do
     {:ok, %{name: name}} = Vaporator.CloudFs.file_upload(
-      @dbx, "./#{@test_file}", @test_dir
+      @dbx, @local_test_path, @test_dir
     )
     
     assert name == @test_file
