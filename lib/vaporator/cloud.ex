@@ -53,7 +53,6 @@ defprotocol Vaporator.CloudFs do
   #   {:error, {:bad_status, {:status_code, code (int)}, JSON (Map)}}
   #     or 
   #   {:error, {:unhandled_status, {:status_code, code (int)}, body (binary)}}
-
   def get_metadata(fs, path, args \\ %{})
 
   # Need to be able to get the binary content of a file at a particular
@@ -165,6 +164,56 @@ defprotocol Vaporator.CloudFs do
   # Returns:
   #
   def sync_files(dbx, local_root, fs_root, file_regex \\ nil, args \\ %{})
+
+  # Need to be able to copy one file in the cloud file system to
+  # another place in the cloud file system.
+  # 
+  # Args:
+  # - fs (Vaporator.CloudFs impl): Cloud file system
+  # - from_path (binary): Path of file/folder on cloud file system to
+  #     copy
+  # - to_path (binary): Path of file/folder on cloud file system to
+  #     place the copied file. If this path ends in a "/", then it is
+  #     treated as a directory into which the file should be copied.
+  # - args (Map): File-system-specific arguments to pass to the
+  #     underlying subsystem. 
+  # 
+  # Returns:
+  #   {:ok, Vaporator.CloudFS.Meta}
+  #     or
+  #   {:error, {:path_not_found, path error (binary)}
+  #     or 
+  #   {:error, {:bad_decode, decode error (any)}
+  #     or 
+  #   {:error, {:bad_status, {:status_code, code (int)}, JSON (Map)}}
+  #     or 
+  #   {:error, {:unhandled_status, {:status_code, code (int)}, body (binary)}}
+  def file_copy(dbx, from_path, to_path, args \\ %{})
+
+  # Need to be able to move one file in the cloud file system to
+  # another place in the cloud file system.
+  # 
+  # Args:
+  # - fs (Vaporator.CloudFs impl): Cloud file system
+  # - from_path (binary): Path of file/folder on cloud file system to
+  #     move
+  # - to_path (binary): Path of file/folder on cloud file system to
+  #     place the moved file. If this path ends in a "/", then it is
+  #     treated as a directory into which the file should be moved.
+  # - args (Map): File-system-specific arguments to pass to the
+  #     underlying subsystem. 
+  # 
+  # Returns:
+  #   {:ok, Vaporator.CloudFS.Meta}
+  #     or
+  #   {:error, {:path_not_found, path error (binary)}
+  #     or 
+  #   {:error, {:bad_decode, decode error (any)}
+  #     or 
+  #   {:error, {:bad_status, {:status_code, code (int)}, JSON (Map)}}
+  #     or 
+  #   {:error, {:unhandled_status, {:status_code, code (int)}, body (binary)}}
+  def file_move(dbx, from_path, to_path, args \\ %{})
 end
 
 defmodule Vaporator.CloudFs.Meta do
