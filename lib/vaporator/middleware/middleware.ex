@@ -1,39 +1,19 @@
 defmodule Vaporator.Middleware do
   use GenServer
+  require Logger
 
   @cloudfs %Vaporator.Dropbox{access_token: System.get_env("DROPBOX_ACCESS_TOKEN")}
   @cloudfs_path Application.get_env(:vaporator, :cloudfs_path)
 
   def start_link do
-    GenServer.start_link(__MODULE__, :queue.new, name: :middleware)
+    GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  def init(queue) do
-    {:ok, queue}
+  def init(state) do
+    {:ok, state}
   end
 
-  def handle_cast({:queue_event, event}, queue) do
-    if not :queue.member(event, queue) do
-      new_queue = :queue.in(event, queue)
-      {:noreply, new_queue}
-    else
-      {:noreply, queue}
-    end
-  end
-
-  def handle_cast(:process_next_event, queue) do
-    if not :queue.is_empty(queue) do
-      {{_, next_event}, new_queue} = :queue.out(queue)
-      process_event(next_event)
-      {:noreply, new_queue}
-    else
-      {:noreply, queue}
-    end
-  end
-
-  def process_next_event do
-    GenServer.cast(:middleware, :process_next_event)
-  end
+  # API
 
   def process_event({:created, path}) do
     if File.exists?(path) do
@@ -67,6 +47,26 @@ defmodule Vaporator.Middleware do
           Path.join(@cloudfs_path, Path.basename(path))
         )
     end
+  end
+
+  def process_event({:empty, reason}) do
+    Logger.info("#{reason}")
+  end
+
+  def process_next_event do
+    GenServer.cast(__MODULE__, :process_next_event)
+  end
+
+  # Server
+
+  def handle_cast({:queue_event, event}, state) do
+      event |> Vaporator.EventQueue.enqueue
+      {:noreply, state}
+  end
+
+  def handle_cast(:process_next_event, state) do
+    Vaporator.EventQueue.dequeue |> process_event
+    {:noreply, state}
   end
 
 end

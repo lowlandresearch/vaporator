@@ -17,13 +17,11 @@ defmodule Vaporator.ClientFs do
   use GenServer
   require Logger
 
-  @watch_dirs Application.get_env(:vaporator, :watch_dirs)
-
   @doc """
   Start ClientFs filesystem monitor
   """
-  def start_link do
-    GenServer.start_link(__MODULE__, [], name: :clientfs)
+  def start_link(path) do
+    GenServer.start_link(__MODULE__, path)
   end
 
   @doc """
@@ -34,9 +32,9 @@ defmodule Vaporator.ClientFs do
   Returns:
     {:ok, process_id}
   """
-  def init(_args) do
+  def init(path) do
     {:ok, pid} = FileSystem.start_link(
-      dirs: @watch_dirs,
+      dirs: path,
       recursive: true
     )
     FileSystem.subscribe(pid)
@@ -56,9 +54,12 @@ defmodule Vaporator.ClientFs do
   """
   def handle_info({:file_event, _, {local_path, [event]}}, state) do
     if event in [:created, :modified, :removed] do
-      GenServer.cast(:middleware, {:queue_event, {event, local_path}})
+      GenServer.cast(
+        Vaporator.Middleware,
+        {:queue_event, {event, local_path}}
+      )
     else
-      Logger.error("[error] Unhandled event -> #{event}")
+      Logger.error("Unhandled event -> #{event}")
     end
     {:noreply, state}
   end
