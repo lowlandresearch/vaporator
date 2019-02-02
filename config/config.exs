@@ -32,7 +32,7 @@ use Mix.Config
 config :vaporator, api_url: "https://api.dropboxapi.com/2"
 config :vaporator, content_url: "https://content.dropboxapi.com/2/"
 
-config :vaporator, watch_dirs: ["C:/dropbox"]
+config :vaporator, watch_dirs: []
 
 config :vaporator, clientfs_path: "C:/dropbox/"
 config :vaporator, cloudfs_path: "/vaporator/test/"

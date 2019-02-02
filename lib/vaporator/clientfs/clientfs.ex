@@ -3,27 +3,20 @@ defmodule Vaporator.ClientFs do
   Monitors client-side filesystem events that
   will be synced to a cloud filesystem
 
-  Events are processed to determine the necessary
-  CloudFs sync action to be taken.
+  Events are sent to Vaporator.Middleware to be queued
+  for processing into CloudFs
 
   file_system event structure:
     {:file_event, process_id, {local_path, [event]}}
-
-  Events supported:
-    - :created -> Uploads file to CloudFs
-    - :modified -> Updates file in CloudFs
-    - :removed -> Removes file from CloudFs
   """
   use GenServer
   require Logger
 
-  @watch_dirs Application.get_env(:vaporator, :watch_dirs)
-
   @doc """
   Start ClientFs filesystem monitor
   """
-  def start_link do
-    GenServer.start_link(__MODULE__, [], name: :clientfs)
+  def start_link(path) do
+    GenServer.start_link(__MODULE__, path)
   end
 
   @doc """
@@ -34,9 +27,9 @@ defmodule Vaporator.ClientFs do
   Returns:
     {:ok, process_id}
   """
-  def init(_args) do
+  def init(path) do
     {:ok, pid} = FileSystem.start_link(
-      dirs: @watch_dirs,
+      dirs: path,
       recursive: true
     )
     FileSystem.subscribe(pid)
@@ -55,11 +48,10 @@ defmodule Vaporator.ClientFs do
     {:noreply, state}
   """
   def handle_info({:file_event, _, {local_path, [event]}}, state) do
-    if event in [:created, :modified, :removed] do
-      GenServer.cast(:middleware, {:queue_event, {event, local_path}})
-    else
-      Logger.error("[error] Unhandled event -> #{event}")
-    end
+    GenServer.cast(
+      Vaporator.Middleware,
+      {:queue_event, {event, local_path}}
+    )
     {:noreply, state}
   end
 
