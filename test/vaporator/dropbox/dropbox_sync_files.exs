@@ -18,23 +18,31 @@ defmodule Vaporator.DropboxSyncFilesTest do
 
     Vaporator.CloudFs.sync_files(@dbx, sync_root, @test_dir)
 
-    {:ok, a_meta} = Vaporator.CloudFs.get_metadata(
-      @dbx, Path.join(@test_dir, "a.txt")
-    )
+    {:ok, a_meta} =
+      Vaporator.CloudFs.get_metadata(
+        @dbx,
+        Path.join(@test_dir, "a.txt")
+      )
+
     assert a_meta.path == Path.join(@test_dir, "a.txt")
     assert a_meta.meta["content_hash"] == Vaporator.Dropbox.dbx_hash!(a_path)
-    
-    {:ok, b_meta} = Vaporator.CloudFs.get_metadata(
-      @dbx, Path.join([@test_dir, "sub1", "b.txt"])
-    )
+
+    {:ok, b_meta} =
+      Vaporator.CloudFs.get_metadata(
+        @dbx,
+        Path.join([@test_dir, "sub1", "b.txt"])
+      )
+
     assert b_meta.path == Path.join([@test_dir, "sub1", "b.txt"])
     assert b_meta.meta["content_hash"] == Vaporator.Dropbox.dbx_hash!(b_path)
-    
-    {:ok, c_meta} = Vaporator.CloudFs.get_metadata(
-      @dbx, Path.join([@test_dir, "sub1", "sub2", "c.txt"])
-    )
+
+    {:ok, c_meta} =
+      Vaporator.CloudFs.get_metadata(
+        @dbx,
+        Path.join([@test_dir, "sub1", "sub2", "c.txt"])
+      )
+
     assert c_meta.path == Path.join([@test_dir, "sub1", "sub2", "c.txt"])
     assert c_meta.meta["content_hash"] == Vaporator.Dropbox.dbx_hash!(c_path)
-    
   end
 end

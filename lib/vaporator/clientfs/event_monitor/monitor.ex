@@ -6,19 +6,18 @@ defmodule Vaporator.ClientFs.EventMonitor do
   end
 
   def init(args) do
-    {:ok, pid} = FileSystem.Worker.start_link(
-                  dirs: args.path,
-                  recursive: true
-                )
+    {:ok, pid} =
+      FileSystem.Worker.start_link(
+        dirs: args.path,
+        recursive: true
+      )
+
     FileSystem.subscribe(pid)
     {:ok, pid}
   end
 
   def handle_info({:file_event, _, {path, [event]}}, state) do
-    GenStage.cast(
-      Vaporator.ClientFs.EventProducer,
-      {:enqueue, {event, path}}
-    )
+    Vaporator.ClientFs.EventProducer.enqueue({event, path})
     {:noreply, state}
   end
 end

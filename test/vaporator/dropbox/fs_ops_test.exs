@@ -11,65 +11,77 @@ defmodule Vaporator.DropboxFsOpsTest do
   setup_all do
     File.write(@local_test_path, "upload test data")
 
-    on_exit fn ->
+    on_exit(fn ->
       File.rm(@local_test_path)
-    end
+    end)
   end
 
   test "upload a file" do
-    {:ok, %{name: name}} = Vaporator.CloudFs.file_upload(
-      @dbx, @local_test_path, @test_dir
-    )
-    
+    {:ok, %{name: name}} =
+      Vaporator.CloudFs.file_upload(
+        @dbx,
+        @local_test_path,
+        @test_dir
+      )
+
     assert name == @test_file
   end
 
   test "download a file" do
-    {:ok, %{content: content}} = Vaporator.CloudFs.file_download(
-      @dbx, @test_file_path
-    )
+    {:ok, %{content: content}} =
+      Vaporator.CloudFs.file_download(
+        @dbx,
+        @test_file_path
+      )
+
     assert content == "upload test data"
   end
 
   test "get_metadata from dropbox folder that exists" do
     use_cassette "cloudfs/get_metadata/folder" do
-      {:ok, meta} = Vaporator.CloudFs.get_metadata(
-        @dbx,
-        @test_dir
-      )
+      {:ok, meta} =
+        Vaporator.CloudFs.get_metadata(
+          @dbx,
+          @test_dir
+        )
+
       assert meta.type == :folder
     end
   end
 
   test "get_metadata from dropbox file that exists" do
     use_cassette "cloudfs/get_metadata/file" do
-      {:ok, meta} = Vaporator.CloudFs.get_metadata(
-        @dbx,
-        @test_file_path
-      )
+      {:ok, meta} =
+        Vaporator.CloudFs.get_metadata(
+          @dbx,
+          @test_file_path
+        )
+
       assert meta.type == :file
     end
   end
 
   test "get_metadata from dropbox item that doesn't exists" do
     use_cassette "cloudfs/get_metadata/not_found" do
-      {:error, {reason, _}} = Vaporator.CloudFs.get_metadata(
-        @dbx,
-        "/fake"
-      )
+      {:error, {reason, _}} =
+        Vaporator.CloudFs.get_metadata(
+          @dbx,
+          "/fake"
+        )
+
       assert reason == :path_not_found
     end
   end
 
   test "removing a file" do
-
-    {:ok, meta} = Vaporator.CloudFs.file_remove(
-      @dbx, @test_file_path
-    )
+    {:ok, meta} =
+      Vaporator.CloudFs.file_remove(
+        @dbx,
+        @test_file_path
+      )
 
     # Access protocol not available by default, must use dot access
     assert meta.path == @test_file_path
-    
   end
 
   test "lists the root directory" do
@@ -81,22 +93,25 @@ defmodule Vaporator.DropboxFsOpsTest do
 
   test "list_folder: empty folder" do
     use_cassette "cloudfs/list_folder/no_files" do
-      {:error, {reason, _}} = Vaporator.CloudFs.list_folder(
-        @dbx,
-        @test_dir
-      )
+      {:error, {reason, _}} =
+        Vaporator.CloudFs.list_folder(
+          @dbx,
+          @test_dir
+        )
+
       assert reason == :no_entries
     end
   end
 
   test "list_folder: path not found" do
     use_cassette "cloudfs/list_folder/not_found" do
-      {:error, {reason, _}} = Vaporator.CloudFs.list_folder(
-        @dbx,
-        "/fake"
-      )
+      {:error, {reason, _}} =
+        Vaporator.CloudFs.list_folder(
+          @dbx,
+          "/fake"
+        )
+
       assert reason == :path_not_found
     end
   end
-
 end

@@ -1,6 +1,7 @@
 defmodule Vaporator.ClientFs do
   require Logger
-   @moduledoc """
+
+  @moduledoc """
   Provides a single interface for:
     - Receiving events streamed from ClientFs and queues them into EventQueue
     - Processing events in EventQueue to determine necessary CloudFs sync action
@@ -43,15 +44,15 @@ defmodule Vaporator.ClientFs do
 
   def process_event({:removed, path}) do
     if File.dir?(path) do
-        Vaporator.CloudFs.folder_remove(
-          @cloudfs,
-          Path.join(@cloudfs_path, Path.dirname("#[path}/"))
-        )
+      Vaporator.CloudFs.folder_remove(
+        @cloudfs,
+        Path.join(@cloudfs_path, Path.dirname("#[path}/"))
+      )
     else
-        Vaporator.CloudFs.file_remove(
-          @cloudfs,
-          Path.join(@cloudfs_path, Path.basename(path))
-        )
+      Vaporator.CloudFs.file_remove(
+        @cloudfs,
+        Path.join(@cloudfs_path, Path.basename(path))
+      )
     end
   end
 

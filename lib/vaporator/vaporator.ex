@@ -1,3 +1,14 @@
+defmodule Vaporator do
+  @moduledoc """
+
+  """
+  use Application
+
+  def start(_type, _args) do
+    Vaporator.Supervisor.start_link()
+  end
+end
+
 defmodule Vaporator.Supervisor do
   use Supervisor
 
@@ -38,5 +49,4 @@ defmodule Vaporator.Supervisor do
 
     Supervisor.init(children, strategy: :one_for_one)
   end
-
 end
