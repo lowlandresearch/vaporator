@@ -477,27 +477,6 @@ defmodule Vaporator.Dropbox do
       )
     )
   end
-
-  def sync_files(dbx, local_root, dbx_root, file_regex \\ nil, args \\ %{}) do
-    local_root = Path.absname(local_root)
-
-    case File.stat(local_root) do
-      {:ok, %{access: access}} when access in [:read_write, :read] ->
-        DirWalker.stream(local_root,
-          include_stat: true,
-          matching: file_regex
-        )
-        |> Enum.map(fn {path, _} ->
-          {path, get_dbx_path(local_root, path, dbx_root)}
-        end)
-        |> Enum.map(fn {local_path, dbx_path} ->
-          file_upload(dbx, local_path, dbx_path, args)
-        end)
-
-      {:error, :enoent} ->
-        {:error, :bad_local_path}
-    end
-  end
 end
 
 # ----------------------------------------------------------------------
@@ -532,16 +511,6 @@ defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
   end
 
   def folder_remove(dbx, path, args \\ %{}), do: file_remove(dbx, path, args)
-
-  def sync_files(dbx, local_root, dbx_root, file_regex \\ nil, args \\ %{}) do
-    Vaporator.Dropbox.sync_files(
-      dbx,
-      local_root,
-      dbx_root,
-      file_regex,
-      args
-    )
-  end
 
   def file_copy(dbx, from_path, to_path, args \\ %{}) do
     Vaporator.Dropbox.file_copy(dbx, from_path, to_path, args)
