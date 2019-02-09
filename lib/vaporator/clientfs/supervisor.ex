@@ -1,4 +1,4 @@
-defmodule Vaporator.ClientFs.Supervisor do
+defmodule Vaporator.ClientFs.EventMonitor.Supervisor do
   use Supervisor
 
   @watch_dirs Application.get_env(:vaporator, :watch_dirs)
@@ -29,7 +29,6 @@ defmodule Vaporator.ClientFs.Supervisor do
 
   @doc """
   Creates a map for a ClientFs process spec
-
   Args:
     path (binary): absolute filepath on ClientFs
   
@@ -38,18 +37,26 @@ defmodule Vaporator.ClientFs.Supervisor do
   """
   def child_spec(path) do
     %{
-      id: generate_name(path),
+      id: generate_id(path),
       start: {
-        Vaporator.ClientFs,
+        Vaporator.ClientFs.EventMonitor,
         :start_link,
-        [path]
+        [%{
+          path: path,
+          name: generate_name(path)
+        }]
       }
     }
   end
 
+  def generate_id(path) do
+    :crypto.hash(:sha256, path)
+    |> Base.encode16
+    |> String.downcase
+  end
+
   @doc """
   Generates a name from the provided path basename
-
   Args:
     path (binary): absolute filepath on ClientFs
   
@@ -61,7 +68,7 @@ defmodule Vaporator.ClientFs.Supervisor do
     |> Path.basename
     |> String.downcase
     |> String.replace(" ", "")
-    |> fn x -> "clientfs_#{x}" end.()
+    |> fn x -> "event_monitor_#{x}" end.()
     |> String.to_atom
   end
 end
