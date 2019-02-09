@@ -43,23 +43,20 @@ defmodule Vaporator.ClientFs.EventMonitor do
         but this will be addressed with a RateLimiter later.
 
   Args:
-    - local_root (binary): abspath on local file system to sync
+    - path (binary): abspath on local file system to sync
     - file_regex (regex): Only file names matching the regex will be
        synced
 
   Returns:
     None
   """
-  def initial_sync(local_root, file_regex \\ nil) do
-    Logger.info("EventMonitor started INITIAL_SYNC of '#{local_root}'")
-    local_root = Path.absname(local_root)
+  def initial_sync(path) do
+    Logger.info("EventMonitor STARTED INITIAL_SYNC of '#{path}'")
+    path = Path.absname(path)
 
-    case File.stat(local_root) do
+    case File.stat(path) do
       {:ok, %{access: access}} when access in [:read_write, :read] ->
-        DirWalker.stream(
-          local_root,
-          matching: file_regex
-        )
+        DirWalker.stream(path)
         |> Enum.map(&create_event/1)
         |> Enum.map(
           &Vaporator.ClientFs.EventProducer.enqueue/1
@@ -68,7 +65,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
       {:error, :enoent} ->
         {:error, :bad_local_path}
     end
-    Logger.info("EventMonitor completed INITIAL_SYNC of '#{local_root}'")
+    Logger.info("EventMonitor COMPLETED INITIAL_SYNC of '#{path}'")
   end
 
   @doc """
@@ -81,7 +78,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
     None
   """
   def start_maintenance(path) do
-    Logger.info("EventMonitor entering MAINTENANCE for '#{path}'")
+    Logger.info("EventMonitor ENTERING MAINTENANCE for '#{path}'")
     {:ok, pid} = FileSystem.start_link(
       dirs: path,
       recursive: true

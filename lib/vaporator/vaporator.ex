@@ -19,15 +19,6 @@ defmodule Vaporator.Supervisor do
   def init(:ok) do
     children = [
       %{
-        id: EventMonitor.Supervisor,
-        start: {
-          Vaporator.ClientFs.EventMonitor.Supervisor,
-          :start_link,
-          []
-        },
-        type: :supervisor
-      },
-      %{
         id: EventProducer,
         start: {
           Vaporator.ClientFs.EventProducer,
@@ -42,6 +33,15 @@ defmodule Vaporator.Supervisor do
           Vaporator.ClientFs.EventConsumer,
           :start_link,
           [:ok]
+        },
+        type: :supervisor
+      },
+      %{
+        id: EventMonitor.Supervisor,
+        start: {
+          Vaporator.ClientFs.EventMonitor.Supervisor,
+          :start_link,
+          []
         },
         type: :supervisor
       }
