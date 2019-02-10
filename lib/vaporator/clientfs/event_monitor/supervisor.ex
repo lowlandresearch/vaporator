@@ -1,14 +1,24 @@
 defmodule Vaporator.ClientFs.EventMonitor.Supervisor do
   use Supervisor
-
-  @sync_dirs System.get_env("VAPORATOR_SYNC_DIRS")
+  require Logger
 
   def start_link do
     Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   def init(:ok) do
-    generate_children() |> Supervisor.init(strategy: :one_for_one)
+    get_sync_dirs()
+    |> generate_children()
+    |> Supervisor.init(strategy: :one_for_one)
+  end
+
+  def get_sync_dirs do
+    case System.get_env("VAPORATOR_SYNC_DIRS") do
+      nil ->
+        Logger.error("VAPORATOR_SYNC_DIRS not set")
+        []
+      dirs -> String.split(dirs, ",")
+    end
   end
 
   @doc """
@@ -17,10 +27,8 @@ defmodule Vaporator.ClientFs.EventMonitor.Supervisor do
   Returns:
     children (list): List of Vaporator.ClientFs child_specs
   """
-  def generate_children do
-    @sync_dirs
-    |> String.split(",")
-    # path needs to be a list for start_link
+  def generate_children(dirs) do
+    dirs
     |> Enum.map(fn x -> [x] end)
     |> Enum.map(&child_spec/1)
   end
