@@ -1,7 +1,7 @@
 defmodule Vaporator.ClientFs.EventMonitor.Supervisor do
   use Supervisor
 
-  @watch_dirs Application.get_env(:vaporator, :watch_dirs)
+  @sync_dirs System.get_env("VAPORATOR_SYNC_DIRS")
 
   def start_link do
     Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -18,7 +18,8 @@ defmodule Vaporator.ClientFs.EventMonitor.Supervisor do
     children (list): List of Vaporator.ClientFs child_specs
   """
   def generate_children do
-    @watch_dirs
+    @sync_dirs
+    |> String.split(",")
     # path needs to be a list for start_link
     |> Enum.map(fn x -> [x] end)
     |> Enum.map(&child_spec/1)

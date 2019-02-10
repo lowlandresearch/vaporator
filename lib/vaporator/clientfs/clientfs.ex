@@ -12,8 +12,8 @@ defmodule Vaporator.ClientFs do
     - :removed -> Removes file from CloudFs
   """
 
-  @cloudfs %Vaporator.Dropbox{access_token: System.get_env("DROPBOX_ACCESS_TOKEN")}
-  @cloudfs_path Application.get_env(:vaporator, :cloudfs_path)
+  @cloudfs %Vaporator.Dropbox{access_token: System.get_env("VAPORATOR_CLOUDFS_ACCESS_TOKEN")}
+  @cloudfs_path System.get_env("VAPORATOR_CLOUDFS_PATH")
 
   @doc """
   Determines CloudFs sync action for the ClientFs generated event
