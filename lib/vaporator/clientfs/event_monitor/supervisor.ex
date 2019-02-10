@@ -49,8 +49,7 @@ defmodule Vaporator.ClientFs.EventMonitor.Supervisor do
         :start_link,
         [
           %{
-            path: path,
-            name: generate_name(path)
+            path: path
           }
         ]
       }
@@ -69,25 +68,5 @@ defmodule Vaporator.ClientFs.EventMonitor.Supervisor do
     :crypto.hash(:sha256, path)
     |> Base.encode16()
     |> String.downcase()
-  end
-
-  @doc """
-  Generates a name for child_spec from the provided path
-  Args:
-    path (binary): absolute path for directory to be monitored
-
-  Returns:
-    name (atom): generated name (i.e. :clientfs_dropbox)
-
-    NOTE: names cannot be strings
-    https://hexdocs.pm/elixir/GenServer.html -> Name Registration
-  """
-  def generate_name(path) do
-    path
-    |> Path.basename()
-    |> String.downcase()
-    |> String.replace(" ", "")
-    |> (fn x -> "event_monitor_#{x}" end).()
-    |> String.to_atom()
   end
 end
