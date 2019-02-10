@@ -42,7 +42,7 @@ defmodule Vaporator.ClientFs do
     end
   end
 
-  def process_event({:removed, path}) do
+  def process_event({:deleted, path}) do
     if File.dir?(path) do
       Vaporator.CloudFs.folder_remove(
         @cloudfs,

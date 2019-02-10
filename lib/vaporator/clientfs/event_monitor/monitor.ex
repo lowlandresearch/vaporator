@@ -96,7 +96,6 @@ defmodule Vaporator.ClientFs.EventMonitor do
   it to EventProducer queue
   """
   def handle_info({:file_event, _, {path, [event]}}, state) do
-    # if event == :deleted do event = :removed end # For testing on Windows only
     Vaporator.ClientFs.EventProducer.enqueue({event, path})
     {:noreply, state}
   end
