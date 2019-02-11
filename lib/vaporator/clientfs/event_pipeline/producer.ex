@@ -2,6 +2,7 @@ defmodule Vaporator.ClientFs.EventProducer do
   @moduledoc """
   Receives events from FileSystem and provides events
   to EventConsumer
+  https://hexdocs.pm/gen_stage/GenStage.html
   """
   use GenStage
   require Logger

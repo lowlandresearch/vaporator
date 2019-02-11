@@ -1,6 +1,8 @@
 defmodule Vaporator do
   @moduledoc """
+  Entry point for application
 
+  https://hexdocs.pm/elixir/Application.html
   """
   use Application
 
@@ -10,12 +12,33 @@ defmodule Vaporator do
 end
 
 defmodule Vaporator.Supervisor do
+  @moduledoc """
+  Starts and supervises all of the application processes.
+
+  Child Processes:
+    - ClientFs.EventMonitor.Supervisor
+    - ClientFs.EventProducer
+    - ClientFs.EventConsumer
+  """
   use Supervisor
 
   def start_link do
     Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
+  @doc """
+  Initalizes the supervisor and starts ClientFs.EventProducer,
+  ClientFs.EventConsumer, ClientFs.EventMonitor.Supervisor.
+
+  elixirschool.com/en/lessons/advanced/otp-supervisors/#child-specification
+
+  Child order matters when initalizing.  EventMonitor sends events to
+  EventProducer and then processed by EventConsumer.
+
+  If EventProducer is not running when events begin flowing from EventMonitor,
+  those events will be lost since we are using GenStage.cast/2 for async
+  queueing.
+  """
   def init(:ok) do
     children = [
       %{

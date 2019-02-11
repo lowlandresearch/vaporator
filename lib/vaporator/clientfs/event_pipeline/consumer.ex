@@ -1,7 +1,9 @@
 defmodule Vaporator.ClientFs.EventConsumer do
   @moduledoc """
-  GenStage ConsumerSupervisor that subscribes to EventProducer and spawns
-  a task process for each received event that updates CloudFs
+  GenStage ConsumerSupervisor that subscribes to EventProducer and spawns a
+  ClientFs.EventProcessor task process for each received event that updates
+  CloudFs.
+
   https://hexdocs.pm/gen_stage/ConsumerSupervisor.html
   """
   use ConsumerSupervisor

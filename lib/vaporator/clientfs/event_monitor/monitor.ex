@@ -1,4 +1,9 @@
 defmodule Vaporator.ClientFs.EventMonitor do
+  @moduledoc """
+  GenServer that spawns and subscribes to a file_system process to monitor
+  :file_events for a local directory provided by the EventMonitor.Supervisor.
+  When a :file_event is received, it is casted to ClientFs.EventProducer.
+  """
   use GenServer
   require Logger
 
@@ -8,8 +13,10 @@ defmodule Vaporator.ClientFs.EventMonitor do
 
   @doc """
   Initializes EventMonitor by completing initial_sync of all files that
-  exist in the specific path to CloudFs and then start_maintenence for
-  subsequent file events
+  exist in the specified path to CloudFs and then start_maintenence for
+  subsequent file event processing.
+
+  https://hexdocs.pm/file_system/readme.html --> Example with GenServer
   """
   def init(args) do
     initial_sync(args.path)
@@ -38,9 +45,10 @@ defmodule Vaporator.ClientFs.EventMonitor do
   Need to be able to sync a local folder with a cloud file system
   folder, making sure that all local files are uploaded to the cloud
 
-  NOTE: This is the brute force approach by sending all files as
-        created events.  The CloudFs rate limit could be reached,
-        but this will be addressed with a RateLimiter later.
+  NOTE:
+    This is the brute force approach by sending all files as
+    created events.  The CloudFs rate limit could be reached,
+    but this will be addressed with a RateLimiter later.
 
   Args:
     - path (binary): abspath on local file system to sync
