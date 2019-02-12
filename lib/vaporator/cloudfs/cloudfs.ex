@@ -9,7 +9,7 @@ defprotocol Vaporator.CloudFs do
   - file_download
   - file_upload
   - ...
-  
+
   """
 
   # Need to be able to get the contents of a folder.
@@ -149,22 +149,6 @@ defprotocol Vaporator.CloudFs do
   def file_remove(fs, path, args \\ %{})
   def folder_remove(fs, path, args \\ %{})
 
-  # Need to be able to sync a local folder with a cloud file system
-  # folder, making sure that all local files are uploaded to the cloud
-  # 
-  # Args:
-  # - fs (Vaporator.CloudFs impl): Cloud file system
-  # - local_root (binary): Path on local file system to sync
-  # - fs_root (binary): Path on cloud file system to put the content
-  # - file_regex (regex): Only file names matching the regex will be
-  #     synced
-  # - args (Map): File-system-specific arguments to pass to the
-  #     underlying subsystem.
-  #
-  # Returns:
-  #
-  def sync_files(dbx, local_root, fs_root, file_regex \\ nil, args \\ %{})
-
   # Need to be able to copy one file in the cloud file system to
   # another place in the cloud file system.
   # 
@@ -224,21 +208,22 @@ defmodule Vaporator.CloudFs.Meta do
   # have at least these attributes
   @enforce_keys [:type, :path]
   defstruct [
-    :type,                      # :file, :folder, or :none?
-
-    :name,                      # file name (w/o path)
-
-    :path,                      # path in file-system
-
-    :modify_time,               # time of last modification (UTC)
-
-    :create_time,               # time of creation (UTC)
-
-    :meta                       # file-system-specific metadata term
-                                # to be used internally by the
-                                # particular file-system (i.e. the
-                                # implementation of the CloudFs
-                                # protocol)
+    # :file, :folder, or :none?
+    :type,
+    # file name (w/o path)
+    :name,
+    # path in file-system
+    :path,
+    # time of last modification (UTC)
+    :modify_time,
+    # time of creation (UTC)
+    :create_time,
+    # file-system-specific metadata term
+    :meta
+    # to be used internally by the
+    # particular file-system (i.e. the
+    # implementation of the CloudFs
+    # protocol)
   ]
 end
 
@@ -260,12 +245,14 @@ defmodule Vaporator.CloudFs.ResultsMeta do
 
   """
   @enforce_keys [:results]
-  defstruct [
-    results: [],              # List of CloudFs.Meta objects
+  defstruct results: [],
 
-    meta: %{},                # File-system-specific metadata for this
-                              # result set
-  ]
+            # List of CloudFs.Meta objects
+
+            # File-system-specific metadata for this
+            meta: %{}
+
+  # result set
 end
 
 defmodule Vaporator.CloudFs.FileContent do
@@ -276,11 +263,12 @@ defmodule Vaporator.CloudFs.FileContent do
   HTTP methods (POST generally)
 
   """
-  defstruct [
-    content: "",              # Binary data from the body
+  defstruct content: "",
 
-    headers: %{},             # Header data returned by the HTTP
-                              # response
-  ]
+            # Binary data from the body
+
+            # Header data returned by the HTTP
+            headers: %{}
+
+  # response
 end
-

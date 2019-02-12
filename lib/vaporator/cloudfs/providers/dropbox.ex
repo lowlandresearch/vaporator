@@ -1,6 +1,7 @@
 defmodule Vaporator.Dropbox do
   use Timex
   require Logger
+
   @moduledoc """
   REST API Interface with Dropbox
 
@@ -27,9 +28,12 @@ defmodule Vaporator.Dropbox do
     case Poison.encode(body) do
       {:ok, encoded_body} ->
         post_request(
-          dbx, "#{@api_url}#{url_path}", encoded_body,
+          dbx,
+          "#{@api_url}#{url_path}",
+          encoded_body,
           json_headers()
         )
+
       {:error, error} ->
         Logger.error("Error in Poison encoding: {#error}")
         {:error, {:bad_encode, error}}
@@ -52,7 +56,10 @@ defmodule Vaporator.Dropbox do
   """
   def post_upload(dbx, url_path, local_path, api_args \\ %{}, headers \\ %{}) do
     post_file_transfer(
-      dbx, url_path, {:file, local_path}, api_args,
+      dbx,
+      url_path,
+      {:file, local_path},
+      api_args,
       Map.merge(%{"Content-Type" => "application/octet-stream"}, headers)
     )
   end
@@ -72,12 +79,21 @@ defmodule Vaporator.Dropbox do
 
   """
   def post_download(
-    dbx, url_path, data \\ [], api_args \\ %{}, headers \\ %{}
-  ) do
+        dbx,
+        url_path,
+        data \\ [],
+        api_args \\ %{},
+        headers \\ %{}
+      ) do
     post_file_transfer(
-      dbx, url_path, data, headers, api_args,
-      &process_download_response/1 # Downloads need to be processed
-                                   # differently
+      dbx,
+      url_path,
+      data,
+      headers,
+      api_args,
+      # Downloads need to be processed
+      &process_download_response/1
+      # differently
     )
   end
 
@@ -94,27 +110,38 @@ defmodule Vaporator.Dropbox do
 
   TODO: Implement/integrate automagical pagination, perhaps through
   some sort of lazily-loaded sequence generator.
-  
+
   """
   def post_file_transfer(dbx, url_path, body, api_args, headers) do
     post_file_transfer(
-      dbx, url_path, body, api_args, headers, &process_json_response/1
+      dbx,
+      url_path,
+      body,
+      api_args,
+      headers,
+      &process_json_response/1
     )
   end
+
   def post_file_transfer(dbx, url_path, body, api_args, headers, processor) do
     case Poison.encode(api_args) do
       {:ok, encoded} ->
         post_request(
           dbx,
-          "#{@content_url}#{url_path}", # Needs @content_url
-          body,                   
-          Map.merge(               # API header keys
+          # Needs @content_url
+          "#{@content_url}#{url_path}",
+          body,
+          # API header keys
+          Map.merge(
             %{"Dropbox-API-Arg": encoded},
-            headers             # e.g. Content-Type => octet for
-                                # uploads
+            # e.g. Content-Type => octet for
+            headers
+            # uploads
           ),
-          processor             # default: process_json_response
+          # default: process_json_response
+          processor
         )
+
       {:error, error} ->
         Logger.error("Error in Poison encoding")
         {:error, error}
@@ -130,37 +157,48 @@ defmodule Vaporator.Dropbox do
   - Augments the given headers with token authentication
   - Sends the data to HTTPoison.post and processes it with a provided
     `processor` function
-  
+
   """
   def post_request(dbx, url, body, headers) do
     post_request(dbx, url, body, headers, &process_json_response/1)
   end
+
   def post_request(dbx, url, body, headers, processor) do
     headers = Map.merge(headers, auth_headers(dbx))
+
     case HTTPoison.post(url, body, headers) do
-      {:ok, response} -> processor.(response)
+      {:ok, response} ->
+        processor.(response)
+
       {:error, reason} ->
         Logger.error("Error with HTTPoison POST: #{reason}")
         {:error, reason}
     end
   end
 
-  def process_bad_response(%HTTPoison.Response{status_code: status_code,
-                                                    body: body}) do
+  def process_bad_response(%HTTPoison.Response{status_code: status_code, body: body}) do
     case {status_code, JSON.decode(body)} do
       # File not found
-      {409, {:ok, %{"error_summary" => summary,
-                    "error" => %{".tag" => "path",
-                                 "path" => %{".tag" => "not_found"}}}}}
-        -> {:error, {:path_not_found, summary}}
-      {409, {:ok, %{"error_summary" => summary,
-                    "error" => %{".tag" => "path_lookup",
-                                 "path_lookup" => %{".tag" => "not_found"}}}}}
-        -> {:error, {:path_not_found, summary}}
+      {409,
+       {:ok,
+        %{
+          "error_summary" => summary,
+          "error" => %{".tag" => "path", "path" => %{".tag" => "not_found"}}
+        }}} ->
+        {:error, {:path_not_found, summary}}
+
+      {409,
+       {:ok,
+        %{
+          "error_summary" => summary,
+          "error" => %{".tag" => "path_lookup", "path_lookup" => %{".tag" => "not_found"}}
+        }}} ->
+        {:error, {:path_not_found, summary}}
+
       # Something else API-related happened
       {status_code, {:ok, body}} when status_code in 400..599 ->
-        {:error, {:bad_status,
-                  {:status_code, status_code}, body}}
+        {:error, {:bad_status, {:status_code, status_code}, body}}
+
       # No idea
       _ ->
         {:error, {:unhandled_status, {:status_code, status_code}, body}}
@@ -172,19 +210,19 @@ defmodule Vaporator.Dropbox do
 
   - Decodes and returns body (as Map) if status code is 200 and body
     decodes correctly
-  
+
   - Returns the following error "signals"
       - :bad_decode for problems decoding JSON body
       - :bad_status for status codes >= 400 and <= 599
       - :unhandled_status for any other status code
   """
-  def process_json_response(%HTTPoison.Response{status_code: 200,
-                                                body: body}) do
+  def process_json_response(%HTTPoison.Response{status_code: 200, body: body}) do
     case Poison.decode(body) do
       {:ok, term} -> {:ok, term}
       {:error, error} -> {:error, {:bad_decode, error}}
     end
   end
+
   def process_json_response(response) do
     process_bad_response(response)
   end
@@ -194,16 +232,19 @@ defmodule Vaporator.Dropbox do
 
   - Decodes and returns body binary content and headers (as
     Vaporator.CloudFs.FileContent) if status code is 200
-  
+
   - Returns the following error "signals"
       - :bad_status for status codes >= 400 and <= 599
       - :unhandled_status for any other status code
   """
-  def process_download_response(%HTTPoison.Response{status_code: 200,
-                                                    body: body,
-                                                    headers: headers}) do
+  def process_download_response(%HTTPoison.Response{
+        status_code: 200,
+        body: body,
+        headers: headers
+      }) do
     {:ok, %Vaporator.CloudFs.FileContent{content: body, headers: headers}}
-  end    
+  end
+
   def process_download_response(response) do
     process_bad_response(response)
   end
@@ -215,10 +256,10 @@ defmodule Vaporator.Dropbox do
   def dropbox_meta_to_cloudfs(meta) do
     %Vaporator.CloudFs.Meta{
       meta: meta,
-      type: meta |> Map.get(".tag", "none") |> String.to_atom,
+      type: meta |> Map.get(".tag", "none") |> String.to_atom(),
       name: meta["name"],
       path: meta["path_display"],
-      modify_time: Timex.parse(meta["server_modified"], "{ISO:Extended}"),
+      modify_time: Timex.parse(meta["server_modified"], "{ISO:Extended}")
     }
   end
 
@@ -256,10 +297,11 @@ defmodule Vaporator.Dropbox do
 
   @doc """
   Get the metadata for the Dropbox file at path
-  
+
   """
   def get_metadata(dbx, path, args \\ %{}) do
     body = Map.merge(%{:path => prep_path(path)}, args)
+
     case post_api(dbx, "/files/get_metadata", body) do
       {:ok, meta} -> {:ok, dropbox_meta_to_cloudfs(meta)}
       {:error, error} -> {:error, error}
@@ -268,16 +310,20 @@ defmodule Vaporator.Dropbox do
 
   def list_folder(dbx, path, args \\ %{}) do
     body = Map.merge(%{:path => prep_path(path)}, args)
+
     case post_api(dbx, "/files/list_folder", body) do
-      {:ok, result_meta=%{"entries" => entries}} when entries != [] ->
-        results = for meta <- entries do
+      {:ok, result_meta = %{"entries" => entries}} when entries != [] ->
+        results =
+          for meta <- entries do
             dropbox_meta_to_cloudfs(meta)
           end
-        {:ok, %Vaporator.CloudFs.ResultsMeta{results: results,
-                                             meta: result_meta}}
+
+        {:ok, %Vaporator.CloudFs.ResultsMeta{results: results, meta: result_meta}}
+
       {:ok, _} ->
         Logger.error("No entries listed in response object")
         {:error, {:no_entries, "No entries listed in response object"}}
+
       {:error, error} ->
         {:error, error}
     end
@@ -289,19 +335,26 @@ defmodule Vaporator.Dropbox do
 
   def file_upload(dbx, local_path, dbx_path, args \\ %{}) do
     case post_upload(
-          dbx, "files/upload", local_path,
-          Map.merge(%{:path => prep_dbx_path(local_path, dbx_path),
-                      :mode => "overwrite",
-                      :autorename => true,
-                      :mute => false}, args),
-          %{}
-        ) do
+           dbx,
+           "files/upload",
+           local_path,
+           Map.merge(
+             %{
+               :path => prep_dbx_path(local_path, dbx_path),
+               :mode => "overwrite",
+               :autorename => true,
+               :mute => false
+             },
+             args
+           ),
+           %{}
+         ) do
       {:ok, meta} -> {:ok, dropbox_meta_to_cloudfs(meta)}
       {:error, error} -> {:error, error}
     end
   end
 
-  @chunk_size 4 * :math.pow(2, 20) |> floor
+  @chunk_size (4 * :math.pow(2, 20)) |> floor
 
   def sha256(s) do
     :crypto.hash(:sha256, s)
@@ -314,16 +367,16 @@ defmodule Vaporator.Dropbox do
   def dbx_hash!(path) do
     File.stream!(path, [], @chunk_size)
     |> Enum.map(&sha256/1)
-    |> Enum.join
+    |> Enum.join()
     |> sha256
-    |> Base.encode16
-    |> String.downcase
+    |> Base.encode16()
+    |> String.downcase()
   end
 
   @doc """
   Does the file represented by dbx_meta have the same content as the
   file at local_path?
-  
+
   """
   def same_content?(local_path, cfs_meta) do
     dbx_hash!(local_path) == cfs_meta.meta["content_hash"]
@@ -332,11 +385,11 @@ defmodule Vaporator.Dropbox do
   @doc """
   Need to be able to update binary content of a file on the cloud
   file system to the version on the local file system.
-  
+
   In the case of file_upload, the file is always transferred. In the
   case of file_update, the file transfer only happens if the cloud
   content is different from the local content.
-  
+
   Args:
   - fs (Vaporator.CloudFs impl): Cloud file system
   - local_path (binary): Path of file on local file system to upload
@@ -345,7 +398,7 @@ defmodule Vaporator.Dropbox do
       treated as a directory in which to place the local_path
   - args (Map): File-system-specific arguments to pass to the
       underlying subsystem. 
-  
+
   Returns:
     {:ok, Vaporator.CloudFs.FileContent}
       or
@@ -363,16 +416,17 @@ defmodule Vaporator.Dropbox do
         else
           {:ok, cfs_meta}
         end
+
       {:error, {:path_not_found, _}} ->
         file_upload(dbx, local_path, dbx_path, args)
-      {:error, error} -> {:error, error}
+
+      {:error, error} ->
+        {:error, error}
     end
   end
 
   def file_remove(dbx, path, args \\ %{}) do
-    case post_api(
-          dbx, "/files/delete_v2",
-          Map.merge(%{"path" => path}, args)) do
+    case post_api(dbx, "/files/delete_v2", Map.merge(%{"path" => path}, args)) do
       {:ok, %{"metadata" => meta}} -> {:ok, dropbox_meta_to_cloudfs(meta)}
       {:error, error} -> {:error, error}
     end
@@ -384,9 +438,13 @@ defmodule Vaporator.Dropbox do
 
   def file_copy(dbx, from_path, to_path, args \\ %{}) do
     case post_api(
-          dbx, "/files/copy_v2",
-          Map.merge(%{"from_path" => from_path,
-                      "to_path" => prep_dbx_path(from_path, to_path)}, args)) do
+           dbx,
+           "/files/copy_v2",
+           Map.merge(
+             %{"from_path" => from_path, "to_path" => prep_dbx_path(from_path, to_path)},
+             args
+           )
+         ) do
       {:ok, %{"metadata" => meta}} -> {:ok, dropbox_meta_to_cloudfs(meta)}
       {:error, error} -> {:error, error}
     end
@@ -394,9 +452,13 @@ defmodule Vaporator.Dropbox do
 
   def file_move(dbx, from_path, to_path, args \\ %{}) do
     case post_api(
-          dbx, "/files/move",
-          Map.merge(%{"from_path" => from_path,
-                      "to_path" => prep_dbx_path(from_path, to_path)}, args)) do
+           dbx,
+           "/files/move",
+           Map.merge(
+             %{"from_path" => from_path, "to_path" => prep_dbx_path(from_path, to_path)},
+             args
+           )
+         ) do
       {:ok, meta} -> {:ok, dropbox_meta_to_cloudfs(meta)}
       {:error, error} -> {:error, error}
     end
@@ -415,25 +477,6 @@ defmodule Vaporator.Dropbox do
       )
     )
   end
-
-  def sync_files(dbx, local_root, dbx_root, file_regex \\ nil, args \\ %{}) do
-    local_root = Path.absname(local_root)
-    case File.stat(local_root) do
-      {:ok, %{access: access}} when access in [:read_write, :read] ->
-        DirWalker.stream(local_root, [include_stat: true,
-                                      matching: file_regex])
-        |> Enum.map(
-          fn {path, _} ->
-            {path, get_dbx_path(local_root, path, dbx_root)} end
-        )
-        |> Enum.map(
-          fn {local_path, dbx_path} ->
-            file_upload(dbx, local_path, dbx_path, args) end
-        )
-      {:error, :enoent} -> {:error, :bad_local_path}
-    end
-  end
-
 end
 
 # ----------------------------------------------------------------------
@@ -450,7 +493,7 @@ defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
   def get_metadata(dbx, path, args \\ %{}) do
     Vaporator.Dropbox.get_metadata(dbx, path, args)
   end
-  
+
   def file_download(dbx, path, dbx_api_args \\ %{}) do
     Vaporator.Dropbox.file_download(dbx, path, dbx_api_args)
   end
@@ -466,13 +509,8 @@ defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
   def file_remove(dbx, path, args \\ %{}) do
     Vaporator.Dropbox.file_remove(dbx, path, args)
   end
-  def folder_remove(dbx, path, args \\ %{}), do: file_remove(dbx, path, args)
 
-  def sync_files(dbx, local_root, dbx_root, file_regex \\ nil, args \\ %{}) do
-    Vaporator.Dropbox.sync_files(
-      dbx, local_root, dbx_root, file_regex, args
-    )
-  end
+  def folder_remove(dbx, path, args \\ %{}), do: file_remove(dbx, path, args)
 
   def file_copy(dbx, from_path, to_path, args \\ %{}) do
     Vaporator.Dropbox.file_copy(dbx, from_path, to_path, args)
