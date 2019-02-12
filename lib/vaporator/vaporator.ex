@@ -5,8 +5,10 @@ defmodule Vaporator do
   https://hexdocs.pm/elixir/Application.html
   """
   use Application
+  require Logger
 
   def start(_type, _args) do
+    Logger.info("#{__MODULE__} Application starting")
     Vaporator.Supervisor.start_link()
   end
 end
@@ -21,8 +23,10 @@ defmodule Vaporator.Supervisor do
     - ClientFs.EventConsumer
   """
   use Supervisor
+  require Logger
 
   def start_link do
+    Logger.info("#{__MODULE__} starting")
     Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
@@ -40,6 +44,7 @@ defmodule Vaporator.Supervisor do
   queueing.
   """
   def init(:ok) do
+    Logger.info("#{__MODULE__} initializing")
     children = [
       %{
         id: EventProducer,

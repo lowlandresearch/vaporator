@@ -8,6 +8,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
   require Logger
 
   def start_link(args) do
+    Logger.info("#{__MODULE__} starting")
     GenServer.start_link(__MODULE__, args)
   end
 
@@ -19,6 +20,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
   https://hexdocs.pm/file_system/readme.html --> Example with GenServer
   """
   def init(args) do
+    Logger.info("#{__MODULE__} initializing")
     initial_sync(args.path)
     start_maintenance(args.path)
     {:ok, :ready}
@@ -59,7 +61,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
     None
   """
   def initial_sync(path) do
-    Logger.info("EventMonitor STARTED INITIAL_SYNC of '#{path}'")
+    Logger.info("#{__MODULE__} STARTED INITIAL_SYNC of '#{path}'")
     path = Path.absname(path)
 
     case File.stat(path) do
@@ -73,7 +75,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
       {:error, :enoent} ->
         {:error, :bad_local_path}
     end
-    Logger.info("EventMonitor COMPLETED INITIAL_SYNC of '#{path}'")
+    Logger.info("#{__MODULE__} COMPLETED INITIAL_SYNC of '#{path}'")
   end
 
   @doc """
@@ -86,7 +88,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
     None
   """
   def start_maintenance(path) do
-    Logger.info("EventMonitor ENTERING MAINTENANCE for '#{path}'")
+    Logger.info("#{__MODULE__} ENTERING MAINTENANCE for '#{path}'")
     {:ok, pid} = FileSystem.start_link(
       dirs: path,
       recursive: true
@@ -104,6 +106,9 @@ defmodule Vaporator.ClientFs.EventMonitor do
   it to EventProducer queue
   """
   def handle_info({:file_event, _, {path, [event]}}, state) do
+    Logger.info(
+      "#{__MODULE__} received an event | #{Atom.to_string(event)} -> `#{path}`"
+    )
     Vaporator.ClientFs.EventProducer.enqueue({event, path})
     {:noreply, state}
   end

@@ -8,10 +8,12 @@ defmodule Vaporator.ClientFs.EventProducer do
   require Logger
 
   def start_link() do
+    Logger.info("#{__MODULE__} starting")
     GenStage.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   def init(:ok) do
+    Logger.info("#{__MODULE__} queue initialized")
     {:producer, {:queue.new(), 0}}
   end
 
@@ -23,8 +25,8 @@ defmodule Vaporator.ClientFs.EventProducer do
   Receives FileSystem events sent from EventMonitor, stores them
   in queue, and dispatches them to EventConsumer
   """
-  def enqueue(event) do                                                                                                                                                   
-    GenStage.cast(__MODULE__, {:enqueue, event})                                                                                                                          
+  def enqueue(event) do
+    GenStage.cast(__MODULE__, {:enqueue, event})
   end
 
   @doc """
@@ -89,6 +91,7 @@ defmodule Vaporator.ClientFs.EventProducer do
   def handle_cast({:enqueue, event}, {queue, pending_demand}) do
     if not event_conflict?(event, queue) do
       new_queue = :queue.in(event, queue)
+      Logger.info("#{__MODULE__} added event to queue")
       dispatch_events(new_queue, pending_demand, [])
     else
       {:noreply, [], {queue, pending_demand}}
@@ -99,6 +102,7 @@ defmodule Vaporator.ClientFs.EventProducer do
   Receives demand from EventConsumer and dispatches events to satisfy demand
   """
   def handle_demand(incoming_demand, {queue, pending_demand}) do
+    Logger.info("#{__MODULE__} dispatching events")
     dispatch_events(queue, pending_demand + incoming_demand, [])
   end
 end

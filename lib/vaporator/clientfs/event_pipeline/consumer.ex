@@ -7,12 +7,15 @@ defmodule Vaporator.ClientFs.EventConsumer do
   https://hexdocs.pm/gen_stage/ConsumerSupervisor.html
   """
   use ConsumerSupervisor
+  require Logger
 
   def start_link(state) do
+    Logger.info("#{__MODULE__} starting")
     ConsumerSupervisor.start_link(__MODULE__, state, name: __MODULE__)
   end
 
   def init(_state) do
+    Logger.info("#{__MODULE__} initializing")
     children = [
       %{
         id: ClientFs.EventProcessor,
@@ -57,7 +60,12 @@ defmodule Vaporator.ClientFs.EventProcessor do
                   i.e. {:created, "/path/a.txt"}
 
   """
+
+  require Logger
+
   def start_link(event) do
+    {action, path} = event
+    "#{__MODULE__} processing event #{Atom.to_string(action)} -> #{path}"
     Task.start_link(fn ->
       Vaporator.ClientFs.process_event(event)
     end)

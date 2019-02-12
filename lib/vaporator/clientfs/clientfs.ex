@@ -57,7 +57,7 @@ defmodule Vaporator.ClientFs do
   end
 
   def process_event({event, _}) do
-    Logger.error("Unhandled event -> #{event}")
+    Logger.error("#{__MODULE__} unhandled event -> #{event}")
   end
 
 end
