@@ -1,4 +1,4 @@
-defmodule Vaporator.Application do
+defmodule Vaporator do
   @moduledoc """
   Entry point for application
 
