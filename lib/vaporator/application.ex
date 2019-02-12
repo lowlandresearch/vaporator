@@ -1,4 +1,4 @@
-defmodule Vaporator do
+defmodule Vaporator.Application do
   @moduledoc """
   Entry point for application
 
@@ -8,7 +8,7 @@ defmodule Vaporator do
   require Logger
 
   def start(_type, _args) do
-    Logger.info("#{__MODULE__} Application starting")
+    Logger.info("#{__MODULE__} starting")
     Vaporator.Supervisor.start_link()
   end
 end
