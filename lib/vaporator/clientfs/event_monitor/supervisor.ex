@@ -84,11 +84,7 @@ defmodule Vaporator.ClientFs.EventMonitor.Supervisor do
       start: {
         Vaporator.ClientFs.EventMonitor,
         :start_link,
-        [
-          %{
-            path: path
-          }
-        ]
+        [%{path: path}]
       }
     }
   end

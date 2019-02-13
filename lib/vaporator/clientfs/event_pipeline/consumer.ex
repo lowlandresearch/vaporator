@@ -9,9 +9,9 @@ defmodule Vaporator.ClientFs.EventConsumer do
   use ConsumerSupervisor
   require Logger
 
-  def start_link(state) do
+  def start_link do
     Logger.info("#{__MODULE__} starting")
-    ConsumerSupervisor.start_link(__MODULE__, state, name: __MODULE__)
+    ConsumerSupervisor.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   def init(_state) do
