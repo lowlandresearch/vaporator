@@ -23,9 +23,19 @@ defmodule Vaporator.ClientFs.EventMonitor.Supervisor do
   """
   def init(:ok) do
     Logger.info("#{__MODULE__} initializing")
-    get_sync_dirs()
-    |> generate_children()
-    |> Supervisor.init(strategy: :one_for_one)
+
+    children = [
+      %{
+        id: ClientFs.EventMonitor,
+        start: {
+          Vaporator.ClientFs.EventMonitor,
+          :start_link,
+          [get_sync_dirs()]
+        }
+      }
+    ]
+    
+    Supervisor.init(children, strategy: :one_for_one)
   end
 
   @doc """
@@ -48,59 +58,5 @@ defmodule Vaporator.ClientFs.EventMonitor.Supervisor do
         Logger.info("#{__MODULE__} sync_dirs set")
         String.split(dirs, ",")
     end
-  end
-
-  @doc """
-  Generates ClientFs.EventMonitors child_specs for configured watch
-  directories.
-
-  Args:
-    dirs (list): List of directories
-
-  Returns:
-    child_specs (list): List of Vaporator.ClientFs.EventMonitor
-  """
-  def generate_children(dirs) do
-    Logger.info("#{__MODULE__} generating EventMonitors for sync_dirs")
-    dirs
-    |> Enum.map(fn x -> [x] end)
-    |> Enum.map(&child_spec/1)
-  end
-
-  @doc """
-  Creates a map for a EventMonitor process spec
-
-  elixirschool.com/en/lessons/advanced/otp-supervisors/#child-specification
-
-  Args:
-    path (binary): absolute path for directory to be monitored
-
-  Returns:
-    child_spec (map)
-  """
-  def child_spec(path) do
-    %{
-      id: generate_id(path),
-      start: {
-        Vaporator.ClientFs.EventMonitor,
-        :start_link,
-        [%{path: path}]
-      }
-    }
-  end
-
-  @doc """
-  Generates an id for child_spec from hash of the provided path
-
-  Args:
-    path (binary): absolute path for directory to be monitored
-
-  Returns:
-    id (binary): hash of provided path
-  """
-  def generate_id(path) do
-    :crypto.hash(:sha256, path)
-    |> Base.encode16()
-    |> String.downcase()
   end
 end

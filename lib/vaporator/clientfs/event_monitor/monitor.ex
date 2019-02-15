@@ -7,9 +7,9 @@ defmodule Vaporator.ClientFs.EventMonitor do
   use GenServer
   require Logger
 
-  def start_link(args) do
+  def start_link(paths) do
     Logger.info("#{__MODULE__} starting")
-    GenServer.start_link(__MODULE__, args)
+    GenServer.start_link(__MODULE__, paths, name: __MODULE__)
   end
 
   @doc """
@@ -19,29 +19,16 @@ defmodule Vaporator.ClientFs.EventMonitor do
 
   https://hexdocs.pm/file_system/readme.html --> Example with GenServer
   """
-  def init(args) do
+  def init(paths) do
     Logger.info("#{__MODULE__} initializing")
-    initial_sync(args.path)
-    start_maintenance(args.path)
+    Enum.map(paths, &initial_sync/1)
+    start_maintenance(paths)
     {:ok, :ready}
   end
 
   ############
   # API
   ###########
-
-  @doc """
-  Creates event tuple for use by EventProducer
-
-  Args:
-    path (binary): abspath on local file system
-
-  Returns:
-    event (tuple): EventProducer file_event
-  """
-  def create_event(path) do
-    {:created, path}
-  end
 
   @doc """
   Need to be able to sync a local folder with a cloud file system
@@ -62,12 +49,11 @@ defmodule Vaporator.ClientFs.EventMonitor do
   """
   def initial_sync(path) do
     Logger.info("#{__MODULE__} STARTED INITIAL_SYNC of '#{path}'")
-    path = Path.absname(path)
 
     case File.stat(path) do
       {:ok, %{access: access}} when access in [:read_write, :read] ->
         DirWalker.stream(path)
-        |> Enum.map(&create_event/1)
+        |> Enum.map(fn x -> {:created, x} end)
         |> Enum.map(
           &Vaporator.ClientFs.EventProducer.enqueue/1
         )
@@ -75,6 +61,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
       {:error, :enoent} ->
         {:error, :bad_local_path}
     end
+
     Logger.info("#{__MODULE__} COMPLETED INITIAL_SYNC of '#{path}'")
   end
 
@@ -87,13 +74,9 @@ defmodule Vaporator.ClientFs.EventMonitor do
   Returns:
     None
   """
-  def start_maintenance(path) do
-    Logger.info("#{__MODULE__} ENTERING MAINTENANCE for '#{path}'")
-    {:ok, pid} = FileSystem.start_link(
-      dirs: path,
-      recursive: true
-    )
-
+  def start_maintenance(paths) do
+    Logger.info("#{__MODULE__} ENTERING MAINTENANCE MODE")
+    {:ok, pid} = FileSystem.Worker.start_link(dirs: paths)
     FileSystem.subscribe(pid)
   end
 

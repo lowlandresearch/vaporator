@@ -33,7 +33,7 @@ defmodule Vaporator.ClientFs.EventConsumer do
       subscribe_to: [
         {
           Vaporator.ClientFs.EventProducer,
-          max_demand: 5, min_demand: 3
+          max_demand: 5, min_demand: 1
         }
       ]
     ]
