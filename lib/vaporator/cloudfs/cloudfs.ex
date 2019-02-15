@@ -12,6 +12,9 @@ defprotocol Vaporator.CloudFs do
 
   """
 
+  # TODO: Documentation
+  def get_path(fs, local_path, cloudfs_root)
+
   # Need to be able to get the contents of a folder.
   #
   # Args:

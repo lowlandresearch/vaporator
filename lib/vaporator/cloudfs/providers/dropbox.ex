@@ -486,6 +486,14 @@ end
 defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
   require Logger
 
+  def get_path(_dbx, local_path, dbx_root) do
+    Vaporator.Dropbox.get_dbx_path(
+      Path.absname(local_path),
+      local_path,
+      dbx_root
+    )
+  end
+
   def list_folder(dbx, path, args \\ %{}) do
     Vaporator.Dropbox.list_folder(dbx, path, args)
   end
