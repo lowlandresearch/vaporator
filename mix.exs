@@ -26,7 +26,7 @@ defmodule Vaporator.MixProject do
   def application do
     [
       extra_applications: [:logger, :gen_stage],
-      mod: {Vaporator, []}
+      # mod: {Vaporator, []}
     ]
   end
 
