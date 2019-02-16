@@ -7,7 +7,7 @@ defmodule Vaporator.ClientFs.EventProducer do
   use GenStage
   require Logger
 
-  def start_link(state) do
+  def start_link(state \\ {:queue.new(), 0}) do
     Logger.info("#{__MODULE__} starting")
     GenStage.start_link(__MODULE__, state, name: __MODULE__)
   end

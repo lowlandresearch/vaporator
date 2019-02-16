@@ -45,6 +45,7 @@ defmodule Vaporator.Supervisor do
   """
   def init(:ok) do
     Logger.info("#{__MODULE__} initializing")
+
     children = [
       %{
         id: EventProducer,

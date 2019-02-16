@@ -32,11 +32,13 @@ defmodule Vaporator.DropboxTest do
 
   test "upload a file" do
     use_cassette "cloudfs/file_ops/upload_file" do
-      {:ok, %{name: name}} = Vaporator.CloudFs.file_upload(
-                              @dbx,
-                              @test_files.clientfs.created_file,
-                              @test_dir
-                            )
+      {:ok, %{name: name}} =
+        Vaporator.CloudFs.file_upload(
+          @dbx,
+          @test_files.clientfs.created_file,
+          @test_dir
+        )
+
       assert name == @test_file
     end
   end
@@ -48,6 +50,7 @@ defmodule Vaporator.DropboxTest do
           @dbx,
           @test_files.cloudfs.created_file
         )
+
       assert content == "update test data"
     end
   end
@@ -82,10 +85,11 @@ defmodule Vaporator.DropboxTest do
 
   test "get_metadata from dropbox file that exists" do
     use_cassette "cloudfs/get_metadata/file" do
-      {:ok, meta} = Vaporator.CloudFs.get_metadata(
-                      @dbx,
-                      @test_files.cloudfs.created_file
-                    )
+      {:ok, meta} =
+        Vaporator.CloudFs.get_metadata(
+          @dbx,
+          @test_files.cloudfs.created_file
+        )
 
       assert meta.type == :file
     end
@@ -110,9 +114,7 @@ defmodule Vaporator.DropboxTest do
     File.write(@test_files.clientfs.created_file, "test data")
 
     hash = "824979ede959fefe53082bc14502f8bf041d53997ffb65cbbe3ade5803f7fb76"
-    assert Vaporator.Dropbox.dbx_hash!(
-      @test_files.clientfs.created_file
-    ) == hash
+    assert Vaporator.Dropbox.dbx_hash!(@test_files.clientfs.created_file) == hash
   end
 
   test "update a file" do
@@ -120,12 +122,12 @@ defmodule Vaporator.DropboxTest do
     File.write(@test_files.clientfs.created_file, "update test data")
 
     use_cassette "/cloudfs/file_ops/upload_file" do
-
-      {:ok, meta} = Vaporator.CloudFs.file_upload(
-                    @dbx,
-                    @test_files.clientfs.created_file,
-                    @test_files.cloudfs.created_file
-                  )
+      {:ok, meta} =
+        Vaporator.CloudFs.file_upload(
+          @dbx,
+          @test_files.clientfs.created_file,
+          @test_files.cloudfs.created_file
+        )
 
       assert meta.path == @test_files.cloudfs.created_file
 
@@ -134,11 +136,12 @@ defmodule Vaporator.DropboxTest do
     end
 
     use_cassette "/cloudfs/file_ops/update_file_without_change" do
-      {:ok, meta} = Vaporator.CloudFs.file_update(
-        @dbx,
-        @test_files.clientfs.created_file,
-        @test_files.cloudfs.created_file
-      )
+      {:ok, meta} =
+        Vaporator.CloudFs.file_update(
+          @dbx,
+          @test_files.clientfs.created_file,
+          @test_files.cloudfs.created_file
+        )
 
       assert meta.path == @test_files.cloudfs.created_file
 
@@ -149,14 +152,15 @@ defmodule Vaporator.DropboxTest do
       assert meta.meta["server_modified"] == expected_server_modified
     end
 
-      File.write(@test_files.clientfs.created_file, "different test data")
+    File.write(@test_files.clientfs.created_file, "different test data")
 
     use_cassette "/cloudfs/file_ops/update_file_with_change" do
-      {:ok, meta} = Vaporator.CloudFs.file_update(
-                  @dbx,
-                  @test_files.clientfs.created_file,
-                  @test_files.cloudfs.created_file
-                )
+      {:ok, meta} =
+        Vaporator.CloudFs.file_update(
+          @dbx,
+          @test_files.clientfs.created_file,
+          @test_files.cloudfs.created_file
+        )
 
       assert meta.path == @test_files.cloudfs.created_file
 
@@ -170,10 +174,11 @@ defmodule Vaporator.DropboxTest do
 
   test "removing a file" do
     use_cassette "/cloudfs/file_ops/remove_file" do
-      {:ok, meta} = Vaporator.CloudFs.file_remove(
-                    @dbx,
-                    @test_files.cloudfs.created_file
-                  )
+      {:ok, meta} =
+        Vaporator.CloudFs.file_remove(
+          @dbx,
+          @test_files.cloudfs.created_file
+        )
 
       assert meta.path == @test_files.cloudfs.created_file
     end

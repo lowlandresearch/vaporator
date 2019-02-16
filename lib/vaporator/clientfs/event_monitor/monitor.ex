@@ -23,7 +23,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
     Logger.info("#{__MODULE__} initializing")
     Enum.map(paths, &Vaporator.ClientFs.sync_directory/1)
     start_maintenance(paths)
-    {:ok, :ready}
+    {:ok, paths}
   end
 
   ############
@@ -55,8 +55,9 @@ defmodule Vaporator.ClientFs.EventMonitor do
   """
   def handle_info({:file_event, _, {path, [event | _]}}, state) do
     Logger.info(
-      "#{__MODULE__} received an event | #{Atom.to_string(event)} -> `#{path}`"
+      "#{__MODULE__} received event | #{Atom.to_string(event)} -> `#{path}`"
     )
+
     Vaporator.ClientFs.EventProducer.enqueue({event, path})
     {:noreply, state}
   end

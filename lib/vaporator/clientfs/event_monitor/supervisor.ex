@@ -2,8 +2,9 @@ defmodule Vaporator.ClientFs.EventMonitor.Supervisor do
   @moduledoc """
   Supervises ClientFs.EventMonitors
 
-  EventMonitors are created for each directory found in the environment variable
-  VAPORATOR_SYNC_DIRS that is a comma seperated list of absolute paths.
+  EventMonitors are created for each directory found in the environment
+  variable VAPORATOR_SYNC_DIRS that is a comma seperated list of absolute
+  paths.
 
   i.e. VAPORATOR_SYNC_DIRS="/c/vaporator/dropbox,/c/vaporator/onedrive"
 
@@ -34,9 +35,7 @@ defmodule Vaporator.ClientFs.EventMonitor.Supervisor do
         }
       }
     ]
-    
+
     Supervisor.init(children, strategy: :one_for_one)
   end
-
-  
 end

@@ -72,16 +72,18 @@ defmodule Vaporator.ClientFs do
 
   Args:
     None
-  
+
   Returns:
     sync_dirs (list): List of directories
   """
   def get_sync_dirs do
     Logger.info("#{__MODULE__} getting sync_dirs")
+
     case System.get_env("VAPORATOR_SYNC_DIRS") do
       nil ->
         Logger.error("VAPORATOR_SYNC_DIRS not set")
         []
+
       dirs ->
         Logger.info("#{__MODULE__} sync_dirs set")
         String.split(dirs, ",")
@@ -109,13 +111,12 @@ defmodule Vaporator.ClientFs do
     Logger.info("#{__MODULE__} STARTED INITIAL_SYNC of '#{path}'")
 
     path = Path.absname(path)
+
     case File.stat(path) do
       {:ok, %{access: access}} when access in [:read_write, :read] ->
         DirWalker.stream(path)
         |> Enum.map(fn x -> {:created, x} end)
-        |> Enum.map(
-          &Vaporator.ClientFs.EventProducer.enqueue/1
-        )
+        |> Enum.map(&Vaporator.ClientFs.EventProducer.enqueue/1)
 
       {:error, :enoent} ->
         {:error, :bad_local_path}
@@ -123,5 +124,4 @@ defmodule Vaporator.ClientFs do
 
     Logger.info("#{__MODULE__} COMPLETED INITIAL_SYNC of '#{path}'")
   end
-
 end
