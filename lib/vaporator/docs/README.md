@@ -9,7 +9,7 @@ absolute paths to sync to Cloud FileSystem
 
 ## Architecture
 ![alt text](
-  https://github.com/lowlandresearch/vaporator/lib/vaporator/architecture.png
+  https://github.com/lowlandresearch/vaporator/blob/master/lib/vaporator/docs/architecture.png
   "Vaporator Architecture"
 )
 
