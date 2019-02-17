@@ -41,7 +41,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
   """
   def start_maintenance(paths) do
     Logger.info("#{__MODULE__} ENTERING MAINTENANCE MODE")
-    {:ok, pid} = FileSystem.Worker.start_link(dirs: paths)
+    {:ok, pid} = FileSystem.start_link(dirs: paths)
     FileSystem.subscribe(pid)
   end
 

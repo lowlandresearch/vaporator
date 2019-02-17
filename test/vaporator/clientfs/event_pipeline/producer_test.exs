@@ -14,21 +14,23 @@ defmodule Vaporator.ClientFs.EventProducerTest do
     assert {queue, 0} = :sys.get_state(pid).state
   end
 
-  test "enqueue an event" do
+  test "enqueue api for an event" do
     response = Vaporator.ClientFs.EventProducer.enqueue(@test_event)
 
     assert response == :ok
   end
 
   test "handle_cast for enqueue an event" do
+    test_event = {:modified, "fake/test.txt"}
+
     {:noreply, _, {queue, 0}} =
       Vaporator.ClientFs.EventProducer.handle_cast(
-        {:enqueue, @test_event},
+        {:enqueue, test_event},
         {:queue.new(), 0}
       )
 
     {{:value, queued_event}, _} = :queue.out(queue)
-    assert queued_event == @test_event
+    assert queued_event == test_event
   end
 
   test "handle_demand from consumer" do
@@ -81,5 +83,19 @@ defmodule Vaporator.ClientFs.EventProducerTest do
 
     events_received = length(events)
     assert events_received == events_requested
+  end
+
+  test "dispatch_events with an empty queue" do
+    events_requested = 1
+
+    {:noreply, events, {_, pending_demand}} =
+      Vaporator.ClientFs.EventProducer.dispatch_events(
+        :queue.new(),
+        events_requested,
+        []
+      )
+
+    assert events == []
+    assert pending_demand == events_requested
   end
 end

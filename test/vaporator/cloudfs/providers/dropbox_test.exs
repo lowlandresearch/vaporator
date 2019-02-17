@@ -2,7 +2,9 @@ defmodule Vaporator.DropboxTest do
   use ExUnit.Case, async: false
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
 
-  @dbx %Vaporator.Dropbox{access_token: System.get_env("VAPORATOR_CLOUDFS_ACCESS_TOKEN")}
+  @dbx %Vaporator.Dropbox{
+    access_token: System.get_env("VAPORATOR_CLOUDFS_ACCESS_TOKEN")
+  }
   @test_dir Application.get_env(:vaporator, :test_dir)
   @test_file Application.get_env(:vaporator, :test_file)
 

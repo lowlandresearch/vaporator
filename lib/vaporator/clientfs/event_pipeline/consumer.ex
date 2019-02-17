@@ -29,15 +29,16 @@ defmodule Vaporator.ClientFs.EventConsumer do
       }
     ]
 
-    opts = [
-      strategy: :one_for_one,
-      subscribe_to: [
-        {
-          Vaporator.ClientFs.EventProducer,
-          max_demand: 5, min_demand: 1
-        }
+    opts = [strategy: :one_for_one]
+
+    GenStage.async_subscribe(
+      __MODULE__,
+      [
+        to: Vaporator.ClientFs.EventProducer,
+        max_demand: 15,
+        min_demand: 1
       ]
-    ]
+    )
 
     ConsumerSupervisor.init(children, opts)
   end
@@ -62,6 +63,7 @@ defmodule Vaporator.ClientFs.EventProcessor do
 
   """
 
+  use Task
   require Logger
 
   def start_link(event) do
