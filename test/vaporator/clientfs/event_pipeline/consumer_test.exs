@@ -1,5 +1,6 @@
 defmodule Vaporator.ClientFs.EventConsumerTest do
   use ExUnit.Case, async: false
+  use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
 
   @cloudfs %Vaporator.Dropbox{
     access_token: System.get_env("VAPORATOR_CLOUDFS_ACCESS_TOKEN")
@@ -19,17 +20,19 @@ defmodule Vaporator.ClientFs.EventConsumerTest do
     test_event = {:created, test_file}
 
     Vaporator.ClientFs.EventProducer.enqueue(test_event)
+    :timer.sleep(1500) # Give event time to process
 
-    :timer.sleep(5)
+    use_cassette "clientfs/event_pipeline/consumer" do
+      {:ok, %{results: [file | _]}} = Vaporator.CloudFs.list_folder(
+                                        @cloudfs,
+                                        @cloudfs_root
+                                      )
 
-    {:ok, %{results: [file | _]}} = Vaporator.CloudFs.list_folder(
-                                      @cloudfs,
-                                      @cloudfs_root
-                                    )
+      assert file.name == Path.basename(test_file)
+    end
 
-    assert file.name == Path.basename(test_file)
     Vaporator.ClientFs.EventProducer.enqueue({:deleted, test_file})
-    :timer.sleep(5)
+    :timer.sleep(1500) # Give event time to process
   end
 
 end
