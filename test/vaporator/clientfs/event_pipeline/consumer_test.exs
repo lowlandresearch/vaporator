@@ -28,7 +28,8 @@ defmodule Vaporator.ClientFs.EventConsumerTest do
                                     )
 
     assert file.name == Path.basename(test_file)
-    Vaporator.CloudFs.file_remove(@cloudfs, file.path)
+    Vaporator.ClientFs.EventProducer.enqueue({:deleted, test_file})
+    :timer.sleep(1500)
   end
 
 end
