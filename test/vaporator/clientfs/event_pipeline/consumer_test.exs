@@ -20,7 +20,7 @@ defmodule Vaporator.ClientFs.EventConsumerTest do
 
     Vaporator.ClientFs.EventProducer.enqueue(test_event)
 
-    :timer.sleep(1500)
+    :timer.sleep(5)
 
     {:ok, %{results: [file | _]}} = Vaporator.CloudFs.list_folder(
                                       @cloudfs,
@@ -29,7 +29,7 @@ defmodule Vaporator.ClientFs.EventConsumerTest do
 
     assert file.name == Path.basename(test_file)
     Vaporator.ClientFs.EventProducer.enqueue({:deleted, test_file})
-    :timer.sleep(1500)
+    :timer.sleep(5)
   end
 
 end
