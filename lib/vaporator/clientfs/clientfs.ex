@@ -46,7 +46,7 @@ defmodule Vaporator.ClientFs do
     end
   end
 
-  def process_event({:removed, path}) do
+  def process_event({:deleted, path}) do
     cloudfs_path = Vaporator.CloudFs.get_path(@cloudfs, path, @cloudfs_root)
 
     if File.dir?(path) do

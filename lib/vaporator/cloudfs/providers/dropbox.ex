@@ -297,7 +297,6 @@ defmodule Vaporator.Dropbox do
 
   @doc """
   Get the metadata for the Dropbox file at path
-
   """
   def get_metadata(dbx, path, args \\ %{}) do
     body = Map.merge(%{:path => prep_path(path)}, args)
