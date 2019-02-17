@@ -32,7 +32,6 @@ defmodule Vaporator.ClientFs.EventConsumerTest do
     end
 
     Vaporator.ClientFs.EventProducer.enqueue({:deleted, test_file})
-    File.rm!(test_file)
     :timer.sleep(1500) # Give event time to process
   end
 
