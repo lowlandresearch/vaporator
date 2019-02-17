@@ -29,6 +29,8 @@ use Mix.Config
 #
 #     import_config "#{Mix.env()}.exs"
 
+config :vaporator, cloudfs_root: "/vaporator/test/"
+
 config :vaporator, api_url: "https://api.dropboxapi.com/2"
 config :vaporator, content_url: "https://content.dropboxapi.com/2/"
 

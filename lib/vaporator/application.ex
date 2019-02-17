@@ -45,13 +45,14 @@ defmodule Vaporator.Supervisor do
   """
   def init(:ok) do
     Logger.info("#{__MODULE__} initializing")
+
     children = [
       %{
         id: EventProducer,
         start: {
           Vaporator.ClientFs.EventProducer,
           :start_link,
-          []
+          [{:queue.new(), 0}]
         },
         type: :worker
       },
@@ -60,7 +61,7 @@ defmodule Vaporator.Supervisor do
         start: {
           Vaporator.ClientFs.EventConsumer,
           :start_link,
-          [:ok]
+          []
         },
         type: :supervisor
       },

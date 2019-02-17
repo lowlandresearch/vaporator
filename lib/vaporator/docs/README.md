@@ -8,10 +8,7 @@ Before starting the application, you must set three environment variables.
 absolute paths to sync to Cloud FileSystem
 
 ## Architecture
-![alt text](
-  https://github.com/lowlandresearch/vaporator/lib/vaporator/architecture.png
-  "Vaporator Architecture"
-)
+<img src="./architecture.svg">
 
 ## Vaporator.ClientFs
 

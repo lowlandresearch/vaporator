@@ -297,7 +297,6 @@ defmodule Vaporator.Dropbox do
 
   @doc """
   Get the metadata for the Dropbox file at path
-
   """
   def get_metadata(dbx, path, args \\ %{}) do
     body = Map.merge(%{:path => prep_path(path)}, args)
@@ -485,6 +484,14 @@ end
 
 defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
   require Logger
+
+  def get_path(_dbx, local_path, dbx_root) do
+    Vaporator.Dropbox.get_dbx_path(
+      Path.absname(local_path),
+      local_path,
+      dbx_root
+    )
+  end
 
   def list_folder(dbx, path, args \\ %{}) do
     Vaporator.Dropbox.list_folder(dbx, path, args)
