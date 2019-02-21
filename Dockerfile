@@ -1,4 +1,4 @@
-FROM arm64v8/elixir:1.8-slim
+FROM arm32v7/elixir:1.8-slim
 
 RUN apt-get update && \
     apt-get install -y build-essential inotify-tools masscan
