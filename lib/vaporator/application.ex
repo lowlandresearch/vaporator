@@ -7,8 +7,13 @@ defmodule Vaporator do
   use Application
   require Logger
 
-  def start(_type, _args) do
-    Logger.info("#{__MODULE__} starting")
+  def start(type, args) do
+    Logger.info(
+      "#{__MODULE__} starting...\n" <>
+        "  type: #{type}\n" <>
+        "  args: #{args}\n" <>
+        "  env: #{Mix.env}"
+    )
     Vaporator.Supervisor.start_link()
   end
 end
