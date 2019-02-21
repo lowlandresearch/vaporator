@@ -3,8 +3,10 @@ defmodule Vaporator.ClientFs do
 
   @moduledoc """
   Provides a single interface for:
-    - Receiving events streamed from ClientFs and queues them into EventQueue
-    - Processing events in EventQueue to determine necessary CloudFs sync action
+    - Receiving events streamed from ClientFs and queues them into
+      EventQueue
+    - Processing events in EventQueue to determine necessary CloudFs
+      sync action
 
   Events supported:
     - :created -> Uploads file to CloudFs
@@ -12,7 +14,9 @@ defmodule Vaporator.ClientFs do
     - :deleted -> Removes file from CloudFs
   """
 
-  @cloudfs %Vaporator.Dropbox{access_token: System.get_env("VAPORATOR_CLOUDFS_ACCESS_TOKEN")}
+  @cloudfs %Vaporator.Dropbox{
+    access_token: Application.get_env(:vaporator, :dbx_token)
+  }
   @cloudfs_root Application.get_env(:vaporator, :cloudfs_root)
 
   @doc """
@@ -22,32 +26,73 @@ defmodule Vaporator.ClientFs do
     - event (tuple): description of event action
                       i.e. {:created, filepath}
   """
-  def process_event({:created, path}) do
+  def process_event({:created, {root, path}}) do
     if not File.dir?(path) and File.exists?(path) do
-      cloudfs_path = Vaporator.CloudFs.get_path(@cloudfs, path, @cloudfs_root)
-
-      Vaporator.CloudFs.file_upload(
-        @cloudfs,
-        path,
-        cloudfs_path
+      cloudfs_path = Vaporator.CloudFs.get_path(
+        @cloudfs, root, path, @cloudfs_root
       )
+      Logger.info(
+        "#{__MODULE__} CREATED event:\n" <>
+          "  local path: #{path}\n" <>
+          "  cloud path: #{cloudfs_path}"
+      )
+
+      case Vaporator.CloudFs.file_upload(
+            @cloudfs,
+            path,
+            cloudfs_path
+          ) do
+        {:ok, meta} ->
+          Logger.info(
+            "#{__MODULE__} upload SUCCESS."
+          )
+          {:ok, meta}
+        {:error, reason} ->
+          Logger.error(
+            "#{__MODULE__} upload FAILURE: #{reason}"
+          )
+          {:error, reason}
+      end
     end
   end
 
-  def process_event({:modified, path}) do
+  def process_event({:modified, {root, path}}) do
     if not File.dir?(path) and File.exists?(path) do
-      cloudfs_path = Vaporator.CloudFs.get_path(@cloudfs, path, @cloudfs_root)
-
-      Vaporator.CloudFs.file_update(
-        @cloudfs,
-        path,
-        cloudfs_path
+      cloudfs_path = Vaporator.CloudFs.get_path(
+        @cloudfs, root, path, @cloudfs_root
       )
+      Logger.info("#{__MODULE__} MODIFIED event:\n" <>
+        "  local path: #{path}\n" <>
+        "  cloud path: #{cloudfs_path}"
+      )
+
+      case Vaporator.CloudFs.file_update(
+            @cloudfs,
+            path,
+            cloudfs_path
+          ) do
+        {:ok, meta} ->
+          Logger.info(
+            "#{__MODULE__} update SUCCESS."
+          )
+          {:ok, meta}
+        {:error, reason} ->
+          Logger.error(
+            "#{__MODULE__} update FAILURE: #{reason}"
+          )
+          {:error, reason}
+      end
     end
   end
 
-  def process_event({:deleted, path}) do
-    cloudfs_path = Vaporator.CloudFs.get_path(@cloudfs, path, @cloudfs_root)
+  def process_event({:deleted, {root, path}}) do
+    cloudfs_path = Vaporator.CloudFs.get_path(
+      @cloudfs, root, path, @cloudfs_root
+    )
+    Logger.info("#{__MODULE__} DELETED event:\n" <>
+      "  local path: #{path}\n" <>
+      "  cloud path: #{cloudfs_path}"
+    )
 
     if File.dir?(path) do
       Vaporator.CloudFs.folder_remove(
@@ -67,27 +112,43 @@ defmodule Vaporator.ClientFs do
   end
 
   @doc """
-  Retrieves environment variable VAPORATOR_SYNC_DIRS to convert
-  the provided comma seperated string to a List
+  Currently, retrieves List of absolute paths from Application
+  variable :clientfs_sync_dirs.
+
+  TODO: pull these from a runtime configuration database of some sort.
 
   Args:
     None
 
   Returns:
-    sync_dirs (list): List of directories
+    sync_dirs (list): List of absolute paths to directories
   """
-  def get_sync_dirs do
+  def sync_dirs do
     Logger.info("#{__MODULE__} getting sync_dirs")
 
-    case System.get_env("VAPORATOR_SYNC_DIRS") do
+    case Application.get_env(:vaporator, :clientfs_sync_dirs) do
       nil ->
-        Logger.error("VAPORATOR_SYNC_DIRS not set")
+        Logger.error(":clientfs_sync_dirs NOT configured")
         []
 
       dirs ->
         Logger.info("#{__MODULE__} sync_dirs set")
-        String.split(dirs, ",")
+        dirs
     end
+  end
+
+  @doc """
+  To which sync directory does this path belong?
+
+  Args:
+    - path (binary): 
+  """
+  def which_sync_dir(path) do
+    sync_dirs()
+    |> Enum.filter(
+      fn root -> String.starts_with?(path, root) end
+    )
+    |> Enum.fetch(0)
   end
 
   @doc """
@@ -95,9 +156,9 @@ defmodule Vaporator.ClientFs do
   folder, making sure that all local files are uploaded to the cloud
 
   NOTE:
-    This is the brute force approach by sending all files as
-    created events.  The CloudFs rate limit could be reached,
-    but this will be addressed with a RateLimiter later.
+    This is the brute force approach by sending all files as created
+    events.  The CloudFs rate limit could be reached, but this will be
+    addressed with a RateLimiter later.
 
   Args:
     - path (binary): abspath on local file system to sync
@@ -108,20 +169,25 @@ defmodule Vaporator.ClientFs do
     None
   """
   def sync_directory(path) do
-    Logger.info("#{__MODULE__} STARTED INITIAL_SYNC of '#{path}'")
+    local_root = Path.absname(path)
 
-    path = Path.absname(path)
+    Logger.info("#{__MODULE__} STARTED initial sync of '#{local_root}'")
 
-    case File.stat(path) do
+    case File.stat(local_root) do
       {:ok, %{access: access}} when access in [:read_write, :read] ->
-        DirWalker.stream(path)
-        |> Enum.map(fn x -> {:created, x} end)
+        DirWalker.stream(local_root)
+        |> Enum.map(
+          fn path ->
+            {:created, {local_root, path}}
+          end
+        )
         |> Enum.map(&Vaporator.ClientFs.EventProducer.enqueue/1)
 
+        Logger.info("#{__MODULE__} COMPLETED initial sync of '#{path}'")
+        {:ok, local_root}
       {:error, :enoent} ->
+        Logger.error("#{__MODULE__} bad local path in initial sync: '#{path}'")
         {:error, :bad_local_path}
     end
-
-    Logger.info("#{__MODULE__} COMPLETED INITIAL_SYNC of '#{path}'")
   end
 end

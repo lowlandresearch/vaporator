@@ -17,13 +17,17 @@ defprotocol Vaporator.CloudFs do
 
   Args:
   - fs (Vaporator.CloudFs impl): Cloud file system
+  - local_root (binary): Path of root folder on client file
+    system. That is, the given local_path should be within the given
+    root, and it is this root that will be "replaced" with the
+    cloudfs_root when transfering the file.
   - local_path (binary): Path of folder on client file system
   - cloudfs_root (binary): Path of root folder on cloud file system
 
   Returns:
     cloudfs_path (binary)
   """
-  def get_path(fs, local_path, cloudfs_root)
+  def get_path(fs, local_root, local_path, cloudfs_root)
 
   @doc """
   Need to be able to get the contents of a folder.
@@ -38,7 +42,7 @@ defprotocol Vaporator.CloudFs do
   Returns:
     {:ok, Vaporator.CloudFs.ResultsMeta}
       or
-    {:error, {:path_not_found, path error (binary)}
+    {:error, {:cloud_path_not_found, path error (binary)}
       or 
     {:error, {:bad_decode, decode error (any)}
       or 
@@ -62,7 +66,7 @@ defprotocol Vaporator.CloudFs do
   Returns:
     {:ok, Vaporator.CloudFS.Meta}
       or
-    {:error, {:path_not_found, path error (binary)}
+    {:error, {:cloud_path_not_found, path error (binary)}
       or 
     {:error, {:bad_decode, decode error (any)}
       or 
@@ -85,7 +89,7 @@ defprotocol Vaporator.CloudFs do
   Returns:
     {:ok, Vaporator.CloudFs.FileContent}
       or
-    {:error, {:path_not_found, path error (binary)}
+    {:error, {:cloud_path_not_found, path error (binary)}
       or 
     {:error, {:bad_decode, decode error (any)}
       or 
@@ -113,6 +117,8 @@ defprotocol Vaporator.CloudFs do
   
   Returns:
     {:ok, Vaporator.CloudFs.Meta}
+      or
+    {:error, :local_path_not_found}
       or
     {:error, {:bad_decode, decode error (any)}
       or 
@@ -142,6 +148,8 @@ defprotocol Vaporator.CloudFs do
   Returns:
     {:ok, Vaporator.CloudFs.Meta}
       or
+    {:error, :local_path_not_found}
+      or
     {:error, {:bad_decode, decode error (any)}
       or 
     {:error, {:bad_status, {:status_code, code (int)}, JSON (Map)}}
@@ -163,7 +171,7 @@ defprotocol Vaporator.CloudFs do
   Returns:
     {:ok, Vaporator.CloudFs.FileContent}
       or
-    {:error, {:path_not_found, path error (binary)}
+    {:error, {:cloud_path_not_found, path error (binary)}
       or 
     {:error, {:bad_decode, decode error (any)}
       or 
@@ -191,7 +199,7 @@ defprotocol Vaporator.CloudFs do
   Returns:
     {:ok, Vaporator.CloudFS.Meta}
       or
-    {:error, {:path_not_found, path error (binary)}
+    {:error, {:cloud_path_not_found, path error (binary)}
       or 
     {:error, {:bad_decode, decode error (any)}
       or 
@@ -218,7 +226,7 @@ defprotocol Vaporator.CloudFs do
   Returns:
     {:ok, Vaporator.CloudFS.Meta}
       or
-    {:error, {:path_not_found, path error (binary)}
+    {:error, {:cloud_path_not_found, path error (binary)}
       or 
     {:error, {:bad_decode, decode error (any)}
       or 

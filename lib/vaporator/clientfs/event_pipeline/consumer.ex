@@ -35,7 +35,7 @@ defmodule Vaporator.ClientFs.EventConsumer do
       __MODULE__,
       [
         to: Vaporator.ClientFs.EventProducer,
-        max_demand: 15,
+        max_demand: 2,          # until we can fix parallel upload
         min_demand: 1
       ]
     )
@@ -59,7 +59,7 @@ defmodule Vaporator.ClientFs.EventProcessor do
 
   Args:
     event (tuple): FileSystem event
-                  i.e. {:created, "/path/a.txt"}
+                  i.e. {:created, {"/sync/path", "/sync/path/a.txt"}}
 
   """
 
@@ -67,9 +67,11 @@ defmodule Vaporator.ClientFs.EventProcessor do
   require Logger
 
   def start_link(event) do
-    {action, path} = event
+    {action, {root, path}} = event
     Logger.info(
-      "#{__MODULE__} processing event | #{Atom.to_string(action)} -> `#{path}`"
+      "#{__MODULE__} processing event | #{Atom.to_string(action)}\n" <>
+        "  root: #{root}\n" <>
+        "  path: #{path}"
     )
 
     Task.start_link(fn ->

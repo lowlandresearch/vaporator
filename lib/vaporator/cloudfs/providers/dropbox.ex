@@ -13,8 +13,8 @@ defmodule Vaporator.Dropbox do
   @enforce_keys [:access_token]
   defstruct [:access_token]
 
-  @api_url Application.get_env(:vaporator, :api_url)
-  @content_url Application.get_env(:vaporator, :content_url)
+  @api_url Application.get_env(:vaporator, :dbx_api_url)
+  @content_url Application.get_env(:vaporator, :dbx_content_url)
 
   def json_headers do
     %{"Content-Type" => "application/json"}
@@ -25,6 +25,7 @@ defmodule Vaporator.Dropbox do
   end
 
   def post_api(dbx, url_path, body \\ %{}) do
+    Logger.info("#{__MODULE__} POST to #{url_path}")
     case Poison.encode(body) do
       {:ok, encoded_body} ->
         post_request(
@@ -35,7 +36,7 @@ defmodule Vaporator.Dropbox do
         )
 
       {:error, error} ->
-        Logger.error("Error in Poison encoding: {#error}")
+        Logger.error("Error in Poison encoding for body: #{body}")
         {:error, {:bad_encode, error}}
     end
   end
@@ -55,13 +56,19 @@ defmodule Vaporator.Dropbox do
 
   """
   def post_upload(dbx, url_path, local_path, api_args \\ %{}, headers \\ %{}) do
-    post_file_transfer(
-      dbx,
-      url_path,
-      {:file, local_path},
-      api_args,
-      Map.merge(%{"Content-Type" => "application/octet-stream"}, headers)
-    )
+    if not File.exists?(local_path) do
+      Logger.error("#{__MODULE__} local path: #{local_path} does not exist")
+      {:error, :local_path_not_found}
+    else
+      Logger.info("#{__MODULE__} POST UPLOAD to #{url_path} for #{local_path}")
+      post_file_transfer(
+        dbx,
+        url_path,
+        {:file, local_path},
+        api_args,
+        Map.merge(%{"Content-Type" => "application/octet-stream"}, headers)
+      )
+    end
   end
 
   @doc """
@@ -143,7 +150,7 @@ defmodule Vaporator.Dropbox do
         )
 
       {:error, error} ->
-        Logger.error("Error in Poison encoding")
+        Logger.error("Error in Poison encoding for api_args: #{api_args}")
         {:error, error}
     end
   end
@@ -170,13 +177,15 @@ defmodule Vaporator.Dropbox do
       {:ok, response} ->
         processor.(response)
 
-      {:error, reason} ->
+      {:error, %HTTPoison.Error{reason: reason}} ->
         Logger.error("Error with HTTPoison POST: #{reason}")
         {:error, reason}
     end
   end
 
-  def process_bad_response(%HTTPoison.Response{status_code: status_code, body: body}) do
+  def process_bad_response(
+    %HTTPoison.Response{status_code: status_code, body: body}
+  ) do
     case {status_code, JSON.decode(body)} do
       # File not found
       {409,
@@ -185,16 +194,25 @@ defmodule Vaporator.Dropbox do
           "error_summary" => summary,
           "error" => %{".tag" => "path", "path" => %{".tag" => "not_found"}}
         }}} ->
-        {:error, {:path_not_found, summary}}
+        {:error, {:cloud_path_not_found, summary}}
 
       {409,
        {:ok,
         %{
           "error_summary" => summary,
-          "error" => %{".tag" => "path_lookup", "path_lookup" => %{".tag" => "not_found"}}
+          "error" => %{".tag" => "path_lookup",
+                       "path_lookup" => %{".tag" => "not_found"}}
         }}} ->
-        {:error, {:path_not_found, summary}}
+        {:error, {:cloud_path_not_found, summary}}
 
+      {429,
+       {:ok,
+        %{
+          "error_summary" => summary,
+          "error" => %{"reason" => %{".tag" => "too_many_write_operations"}}
+          }}} ->
+        {:error, {:too_many_write_operations, summary}}
+        
       # Something else API-related happened
       {status_code, {:ok, body}} when status_code in 400..599 ->
         {:error, {:bad_status, {:status_code, status_code}, body}}
@@ -416,7 +434,7 @@ defmodule Vaporator.Dropbox do
           {:ok, cfs_meta}
         end
 
-      {:error, {:path_not_found, _}} ->
+      {:error, {:cloud_path_not_found, _}} ->
         file_upload(dbx, local_path, dbx_path, args)
 
       {:error, error} ->
@@ -471,8 +489,8 @@ defmodule Vaporator.Dropbox do
     Path.join(
       dbx_root,
       Path.relative_to(
-        Path.expand(local_path),
-        Path.expand(local_root)
+        local_path |> Path.expand |> Path.absname,
+        local_root |> Path.expand |> Path.absname
       )
     )
   end
@@ -485,12 +503,8 @@ end
 defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
   require Logger
 
-  def get_path(_dbx, local_path, dbx_root) do
-    Vaporator.Dropbox.get_dbx_path(
-      Path.absname(local_path),
-      local_path,
-      dbx_root
-    )
+  def get_path(_dbx, local_root, local_path, dbx_root) do
+    Vaporator.Dropbox.get_dbx_path(local_root, local_path, dbx_root)
   end
 
   def list_folder(dbx, path, args \\ %{}) do

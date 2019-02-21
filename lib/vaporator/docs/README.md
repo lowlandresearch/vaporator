@@ -1,11 +1,34 @@
 # Vaporator
 
-Before starting the application, you must set three environment variables.
+## Setting Up
 
-* `VAPORATOR_CLOUDFS_ACCESS_TOKEN` - API Key for Cloud FileSystem
-* `VAPORATOR_CLOUDFS_PATH` - Target directory path to sync local files
-* `VAPORATOR_SYNC_DIRS` - comma seperated list of local Client FileSystem
-absolute paths to sync to Cloud FileSystem
+### Configuration variables
+
+- `:dbx_token` - the API key for Dropbox
+- `:clientfs_sync_dirs` - the local client directories to be synchronized by
+  Vaporator
+- `:cloudfs_root` - the cloud filesystem path into which all files
+  will be synchronized
+
+### Separate environment config files
+
+There are now three environment configuration files in the `config`
+directory to be populated as needed for their corresponding
+environments:
+
+- `test.exs`
+- `dev.exs`
+- `prod.exs`
+
+### `instance.exs` Configuration File
+
+You must create the `config/instance.exs` file. This configuration is
+for instance-specific settings. It will contain at least the following
+application environment variables:
+
+- `:dbx_token`
+- `:clientfs_sync_dirs`
+- `:cloudfs_root`
 
 ## Architecture
 <img src="./architecture.svg">
@@ -22,9 +45,11 @@ Receives and processes events from the client filesystem to a cloud filesystem
 [file_system](https://hexdocs.pm/file_system) and casts the received file 
 events to `ClientFs.EventProducer`.
 
-Directories that will be monitored can be provided with the environment 
-variable `VAPORATOR_SYNC_DIRS="/abspath1,/abspath2"`. *The directory 
-paths must be absolute paths.*
+Directories that will be monitored can be provided as a list of
+binaries of **absolute paths** in the application variable
+`:sync_dirs`. This will be set explicitly in either one of the
+environment config files (`{test,dev,prod}.exs`) or in the
+instance-specific environment config, `instance.exs`.
 
 ### ClientFs.EventProducer
 **Type:**

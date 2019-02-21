@@ -1,8 +1,14 @@
+# BDO: Most of these tests feel like we're unit-testing GenStage's
+# innards. What am I missing here?
+
 defmodule Vaporator.ClientFs.EventProducerTest do
   use ExUnit.Case, async: false
 
-  @test_event {:created, "fake/test.txt"}
+  @test_event {:created, {"fake/", "fake/test.txt"}}
 
+  # Since the tests are done with a running Application, why are we
+  # starting up another EventProducer?
+  # 
   setup_all do
     Vaporator.ClientFs.EventProducer.start_link()
     :ok
@@ -11,6 +17,13 @@ defmodule Vaporator.ClientFs.EventProducerTest do
   test "EventProducer started with correct state" do
     pid = Process.whereis(Vaporator.ClientFs.EventProducer)
     assert Process.alive?(pid)
+
+    # If the Application callback line in mix.exs is commented out,
+    # this works. If it is uncommented (i.e. if the Application is
+    # allowed to start prior to testing), then this fails with:
+    #
+    # code:  assert {queue, 0} = :sys.get_state(pid).state()
+    # right: {{[], []}, 2}
     assert {queue, 0} = :sys.get_state(pid).state
   end
 
@@ -21,7 +34,7 @@ defmodule Vaporator.ClientFs.EventProducerTest do
   end
 
   test "handle_cast for enqueue an event" do
-    test_event = {:modified, "fake/test.txt"}
+    test_event = {:modified, {"fake/", "fake/test.txt"}}
 
     {:noreply, _, {queue, 0}} =
       Vaporator.ClientFs.EventProducer.handle_cast(
@@ -45,6 +58,14 @@ defmodule Vaporator.ClientFs.EventProducerTest do
       )
 
     received_event = List.first(events)
+
+    # If the Application callback line in mix.exs is commented out,
+    # this works. If it is uncommented (i.e. if the Application is
+    # allowed to start prior to testing), then this fails with:
+    #
+    # code:  assert received_event == @test_event
+    # left:  nil
+    # right: {:created, {"fake/", "fake/test.txt"}}
     assert received_event == @test_event
   end
 
@@ -67,9 +88,9 @@ defmodule Vaporator.ClientFs.EventProducerTest do
   test "dispatch multiple events when requested" do
     queue =
       :queue.from_list([
-        {:created, "fake/test.txt"},
-        {:modified, "fake/test.txt"},
-        {:deleted, "fake/test.txt"}
+        {:created, {"fake/", "fake/test.txt"}},
+        {:modified, {"fake/", "fake/test.txt"}},
+        {:deleted, {"fake/", "fake/test.txt"}}
       ])
 
     events_requested = :queue.len(queue)
