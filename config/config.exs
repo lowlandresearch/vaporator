@@ -21,31 +21,41 @@ use Mix.Config
 #     config :logger, level: :info
 #
 
-# It is also possible to import configuration files, relative to this
-# directory. For example, you can emulate configuration per environment
-# by uncommenting the line below and defining dev.exs, test.exs and such.
-# Configuration from the imported file will override the ones defined
-# here (which is why it is important to import them last).
-#
-#     import_config "#{Mix.env()}.exs"
-
-config :vaporator, cloudfs_root: "/vaporator/test/"
-
-config :vaporator, api_url: "https://api.dropboxapi.com/2"
-config :vaporator, content_url: "https://content.dropboxapi.com/2/"
-
-config :vaporator, test_dir: "/vaporator/test/"
-config :vaporator, test_file: "test.txt"
-
-config :exvcr,
-  vcr_cassette_library_dir: "test/vaporator/fixture/vcr_cassettes",
-  custom_cassette_library_dir: "test/vaporator/fixture/custom_cassettes",
-  filter_sensitive_data: [
-    [pattern: "Bearer .+", placeholder: "<<DROPBOX_ACCESS_TOKEN>>"]
-  ],
-  filter_url_params: false,
-  filter_request_headers: [],
-  response_headers_blacklist: ["X-Dropbox-Request-Id"]
-
 config :logger,
   level: :info
+
+# Providers:
+# - :dropbox
+#     - :dbx_api_url
+#     - :dbx_content_url
+# - TODO :onedrive
+# - TODO :googledrive
+config :vaporator, cloudfs_provider: :dropbox
+
+# Dropbox global configurations
+config :vaporator, dbx_api_url: "https://api.dropboxapi.com/2"
+config :vaporator, dbx_content_url: "https://content.dropboxapi.com/2/"
+
+# Each of the standard environment config files ({test,dev,prod}.exs)
+# will import an "instance.exs" config that will NOT be part of the
+# code distribution. It must be manually created for development as
+# well as deployment.
+# 
+# ----------------------------------------------------------------------
+# 
+# Configurations that MUST be made either in test.exs, dev.exs,
+# prod.exs, or instance.exs
+# 
+# ----------------------------------------------------------------------
+#
+# 
+# config :vaporator, dbx_token: "dropbox_access_token" 
+# config :vaporator, clientfs_sync_dirs: [
+#   "/list", "/of", "/absolute", "/paths"
+# ]
+# config :vaporator, cloudfs_root: "/path/in/cloudfs/"
+#
+
+import_config "#{Mix.env()}.exs"
+
+

@@ -3,7 +3,7 @@ defmodule Vaporator.DropboxTest do
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
 
   @dbx %Vaporator.Dropbox{
-    access_token: System.get_env("VAPORATOR_CLOUDFS_ACCESS_TOKEN")
+    access_token: Application.get_env(:vaporator, :dbx_token)
   }
   @test_dir Application.get_env(:vaporator, :test_dir)
   @test_file Application.get_env(:vaporator, :test_file)
@@ -101,7 +101,7 @@ defmodule Vaporator.DropboxTest do
     use_cassette "cloudfs/get_metadata/not_found" do
       {:error, {reason, _}} = Vaporator.CloudFs.get_metadata(@dbx, "/fake")
 
-      assert reason == :path_not_found
+      assert reason == :cloud_path_not_found
     end
   end
 
@@ -198,7 +198,7 @@ defmodule Vaporator.DropboxTest do
     use_cassette "cloudfs/list_folder/not_found" do
       {:error, {reason, _}} = Vaporator.CloudFs.list_folder(@dbx, "/fake")
 
-      assert reason == :path_not_found
+      assert reason == :cloud_path_not_found
     end
   end
 end

@@ -14,15 +14,17 @@ defmodule Vaporator.ClientFs.EventMonitorTest do
   end
 
   test "file event received and handled" do
-    paths = Vaporator.ClientFs.get_sync_dirs()
-    assert {:noreply, paths} = Vaporator.ClientFs.EventMonitor.handle_info(@test_event, paths)
+    assert {:noreply, paths} = Vaporator.ClientFs.EventMonitor.handle_info(
+      @test_event, Vaporator.ClientFs.sync_dirs
+    )
   end
 
   test "file event queued in EventProducer" do
     {:ok, pid} = Vaporator.ClientFs.EventProducer.start_link()
 
-    paths = Vaporator.ClientFs.get_sync_dirs()
-    Vaporator.ClientFs.EventMonitor.handle_info(@test_event, paths)
+    Vaporator.ClientFs.EventMonitor.handle_info(
+      @test_event, Vaporator.ClientFs.sync_dirs
+    )
 
     {queue, _} = :sys.get_state(pid).state
     {{:value, queued_event}, _} = :queue.out(queue)
