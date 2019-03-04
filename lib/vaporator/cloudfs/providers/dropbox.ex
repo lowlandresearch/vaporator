@@ -490,7 +490,10 @@ defmodule Vaporator.Dropbox do
       dbx_root,
       Path.relative_to(
         local_path |> Path.expand |> Path.absname,
-        local_root |> Path.expand |> Path.absname
+        local_root
+        |> Path.expand
+        |> Path.absname
+        |> Path.dirname         # multi-root fix 
       )
     )
   end
