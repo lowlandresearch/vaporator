@@ -34,7 +34,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
                     end
       end
     )
-    |> start_maintenance
+    |> start_maintenance()
     # Enum.map(paths, &Vaporator.ClientFs.sync_directory/1)
     # start_maintenance(paths)
     {:ok, paths}
@@ -55,12 +55,17 @@ defmodule Vaporator.ClientFs.EventMonitor do
   """
   def start_maintenance(paths) do
     if not Enum.empty?(paths) do
+      IO.inspect(paths)
       Logger.info(
         "#{__MODULE__} entering MAINTENANCE mode for:\n" <>
           "  paths: #{paths}"
       )
       
-      {:ok, pid} = FileSystem.start_link(dirs: paths)
+      {:ok, pid} = FileSystem.start_link(
+        #dirs: paths |> Enum.map(fn path -> String.replace(path, " ", "\\ ") end)
+        #dirs: paths |> Enum.map(fn path -> "\"#{path}\"" end)
+        dirs: paths
+      )
       FileSystem.subscribe(pid)
     else
       Logger.error(

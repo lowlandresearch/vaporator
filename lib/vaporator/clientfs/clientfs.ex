@@ -132,7 +132,7 @@ defmodule Vaporator.ClientFs do
         []
 
       dirs ->
-        Logger.info("#{__MODULE__} sync_dirs set")
+        Logger.info("#{__MODULE__} sync_dirs set: #{dirs}")
         dirs
     end
   end
