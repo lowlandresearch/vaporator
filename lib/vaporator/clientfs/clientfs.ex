@@ -11,7 +11,7 @@ defmodule Vaporator.ClientFs do
   Events supported:
     - :created -> Uploads file to CloudFs
     - :updated -> Updates file in CloudFs
-    - :deleted -> Removes file from CloudFs
+    - :removed -> Removes file from CloudFs
   """
 
   @cloudfs %Vaporator.Dropbox{
@@ -85,7 +85,7 @@ defmodule Vaporator.ClientFs do
     end
   end
 
-  def process_event({:deleted, {root, path}}) do
+  def process_event({:removed, {root, path}}) do
     cloudfs_path = Vaporator.CloudFs.get_path(
       @cloudfs, root, path, @cloudfs_root
     )
