@@ -24,7 +24,7 @@ defmodule Vaporator.ClientFs.EventMonitor.Supervisor do
 
     children = [
       %{
-        id: fs_watcher,
+        id: :sentix,
         start: {
           Sentix,
           :start_link,
