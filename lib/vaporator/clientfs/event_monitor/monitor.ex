@@ -26,17 +26,15 @@ defmodule Vaporator.ClientFs.EventMonitor do
         "  paths: #{paths}"
     )
     paths
-    |> Enum.map(&Vaporator.ClientFs.sync_directory/1)
-    |> Enum.flat_map(
-      fn outcome -> case outcome do
-                      {:ok, path} -> [path]
-                      _ -> []
-                    end
-      end
-    )
+    # |> Enum.map(&Vaporator.ClientFs.sync_directory/1)
+    # |> Enum.flat_map(
+    #   fn outcome -> case outcome do
+    #                   {:ok, path} -> [path]
+    #                   _ -> []
+    #                 end
+    #   end
+    # )
     |> start_maintenance()
-    # Enum.map(paths, &Vaporator.ClientFs.sync_directory/1)
-    # start_maintenance(paths)
     {:ok, paths}
   end
 
@@ -60,13 +58,18 @@ defmodule Vaporator.ClientFs.EventMonitor do
         "#{__MODULE__} entering MAINTENANCE mode for:\n" <>
           "  paths: #{paths}"
       )
+
+      options = [
+        monitor: "poll_monitor",
+        recursive: true
+      ]
       
-      {:ok, pid} = FileSystem.start_link(
-        #dirs: paths |> Enum.map(fn path -> String.replace(path, " ", "\\ ") end)
-        #dirs: paths |> Enum.map(fn path -> "\"#{path}\"" end)
-        dirs: paths
+      {:ok, pid} = Sentix.start_link(
+        :fs_watcher,
+        paths,
+        options
       )
-      FileSystem.subscribe(pid)
+      Sentix.subscribe(:fs_watcher)
     else
       Logger.error(
         "#{__MODULE__} no paths given for MAINTENANCE mode"
@@ -82,7 +85,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
   Receives :file_event from FileSystem subscribtion and sends
   it to EventProducer queue
   """
-  def handle_info({:file_event, _, {path, [event | _]}}, state) do
+  def handle_info({_, {_, :file_event}, {path, [event | _]}}, state) do
     case Vaporator.ClientFs.which_sync_dir(path) do
       {:ok, root} -> 
         Logger.info(
