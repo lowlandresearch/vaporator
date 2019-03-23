@@ -59,16 +59,6 @@ defmodule Vaporator.ClientFs.EventMonitor do
           "  paths: #{paths}"
       )
 
-      options = [
-        monitor: "poll_monitor",
-        recursive: true
-      ]
-      
-      {:ok, pid} = Sentix.start_link(
-        :fs_watcher,
-        paths,
-        options
-      )
       Sentix.subscribe(:fs_watcher)
     else
       Logger.error(
