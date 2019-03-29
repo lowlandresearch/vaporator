@@ -35,8 +35,6 @@ defmodule Vaporator.ClientFs.EventMonitor do
       end
     )
     |> start_maintenance()
-    # Enum.map(paths, &Vaporator.ClientFs.sync_directory/1)
-    # start_maintenance(paths)
     {:ok, paths}
   end
 
@@ -60,13 +58,8 @@ defmodule Vaporator.ClientFs.EventMonitor do
         "#{__MODULE__} entering MAINTENANCE mode for:\n" <>
           "  paths: #{paths}"
       )
-      
-      {:ok, pid} = FileSystem.start_link(
-        #dirs: paths |> Enum.map(fn path -> String.replace(path, " ", "\\ ") end)
-        #dirs: paths |> Enum.map(fn path -> "\"#{path}\"" end)
-        dirs: paths
-      )
-      FileSystem.subscribe(pid)
+
+      Sentix.subscribe(:fs_watcher)
     else
       Logger.error(
         "#{__MODULE__} no paths given for MAINTENANCE mode"
@@ -82,7 +75,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
   Receives :file_event from FileSystem subscribtion and sends
   it to EventProducer queue
   """
-  def handle_info({:file_event, _, {path, [event | _]}}, state) do
+  def handle_info({_, {_, :file_event}, {path, [event | _]}}, state) do
     case Vaporator.ClientFs.which_sync_dir(path) do
       {:ok, root} -> 
         Logger.info(

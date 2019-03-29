@@ -6,4 +6,3 @@ COPY . .
 ENV MIX_ENV=prod
 
 CMD ["mix run --no-halt"]
-
