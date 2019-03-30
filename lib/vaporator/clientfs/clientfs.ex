@@ -143,12 +143,12 @@ defmodule Vaporator.ClientFs do
   Args:
     - path (binary): 
   """
-  def which_sync_dir(path) do
+  def which_sync_dir!(path) do
     sync_dirs()
     |> Enum.filter(
       fn root -> String.starts_with?(path, root) end
     )
-    |> Enum.fetch(0)
+    |> Enum.fetch!(0)
   end
 
   @doc """
@@ -168,27 +168,44 @@ defmodule Vaporator.ClientFs do
   Returns:
     None
   """
-  def sync_directory(path) do
-    local_root = Path.absname(path)
+  # def sync_directory(path) do
+  #   local_root = Path.absname(path)
 
-    Logger.info("#{__MODULE__} STARTED initial sync of '#{local_root}'")
+  #   Logger.info("#{__MODULE__} STARTED initial sync of '#{local_root}'")
 
-    case File.stat(local_root) do
-      {:ok, %{access: access}} when access in [:read_write, :read] ->
-        DirWalker.stream(local_root)
-        |> Enum.map(
+  #   case File.stat(local_root) do
+  #     {:ok, %{access: access}} when access in [:read_write, :read] ->
+  #       DirWalker.stream(local_root)
+  #       |> Enum.map(
+  #         fn path ->
+  #           {:created, {local_root, path}}
+  #         end
+  #       )
+  #       |> Enum.map(&Vaporator.ClientFs.EventProducer.enqueue/1)
+
+  #       Logger.info("#{__MODULE__} COMPLETED initial sync of '#{path}'")
+  #       {:ok, local_root}
+  #     {:error, :enoent} ->
+  #       Logger.error("#{__MODULE__} bad local path in initial sync: '#{path}'")
+  #       {:error, :bad_local_path}
+  #   end
+  # end
+
+  def sync_files do
+
+    match_spec = [
+      {{:"$1", %{clientfs: :"$2", cloudfs: :"$3"}},
+      [{:"/=", :"$2", :"$3"}],
+      [:"$1"]}
+    ]
+
+    :ets.select(:cache, match_spec)
+    |> Enum.map(
           fn path ->
-            {:created, {local_root, path}}
+            {:created, {which_sync_dir!(path), path}}
           end
         )
-        |> Enum.map(&Vaporator.ClientFs.EventProducer.enqueue/1)
-
-        Logger.info("#{__MODULE__} COMPLETED initial sync of '#{path}'")
-        {:ok, local_root}
-      {:error, :enoent} ->
-        Logger.error("#{__MODULE__} bad local path in initial sync: '#{path}'")
-        {:error, :bad_local_path}
-    end
+    # |> Enum.map(&Vaporator.ClientFs.EventProducer.enqueue/1)
   end
 
   def cache_directory(path) do
@@ -202,7 +219,7 @@ defmodule Vaporator.ClientFs do
         |> Enum.map(
           fn path ->
             Logger.info(path)
-            Vaporator.FileCache.insert(path)
+            Vaporator.Cache.insert(@cloudfs, path)
           end
         )
 

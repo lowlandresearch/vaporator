@@ -24,18 +24,6 @@ defmodule Vaporator.ClientFs.EventMonitor.Supervisor do
 
     children = [
       %{
-        id: :sentix,
-        start: {
-          Sentix,
-          :start_link,
-          [
-            :fs_watcher,
-            Vaporator.ClientFs.sync_dirs,
-            [monitor: "poll_monitor", recursive: true]
-          ]
-        }
-      },
-      %{
         id: ClientFs.EventMonitor,
         start: {
           Vaporator.ClientFs.EventMonitor,

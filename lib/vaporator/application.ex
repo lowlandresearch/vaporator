@@ -70,7 +70,7 @@ defmodule Vaporator.Supervisor do
         },
         type: :supervisor
       },
-      {Vaporator.FileCache, name: Vaporator.FileCache},
+      {Vaporator.Cache, name: Vaporator.Cache},
       %{
         id: EventMonitor.Supervisor,
         start: {

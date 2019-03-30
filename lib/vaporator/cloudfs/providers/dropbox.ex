@@ -506,6 +506,10 @@ end
 defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
   require Logger
 
+  def get_hash!(_dbx, local_path) do
+    Vaporator.Dropbox.dbx_hash!(local_path)
+  end
+
   def get_path(_dbx, local_root, local_path, dbx_root) do
     Vaporator.Dropbox.get_dbx_path(local_root, local_path, dbx_root)
   end

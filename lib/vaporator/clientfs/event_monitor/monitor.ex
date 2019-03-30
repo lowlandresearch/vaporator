@@ -26,15 +26,15 @@ defmodule Vaporator.ClientFs.EventMonitor do
         "  paths: #{paths}"
     )
     paths
-    |> Enum.map(&Vaporator.ClientFs.sync_directory/1)
-    |> Enum.flat_map(
-      fn outcome -> case outcome do
-                      {:ok, path} -> [path]
-                      _ -> []
-                    end
-      end
-    )
-    |> start_maintenance()
+    |> Enum.map(&Vaporator.ClientFs.cache_directory/1)
+    # |> Enum.flat_map(
+    #   fn outcome -> case outcome do
+    #                   {:ok, path} -> [path]
+    #                   _ -> []
+    #                 end
+    #   end
+    # )
+    # |> start_maintenance()
     {:ok, paths}
   end
 
