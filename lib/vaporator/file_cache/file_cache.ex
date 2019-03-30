@@ -11,7 +11,7 @@ defmodule Vaporator.FileCache do
   end
 
   def init(table) do
-    files = :ets.new(table, [:protected])
+    files = :ets.new(table, [:named_table, :protected])
     {:ok, files}
   end
 
@@ -27,7 +27,8 @@ defmodule Vaporator.FileCache do
     hashes (Map)
   """
   def lookup(filepath) do
-    GenServer.call(__MODULE__, {:lookup, filepath})
+    file = string_hash(filepath)
+    GenServer.call(__MODULE__, {:lookup, file})
   end
 
   @doc """
@@ -54,7 +55,8 @@ defmodule Vaporator.FileCache do
     :ok (Atom)
   """
   def update(filepath, hashes) do
-    GenServer.cast(__MODULE__, {:update, filepath, hashes})
+    file = string_hash(filepath)
+    GenServer.cast(__MODULE__, {:update, file, hashes})
   end
 
   @doc """
@@ -67,14 +69,23 @@ defmodule Vaporator.FileCache do
     :ok (Atom)
   """
   def delete(filepath) do
-    GenServer.cast(__MODULE__, {:delete, filepath})
+    file = string_hash(filepath)
+    GenServer.cast(__MODULE__, {:delete, file})
+  end
+
+  defp string_hash(s) do
+    hash = :crypto.hash(:md5, s)
+
+    hash
+    |> Base.encode16()
+    |> String.downcase()
   end
 
   # Server
 
-  def handle_call({:lookup, filepath}, _, cache) do
-    case :ets.lookup(cache, filepath) do
-      [{^filepath, hashes}] ->
+  def handle_call({:lookup, file}, _, cache) do
+    case :ets.lookup(cache, file) do
+      [{^file, hashes}] ->
         {:reply, hashes, cache}
 
       [] ->
@@ -82,19 +93,19 @@ defmodule Vaporator.FileCache do
     end
   end
 
-  def handle_cast({:update, filepath, hashes}, cache) do
-    :ets.insert(cache, {filepath, hashes})
+  def handle_cast({:update, file, hashes}, cache) do
+    :ets.insert(cache, {file, hashes})
     {:noreply, cache}
   end
 
-  def handle_cast({:delete, filepath}, cache) do
-    :ets.delete(cache, filepath)
+  def handle_cast({:delete, file}, cache) do
+    :ets.delete(cache, file)
     {:noreply, cache}
   end
 
   def handle_cast({:insert, filepath}, cache) do
     record = {
-      filepath,
+      string_hash(filepath),
       %{
         clientfs: Vaporator.Dropbox.dbx_hash!(filepath),
         cloudfs: ""

@@ -190,4 +190,27 @@ defmodule Vaporator.ClientFs do
         {:error, :bad_local_path}
     end
   end
+
+  def cache_directory(path) do
+    local_root = Path.absname(path)
+
+    Logger.info("#{__MODULE__} STARTED initial cache of '#{local_root}'")
+
+    case File.stat(local_root) do
+      {:ok, %{access: access}} when access in [:read_write, :read] ->
+        DirWalker.stream(local_root)
+        |> Enum.map(
+          fn path ->
+            Logger.info(path)
+            Vaporator.FileCache.insert(path)
+          end
+        )
+
+        Logger.info("#{__MODULE__} COMPLETED initial cache of '#{path}'")
+        {:ok, local_root}
+      {:error, :enoent} ->
+        Logger.error("#{__MODULE__} bad local path in initial cache: '#{path}'")
+        {:error, :bad_local_path}
+    end
+  end
 end
