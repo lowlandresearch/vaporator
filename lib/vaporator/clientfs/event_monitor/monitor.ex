@@ -8,6 +8,8 @@ defmodule Vaporator.ClientFs.EventMonitor do
   use GenServer
   require Logger
 
+  @poll_interval Application.get_env(:vaporator, :poll_interval)
+
   def start_link(paths) do
     Logger.info("#{__MODULE__} starting")
     GenServer.start_link(__MODULE__, paths, name: __MODULE__)
@@ -25,16 +27,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
       "#{__MODULE__} initializing for:\n" <>
         "  paths: #{paths}"
     )
-    paths
-    |> Enum.map(&Vaporator.ClientFs.cache_directory/1)
-    # |> Enum.flat_map(
-    #   fn outcome -> case outcome do
-    #                   {:ok, path} -> [path]
-    #                   _ -> []
-    #                 end
-    #   end
-    # )
-    # |> start_maintenance()
+
     {:ok, paths}
   end
 
@@ -51,7 +44,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
   Returns:
     None
   """
-  def start_maintenance(paths) do
+  def start(paths) do
     if not Enum.empty?(paths) do
       IO.inspect(paths)
       Logger.info(
@@ -59,7 +52,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
           "  paths: #{paths}"
       )
 
-      Sentix.subscribe(:fs_watcher)
+     monitor(paths)
     else
       Logger.error(
         "#{__MODULE__} no paths given for MAINTENANCE mode"
@@ -67,30 +60,20 @@ defmodule Vaporator.ClientFs.EventMonitor do
     end
   end
 
-  ############
-  # SERVER
-  ###########
+  def monitor(paths) do
+    paths
+    |> Enum.map(&Vaporator.Sync.cache_clientfs/1)
+    |> Enum.map(fn {:ok, path} -> path end)
+    |> Enum.map(&Vaporator.Sync.cache_cloudfs/1)
+    
+    Vaporator.Sync.sync_files()
 
-  @doc """
-  Receives :file_event from FileSystem subscribtion and sends
-  it to EventProducer queue
-  """
-  def handle_info({_, {_, :file_event}, {path, [event | _]}}, state) do
-    case Vaporator.ClientFs.which_sync_dir(path) do
-      {:ok, root} -> 
-        Logger.info(
-          "#{__MODULE__} received event | #{Atom.to_string(event)}..\n" <>
-            "  root: #{root}" <>
-            "  path: #{path}"
-        )
-        Vaporator.ClientFs.EventProducer.enqueue({event, {root, path}})
-      :error ->
-        Logger.error(
-          "#{__MODULE__} received event | #{Atom.to_string(event)}.." <>
-            "  could not find sync directory for path: #{path}"
-        )
-    end
-
-    {:noreply, state}
+    Process.sleep(@poll_interval)
+    monitor(paths)
   end
+
+  def handle_cast(:monitor, paths) do
+    monitor(paths)
+  end
+
 end

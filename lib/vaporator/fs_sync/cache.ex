@@ -1,3 +1,7 @@
+defmodule FileHashes do
+  defstruct [:clientfs, :cloudfs]
+end
+
 defmodule Vaporator.Cache do
   @moduledoc """
   Cache for storing ClientFs and CloudFs file hashes that will be
@@ -10,98 +14,50 @@ defmodule Vaporator.Cache do
   end
 
   def init(_) do
-    table = :ets.new(:cache, [:named_table, :protected])
+    {:ok, table} = Ets.Set.new()
     {:ok, table}
   end
 
   # Client
 
-  @doc """
-  Looks up the hashes for a local_path
-
-  Args:
-    local_path (binary): used as key in cache
-
-  Returns:
-    hashes (Map)
-  """
-  def lookup(local_path) do
-    GenServer.call(__MODULE__, {:lookup, local_path})
+  def select(match_spec) do
+    GenServer.call(__MODULE__, {:select, match_spec})
   end
 
   @doc """
-  Inserts new local_path record into cache asynchronously
+  Updates local_path hashes with a new value.
 
+  If local_path exists in cache, the %FileHashes are updated.
+  If local_path doesn't exist in cache, a new record is inserted.
   Args:
-    local_path (binary): used as key in cache
+    update (tuple): {local_path, Map}
+                    Ex: {"/watch/test.txt", %{cloudfs: "1234"}}
 
   Returns:
-    :ok (Atom)
+    result (tuple): {:ok, local_path} when update success
   """
-  def insert(cloudfs, local_path) do
-    GenServer.cast(__MODULE__, {:insert, cloudfs, local_path})
-  end
-
-  @doc """
-  Updates local_path record in cache asynchronously
-
-  Args:
-    local_path (binary): used as key in cache
-    hashes (Map): new hashes to overwrite old hashes
-
-  Returns:
-    :ok (Atom)
-  """
-  def update(local_path, hashes) do
-    GenServer.cast(__MODULE__, {:update, local_path, hashes})
-  end
-
-  @doc """
-  Deletes local_path record from cache asynchronously
-
-  Args:
-    local_path (binary): used as key in cache
-
-  Returns:
-    :ok (Atom)
-  """
-  def delete(local_path) do
-    GenServer.cast(__MODULE__, {:delete, local_path})
+  def update({_local_path, %{}}=record) do
+    GenServer.call(__MODULE__, {:update, record})
   end
 
   # Server
 
-  def handle_call({:lookup, local_path}, _, cache) do
-    case :ets.lookup(cache, local_path) do
-      [{^local_path, hashes}] ->
-        {:reply, hashes, cache}
+  def handle_call({:select, match_spec}, _, cache) do
+    {:reply, Ets.Set.select(cache, match_spec), cache}
+  end
 
-      [] ->
-        {:reply, :error, cache}
+  def handle_call({:update, {local_path, hash}}, _, cache) do
+    case Ets.Set.get(cache, local_path) do
+      {:ok, {^local_path, hashes}} ->
+        record = {local_path, Map.merge(hashes, hash)}
+        Ets.Set.put(cache, record)
+        {:reply, {:ok, local_path}, cache}
+
+      _ ->
+        record = {local_path, Map.merge(%FileHashes{}, hash)}
+        Ets.Set.put(cache, record)
+        {:reply, {:ok, local_path}, cache}
     end
-  end
-
-  def handle_cast({:update, local_path, hashes}, cache) do
-    :ets.insert(cache, {local_path, hashes})
-    {:noreply, cache}
-  end
-
-  def handle_cast({:delete, local_path}, cache) do
-    :ets.delete(cache, local_path)
-    {:noreply, cache}
-  end
-
-  def handle_cast({:insert, cloudfs, local_path}, cache) do
-    record = {
-      local_path,
-      %{
-        clientfs: Vaporator.CloudFs.get_hash!(cloudfs, local_path),
-        cloudfs: ""
-      }
-    }
-
-    :ets.insert_new(cache, record)
-    {:noreply, cache}
   end
 
 end
