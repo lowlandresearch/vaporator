@@ -1,4 +1,7 @@
 defmodule FileHashes do
+  @moduledoc """
+  Struct for file hashes
+  """
   defstruct [:clientfs, :cloudfs]
 end
 
@@ -20,6 +23,16 @@ defmodule Vaporator.Cache do
 
   # Client
 
+  @doc """
+  Select query for cache ets table
+
+  Args:
+    match_spec (:erlang match_spec)
+      http://erlang.org/doc/man/ets.html#type-match_spec
+
+  Returns:
+    result (tuple): {:ok, records :: List}
+  """
   def select(match_spec) do
     GenServer.call(__MODULE__, {:select, match_spec})
   end
