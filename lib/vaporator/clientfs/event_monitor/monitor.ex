@@ -55,11 +55,11 @@ defmodule Vaporator.ClientFs.EventMonitor do
   """
   def monitor(paths) do
     paths
-    |> Enum.map(&Vaporator.Sync.cache_clientfs/1)
+    |> Enum.map(&cache_clientfs/1)
     |> Enum.map(fn {:ok, path} -> path end)
-    |> Enum.map(&Vaporator.Sync.cache_cloudfs/1)
-    
-    Vaporator.Sync.sync_files()
+    |> Enum.map(&cache_cloudfs/1)
+
+    sync_files()
 
     Process.sleep(@poll_interval)
     monitor(paths)
@@ -107,7 +107,12 @@ defmodule Vaporator.ClientFs.EventMonitor do
       {:ok, %{access: access}} when access in [:read_write, :read] ->
         DirWalker.stream(local_root)
         |> Enum.map(fn path ->
-              {path, %{clientfs: CloudFs.get_hash!(@cloudfs, path)}}
+            hashes = Map.merge(
+                        %FileHashes{},
+                        %{clientfs: CloudFs.get_hash!(@cloudfs, path)}
+                    )
+
+            {path, hashes}
            end)
         |> Enum.map(&Cache.update/1)
 
