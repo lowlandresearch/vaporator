@@ -1,18 +1,7 @@
 FROM arm32v7/elixir:1.8-slim
 
 RUN apt-get update && \
-    apt-get install -y build-essential inotify-tools masscan wget
-
-# Install fswatch for use with sentix
-RUN wget https://github.com/emcrisostomo/fswatch/releases/download/1.14.0/fswatch-1.14.0.tar.gz && \
-    tar -xvzf fswatch-1.14.0.tar.gz && \
-    rm fswatch-1.14.0.tar.gz && \
-    cd fswatch-1.14.0 && \
-    ./configure && \
-    make && \
-    make install && \
-    ldconfig && \
-    rm -rf /fswatch-1.14.0
+    apt-get install -y build-essential masscan wget
 
 # Compile vaporator dependences
 WORKDIR /vaporator
