@@ -74,7 +74,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
 
     match_spec = [
       {{:"$1", %{clientfs: :"$2", cloudfs: :"$3"}},
-      [{:"/=", :"$2", :"$3"}],
+      [{:andalso, {:"/=", :"$2", :"$3"}, {:"/=", :"$2", nil}}],
       [:"$1"]}
     ]
 
