@@ -173,7 +173,7 @@ defmodule Vaporator.Dropbox do
   def post_request(dbx, url, body, headers, processor) do
     headers = Map.merge(headers, auth_headers(dbx))
 
-    case HTTPoison.post(url, body, headers) do
+    case HTTPoison.post(url, body, headers, [recv_timeout: 10000]) do
       {:ok, response} ->
         processor.(response)
 

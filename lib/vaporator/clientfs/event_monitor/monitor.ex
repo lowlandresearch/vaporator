@@ -70,6 +70,8 @@ defmodule Vaporator.ClientFs.EventMonitor do
   """
   def sync_files do
 
+    Logger.info("#{__MODULE__} STARTED clientfs and cloudfs sync")
+
     match_spec = [
       {{:"$1", %{clientfs: :"$2", cloudfs: :"$3"}},
       [{:"/=", :"$2", :"$3"}],
@@ -85,6 +87,8 @@ defmodule Vaporator.ClientFs.EventMonitor do
           end
         )
     |> Enum.map(&ClientFs.EventProducer.enqueue/1)
+
+    Logger.info("#{__MODULE__} COMPLETED clientfs and cloudfs sync")
   end
 
   @doc """
