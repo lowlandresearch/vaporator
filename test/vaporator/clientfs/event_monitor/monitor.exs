@@ -1,7 +1,9 @@
 defmodule Vaporator.ClientFs.EventMonitorTest do
   use ExUnit.Case, async: true
 
-  @test_event {:file_event, :none, {"fake/test.txt", [:created]}}
+  alias Vaporator.ClientFs.EventMonitor
+
+  @sync_dirs Vaporator.ClientFs.sync_dirs()
 
   setup_all do
     Vaporator.ClientFs.EventMonitor.start_link(["./test"])
@@ -9,25 +11,18 @@ defmodule Vaporator.ClientFs.EventMonitorTest do
   end
 
   test "EventMonitor is running" do
-    pid = Process.whereis(Vaporator.ClientFs.EventMonitor)
+    pid = Process.whereis(EventMonitor)
     assert Process.alive?(pid)
   end
 
-  test "file event received and handled" do
-    assert {:noreply, paths} = Vaporator.ClientFs.EventMonitor.handle_info(
-      @test_event, Vaporator.ClientFs.sync_dirs
-    )
+  test "cache_clientfs" do
+    assert {:ok, _} = EventMonitor.cache_clientfs(@sync_dirs)
+    assert {:error, _} = EventMonitor.cache_clientfs("/fake")
   end
 
-  test "file event queued in EventProducer" do
-    {:ok, pid} = Vaporator.ClientFs.EventProducer.start_link()
-
-    Vaporator.ClientFs.EventMonitor.handle_info(
-      @test_event, Vaporator.ClientFs.sync_dirs
-    )
-
-    {queue, _} = :sys.get_state(pid).state
-    {{:value, queued_event}, _} = :queue.out(queue)
-    assert queued_event == {:created, "fake/test.txt"}
+  test "cache_cloudfs" do
+    assert {:ok, _} = EventMonitor.cache_cloudfs(@sync_dirs)
+    assert {:error, _} = EventMonitor.cache_cloudfs("/fake")
   end
+
 end

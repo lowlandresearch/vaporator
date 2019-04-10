@@ -44,13 +44,12 @@ defmodule Vaporator do
       },
       {Vaporator.Cache, name: Vaporator.Cache},
       %{
-        id: EventMonitor.Supervisor,
+        id: ClientFs.EventMonitor,
         start: {
-          Vaporator.ClientFs.EventMonitor.Supervisor,
+          Vaporator.ClientFs.EventMonitor,
           :start_link,
-          []
-        },
-        type: :supervisor
+          [Vaporator.ClientFs.sync_dirs]
+        }
       }
     ]
 
