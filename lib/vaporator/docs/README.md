@@ -9,6 +9,7 @@
   Vaporator
 - `:cloudfs_root` - the cloud filesystem path into which all files
   will be synchronized
+- `:poll_interval` - number of seconds between polling clientfs and cloudfs state.
 
 ### Separate environment config files
 
@@ -29,6 +30,7 @@ application environment variables:
 - `:dbx_token`
 - `:clientfs_sync_dirs`
 - `:cloudfs_root`
+- `:poll_interval`
 
 ## Architecture
 <img src="./architecture.svg">
@@ -41,15 +43,20 @@ Receives and processes events from the client filesystem to a cloud filesystem
 **Type:**
 [GenServer](hexdocs.pm/elixir/GenServer.html)
 
-`ClientFs.EventMonitor` subscribes to the client
-[file_system](https://hexdocs.pm/file_system) and casts the received file 
-events to `ClientFs.EventProducer`.
+`ClientFs.EventMonitor` polls the current state of `clientfs` and `cloudfs` and updates `cloudfs` where states differ.
 
 Directories that will be monitored can be provided as a list of
 binaries of **absolute paths** in the application variable
 `:sync_dirs`. This will be set explicitly in either one of the
 environment config files (`{test,dev,prod}.exs`) or in the
 instance-specific environment config, `instance.exs`.
+
+### Vaporator.Cache
+**Type:**
+[GenServer](hexdocs.pm/elixir/GenServer.html), 
+[ETS](https://hexdocs.pm/ets/Ets.html)
+
+`Vaporator.Cache` provides an interface to the ets file hash cache.
 
 ### ClientFs.EventProducer
 **Type:**

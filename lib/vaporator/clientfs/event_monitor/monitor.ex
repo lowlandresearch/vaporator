@@ -8,6 +8,16 @@ defmodule Vaporator.ClientFs.EventMonitor do
   use GenServer
   require Logger
 
+  alias Vaporator.CloudFs
+  alias Vaporator.ClientFs
+  alias Vaporator.Cache
+
+  @cloudfs %Vaporator.Dropbox{
+    access_token: Application.get_env(:vaporator, :dbx_token)
+  }
+  @cloudfs_root Application.get_env(:vaporator, :cloudfs_root)
+  @poll_interval Application.get_env(:vaporator, :poll_interval)
+
   def start_link(paths) do
     Logger.info("#{__MODULE__} starting")
     GenServer.start_link(__MODULE__, paths, name: __MODULE__)
@@ -25,16 +35,8 @@ defmodule Vaporator.ClientFs.EventMonitor do
       "#{__MODULE__} initializing for:\n" <>
         "  paths: #{paths}"
     )
-    paths
-    |> Enum.map(&Vaporator.ClientFs.sync_directory/1)
-    |> Enum.flat_map(
-      fn outcome -> case outcome do
-                      {:ok, path} -> [path]
-                      _ -> []
-                    end
-      end
-    )
-    |> start_maintenance()
+
+    monitor(paths)
     {:ok, paths}
   end
 
@@ -51,46 +53,118 @@ defmodule Vaporator.ClientFs.EventMonitor do
   Returns:
     None
   """
-  def start_maintenance(paths) do
-    if not Enum.empty?(paths) do
-      IO.inspect(paths)
-      Logger.info(
-        "#{__MODULE__} entering MAINTENANCE mode for:\n" <>
-          "  paths: #{paths}"
-      )
+  def monitor(paths) do
+    paths
+    |> Enum.map(&cache_clientfs/1)
+    |> Enum.map(fn {:ok, path} -> path end)
+    |> Enum.map(&cache_cloudfs/1)
 
-      Sentix.subscribe(:fs_watcher)
-    else
-      Logger.error(
-        "#{__MODULE__} no paths given for MAINTENANCE mode"
-      )
-    end
+    sync_files()
+
+    Process.sleep(@poll_interval)
+    monitor(paths)
   end
-
-  ############
-  # SERVER
-  ###########
 
   @doc """
-  Receives :file_event from FileSystem subscribtion and sends
-  it to EventProducer queue
+  Checks for local file updates and syncs the changes to CloudFs
   """
-  def handle_info({_, {_, :file_event}, {path, [event | _]}}, state) do
-    case Vaporator.ClientFs.which_sync_dir(path) do
-      {:ok, root} -> 
-        Logger.info(
-          "#{__MODULE__} received event | #{Atom.to_string(event)}..\n" <>
-            "  root: #{root}" <>
-            "  path: #{path}"
-        )
-        Vaporator.ClientFs.EventProducer.enqueue({event, {root, path}})
-      :error ->
-        Logger.error(
-          "#{__MODULE__} received event | #{Atom.to_string(event)}.." <>
-            "  could not find sync directory for path: #{path}"
-        )
-    end
+  def sync_files do
 
-    {:noreply, state}
+    Logger.info("#{__MODULE__} STARTED clientfs and cloudfs sync")
+
+    match_spec = [
+      {{:"$1", %{clientfs: :"$2", cloudfs: :"$3"}},
+      [{:andalso, {:"/=", :"$2", :"$3"}, {:"/=", :"$2", nil}}],
+      [:"$1"]}
+    ]
+
+    {:ok, records} = Cache.select(match_spec)
+
+    records
+    |> Enum.map(
+          fn path ->
+            {:created, {ClientFs.which_sync_dir!(path), path}}
+          end
+        )
+    |> Enum.map(&ClientFs.EventProducer.enqueue/1)
+
+    Logger.info("#{__MODULE__} COMPLETED clientfs and cloudfs sync")
   end
+
+  @doc """
+  Updates Vaporator.Cache with file hashes found in sync_dir
+
+  Args:
+    path (binary): absolute path of local fs
+
+  Returns:
+    result (tuple):
+      {:ok, local_root} -> successful cache
+      {:error, :bad_local_path} -> invalid directory
+  """
+  def cache_clientfs(path) do
+    local_root = Path.absname(path)
+
+    Logger.info("#{__MODULE__} STARTED clientfs cache of '#{local_root}'")
+
+    case File.stat(local_root) do
+      {:ok, %{access: access}} when access in [:read_write, :read] ->
+        DirWalker.stream(local_root)
+        |> Enum.map(fn path ->
+            hashes = Map.merge(
+                        %FileHashes{},
+                        %{clientfs: CloudFs.get_hash!(@cloudfs, path)}
+                    )
+
+            {path, hashes}
+           end)
+        |> Enum.map(&Cache.update/1)
+
+        Logger.info("#{__MODULE__} COMPLETED clientfs cache of '#{path}'")
+        {:ok, local_root}
+
+      {:error, :enoent} ->
+        Logger.error("#{__MODULE__} bad local path in initial cache: '#{path}'")
+        {:error, :bad_local_path}
+    end
+  end
+
+  @doc """
+  Updates Vaporator.Cache with file hashes found in CloudFs
+
+  Args:
+    path (binary): absolute path of local fs
+
+  Returns:
+    result (tuple):
+      {:ok, local_root} -> successful cache
+  """
+  def cache_cloudfs(path) do
+
+    Logger.info("#{__MODULE__} STARTED cloudfs cache of '#{@cloudfs_root}'")
+
+    {:ok, %{results: meta}} = CloudFs.list_folder(
+                                @cloudfs,
+                                Path.join(
+                                  @cloudfs_root,
+                                  Path.basename(path)
+                                ),
+                                %{recursive: true}
+                              )
+
+    meta
+    |> Enum.filter(fn %{type: t} -> t == :file end)
+    |> Enum.map(fn %{path: p, meta: m} ->
+        {
+          ClientFs.get_local_path!(@cloudfs_root, p),
+          %{cloudfs: m["content_hash"]}
+        }
+      end)
+    |> Enum.map(&Cache.update/1)
+
+    {:ok, @cloudfs_root}
+
+    Logger.info("#{__MODULE__} COMPLETED cloudfs cache of '#{@cloudfs_root}'")
+  end
+
 end

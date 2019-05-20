@@ -173,7 +173,7 @@ defmodule Vaporator.Dropbox do
   def post_request(dbx, url, body, headers, processor) do
     headers = Map.merge(headers, auth_headers(dbx))
 
-    case HTTPoison.post(url, body, headers) do
+    case HTTPoison.post(url, body, headers, [recv_timeout: 10000]) do
       {:ok, response} ->
         processor.(response)
 
@@ -505,6 +505,10 @@ end
 
 defimpl Vaporator.CloudFs, for: Vaporator.Dropbox do
   require Logger
+
+  def get_hash!(_dbx, local_path) do
+    Vaporator.Dropbox.dbx_hash!(local_path)
+  end
 
   def get_path(_dbx, local_root, local_path, dbx_root) do
     Vaporator.Dropbox.get_dbx_path(local_root, local_path, dbx_root)

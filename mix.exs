@@ -25,7 +25,7 @@ defmodule Vaporator.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :gen_stage, :sentix],
+      extra_applications: [:logger, :gen_stage],
       mod: {Vaporator, []}
     ]
   end
@@ -36,9 +36,9 @@ defmodule Vaporator.MixProject do
       {:httpoison, "~> 1.5.0"},
       {:poison, "~> 4.0.1"},
       {:json, "~> 1.2.1"},
-      {:timex, "~> 3.1"},
+      {:timex, "~> 3.5"},
+      {:ets, "~> 0.7.0"},
       {:dir_walker, "~> 0.0.8"},
-      {:sentix, "~> 1.0"},
       {:gen_stage, "~> 0.11"},
       {:excoveralls, "~> 0.10", only: :test},
       {:exvcr, "~> 0.10", only: :test}

@@ -13,6 +13,21 @@ defprotocol Vaporator.CloudFs do
   """
 
   @doc """
+  Need to be able to get the file's hash based on the destination CloudFs
+  hashing method.  This can be different for each cloud provider.
+
+  Used when comparing ClientFs and CloudFs versions of a file.
+
+  Args:
+  - fs (Vaporator.CloudFs impl): Cloud file system
+  - local_path (binary): Path of file on client file system
+
+  Returns:
+    cloudfs_hash (binary)
+  """
+  def get_hash!(fs, local_path)
+
+  @doc """
   Need to be able to get the destination CloudFs path from a local_path
 
   Args:

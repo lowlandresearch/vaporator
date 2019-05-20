@@ -1,55 +1,27 @@
 defmodule Vaporator do
   @moduledoc """
   Entry point for application
-
-  https://hexdocs.pm/elixir/Application.html
-  """
-  use Application
-  require Logger
-
-  def start(type, args) do
-    Logger.info(
-      "#{__MODULE__} starting...\n" <>
-        "  type: #{type}\n" <>
-        "  args: #{args}\n" <>
-        "  env: #{Mix.env}"
-    )
-    Vaporator.Supervisor.start_link()
-  end
-end
-
-defmodule Vaporator.Supervisor do
-  @moduledoc """
+  
   Starts and supervises all of the application processes.
 
   Child Processes:
     - ClientFs.EventMonitor.Supervisor
     - ClientFs.EventProducer
     - ClientFs.EventConsumer
+
+  https://hexdocs.pm/elixir/Application.html
+  
   """
-  use Supervisor
+  use Application
   require Logger
 
-  def start_link do
-    Logger.info("#{__MODULE__} starting")
-    Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
-  end
-
-  @doc """
-  Initalizes the supervisor and starts ClientFs.EventProducer,
-  ClientFs.EventConsumer, ClientFs.EventMonitor.Supervisor.
-
-  elixirschool.com/en/lessons/advanced/otp-supervisors/#child-specification
-
-  Child order matters when initalizing.  EventMonitor sends events to
-  EventProducer and then processed by EventConsumer.
-
-  If EventProducer is not running when events begin flowing from EventMonitor,
-  those events will be lost since we are using GenStage.cast/2 for async
-  queueing.
-  """
-  def init(:ok) do
-    Logger.info("#{__MODULE__} initializing")
+  def start(_type, _args) do
+    Logger.info(
+      "#{__MODULE__} starting...\n" <>
+        "  type: #{type}\n" <>
+        "  args: #{args}\n" <>
+        "  env: #{Mix.env}"
+    )
 
     children = [
       %{
@@ -70,17 +42,20 @@ defmodule Vaporator.Supervisor do
         },
         type: :supervisor
       },
+      {Vaporator.Cache, name: Vaporator.Cache},
       %{
-        id: EventMonitor.Supervisor,
+        id: ClientFs.EventMonitor,
         start: {
-          Vaporator.ClientFs.EventMonitor.Supervisor,
+          Vaporator.ClientFs.EventMonitor,
           :start_link,
-          []
-        },
-        type: :supervisor
+          [Vaporator.ClientFs.sync_dirs]
+        }
       }
     ]
 
-    Supervisor.init(children, strategy: :one_for_one)
+    # See https://hexdocs.pm/elixir/Supervisor.html
+    # for other strategies and supported options
+    opts = [strategy: :one_for_one, name: Vaporator.Supervisor]
+    Supervisor.start_link(children, opts)
   end
 end
