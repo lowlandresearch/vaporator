@@ -36,7 +36,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
         "  paths: #{paths}"
     )
 
-    GenServer.cast({:monitor, paths})
+    GenServer.cast(__MODULE__, {:monitor, paths})
     {:ok, paths}
   end
 
