@@ -335,7 +335,7 @@ defmodule Vaporator.Dropbox do
         list_folder(
           dbx,
           result_meta,
-          Map.take(result_meta, "has_more"),
+          Map.take(result_meta, ["has_more"]),
           entries
         )
 
