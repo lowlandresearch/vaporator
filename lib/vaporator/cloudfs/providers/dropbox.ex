@@ -327,6 +327,19 @@ defmodule Vaporator.Dropbox do
     end
   end
 
+  @doc """
+  Lists the contents of a directory on CloudFs.
+
+  Supports recursive by passing %{recursive: true} in args
+
+  Args:
+    dbx (struct): Specifies CloudFs provider and access token
+    path (binary): CloudFs root directory
+    args (map): additional arguments to be passed in the body
+
+  Returns:
+    CloudFs.ResultsMeta (struct): all files and folders found in directory
+  """
   def list_folder(dbx, path, args \\ %{}) do
     body = Map.merge(%{:path => prep_path(path)}, args)
 

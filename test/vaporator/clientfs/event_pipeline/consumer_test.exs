@@ -2,20 +2,15 @@ defmodule Vaporator.ClientFs.EventConsumerTest do
   use ExUnit.Case, async: false
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
 
+  alias Vaporator.ClientFs.EventConsumer
+
   @cloudfs %Vaporator.Dropbox{
     access_token: Application.get_env(:vaporator, :dbx_token)
   }
   @cloudfs_root Application.get_env(:vaporator, :cloudfs_root)
 
   setup_all do 
-    Vaporator.ClientFs.EventProducer.start_link()
-
-    # If the Application callback line in mix.exs is commented out,
-    # this works. If it is uncommented (i.e. if the Application is
-    # allowed to start prior to testing), then this fails with:
-    #
-    # ** (MatchError) no match of right hand side value: {:error, {:already_started, #PID<0.331.0>}}
-    {:ok, consumer_pid} = Vaporator.ClientFs.EventConsumer.start_link()
+    consumer_pid = Process.whereis(EventConsumer)
     Process.monitor(consumer_pid)
     :ok
   end

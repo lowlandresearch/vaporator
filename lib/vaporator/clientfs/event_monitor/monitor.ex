@@ -36,6 +36,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
         "  paths: #{paths}"
     )
 
+    # Added to ensure module finishes initialization
     GenServer.cast(__MODULE__, {:monitor, paths})
     {:ok, paths}
   end
@@ -167,6 +168,9 @@ defmodule Vaporator.ClientFs.EventMonitor do
     Logger.info("#{__MODULE__} COMPLETED cloudfs cache of '#{@cloudfs_root}'")
   end
 
+  @doc """
+  Starts the monitoring process
+  """
   def handle_cast({:monitor, paths}, state) do
     {:noreply, monitor(paths), state}
   end
