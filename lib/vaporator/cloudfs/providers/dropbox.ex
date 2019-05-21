@@ -352,7 +352,7 @@ defmodule Vaporator.Dropbox do
     dbx, result_meta, %{"has_more" => "true"}, results
   ) do
 
-    body = Map.take(result_meta, "cursor")
+    body = Map.take(result_meta, ["cursor"])
 
     case post_api(dbx, "/files/list_folder/continue", body) do
       {:ok, result_meta = %{"entries" => entries}} ->
@@ -361,7 +361,7 @@ defmodule Vaporator.Dropbox do
   end
 
   defp list_folder(
-    _, result_meta, %{"has_more" => "true"}, results
+    _, result_meta, %{"has_more" => "false"}, results
   ) do
     results = 
       [result_meta["entries"] | results]
