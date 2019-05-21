@@ -3,32 +3,24 @@
 
 defmodule Vaporator.ClientFs.EventProducerTest do
   use ExUnit.Case, async: false
+  alias Vaporator.ClientFs.EventProducer
 
   @test_event {:created, {"fake/", "fake/test.txt"}}
 
-  # Since the tests are done with a running Application, why are we
-  # starting up another EventProducer?
-  # 
   setup_all do
-    Vaporator.ClientFs.EventProducer.start_link()
+    EventProducer.start_link()
     :ok
   end
 
   test "EventProducer started with correct state" do
-    pid = Process.whereis(Vaporator.ClientFs.EventProducer)
+    pid = Process.whereis(EventProducer)
     assert Process.alive?(pid)
-
-    # If the Application callback line in mix.exs is commented out,
-    # this works. If it is uncommented (i.e. if the Application is
-    # allowed to start prior to testing), then this fails with:
-    #
-    # code:  assert {queue, 0} = :sys.get_state(pid).state()
-    # right: {{[], []}, 2}
-    assert {queue, 0} = :sys.get_state(pid).state
+    # The application starts EventConsumer with a demand of 2
+    assert {queue, 2} = :sys.get_state(pid).state
   end
 
   test "enqueue api for an event" do
-    response = Vaporator.ClientFs.EventProducer.enqueue(@test_event)
+    response = EventProducer.enqueue(@test_event)
 
     assert response == :ok
   end
@@ -37,7 +29,7 @@ defmodule Vaporator.ClientFs.EventProducerTest do
     test_event = {:modified, {"fake/", "fake/test.txt"}}
 
     {:noreply, _, {queue, 0}} =
-      Vaporator.ClientFs.EventProducer.handle_cast(
+      EventProducer.handle_cast(
         {:enqueue, test_event},
         {:queue.new(), 0}
       )
@@ -46,36 +38,13 @@ defmodule Vaporator.ClientFs.EventProducerTest do
     assert queued_event == test_event
   end
 
-  test "handle_demand from consumer" do
-    producer_state = :sys.get_state(Vaporator.ClientFs.EventProducer).state
-
-    requested_events = 1
-
-    {:noreply, events, _} =
-      Vaporator.ClientFs.EventProducer.handle_demand(
-        requested_events,
-        producer_state
-      )
-
-    received_event = List.first(events)
-
-    # If the Application callback line in mix.exs is commented out,
-    # this works. If it is uncommented (i.e. if the Application is
-    # allowed to start prior to testing), then this fails with:
-    #
-    # code:  assert received_event == @test_event
-    # left:  nil
-    # right: {:created, {"fake/", "fake/test.txt"}}
-    assert received_event == @test_event
-  end
-
   test "dispatch single event when requested" do
     queue = :queue.in(@test_event, :queue.new())
 
     events_requested = 1
 
     {:noreply, events, _} =
-      Vaporator.ClientFs.EventProducer.dispatch_events(
+      EventProducer.dispatch_events(
         queue,
         events_requested,
         []
@@ -96,7 +65,7 @@ defmodule Vaporator.ClientFs.EventProducerTest do
     events_requested = :queue.len(queue)
 
     {:noreply, events, _} =
-      Vaporator.ClientFs.EventProducer.dispatch_events(
+      EventProducer.dispatch_events(
         queue,
         events_requested,
         []
@@ -110,7 +79,7 @@ defmodule Vaporator.ClientFs.EventProducerTest do
     events_requested = 1
 
     {:noreply, events, {_, pending_demand}} =
-      Vaporator.ClientFs.EventProducer.dispatch_events(
+      EventProducer.dispatch_events(
         :queue.new(),
         events_requested,
         []

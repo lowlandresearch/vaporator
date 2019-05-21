@@ -10,6 +10,8 @@ defmodule Vaporator.Dropbox do
   - Better, more descriptive error messaging/routing
   """
 
+  alias Vaporator.CloudFs
+
   @enforce_keys [:access_token]
   defstruct [:access_token]
 
@@ -260,7 +262,7 @@ defmodule Vaporator.Dropbox do
         body: body,
         headers: headers
       }) do
-    {:ok, %Vaporator.CloudFs.FileContent{content: body, headers: headers}}
+    {:ok, %CloudFs.FileContent{content: body, headers: headers}}
   end
 
   def process_download_response(response) do
@@ -272,7 +274,7 @@ defmodule Vaporator.Dropbox do
   Vaporator.CloudFs.Meta element
   """
   def dropbox_meta_to_cloudfs(meta) do
-    %Vaporator.CloudFs.Meta{
+    %CloudFs.Meta{
       meta: meta,
       type: meta |> Map.get(".tag", "none") |> String.to_atom(),
       name: meta["name"],
@@ -325,17 +327,30 @@ defmodule Vaporator.Dropbox do
     end
   end
 
+  @doc """
+  Lists the contents of a directory on CloudFs.
+
+  Supports recursive by passing %{recursive: true} in args
+
+  Args:
+    dbx (struct): Specifies CloudFs provider and access token
+    path (binary): CloudFs root directory
+    args (map): additional arguments to be passed in the body
+
+  Returns:
+    CloudFs.ResultsMeta (struct): all files and folders found in directory
+  """
   def list_folder(dbx, path, args \\ %{}) do
     body = Map.merge(%{:path => prep_path(path)}, args)
 
     case post_api(dbx, "/files/list_folder", body) do
       {:ok, result_meta = %{"entries" => entries}} when entries != [] ->
-        results =
-          for meta <- entries do
-            dropbox_meta_to_cloudfs(meta)
-          end
-
-        {:ok, %Vaporator.CloudFs.ResultsMeta{results: results, meta: result_meta}}
+        list_folder(
+          dbx,
+          result_meta,
+          Map.take(result_meta, ["has_more"]),
+          entries
+        )
 
       {:ok, _} ->
         Logger.error("No entries listed in response object")
@@ -344,6 +359,37 @@ defmodule Vaporator.Dropbox do
       {:error, error} ->
         {:error, error}
     end
+  end
+
+  defp list_folder(
+    dbx, result_meta, %{"has_more" => true}, results
+  ) do
+
+    body = Map.take(result_meta, ["cursor"])
+
+    case post_api(dbx, "/files/list_folder/continue", body) do
+      {:ok, result_meta = %{"entries" => entries}} ->
+        list_folder(
+          dbx,
+          result_meta,
+          Map.take(result_meta, ["has_more"]),
+          [entries | results]
+        )
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
+  defp list_folder(
+    _, result_meta, %{"has_more" => false}, results
+  ) do
+    results = 
+      [result_meta["entries"] | results]
+      |> List.flatten()
+      |> Enum.map(&dropbox_meta_to_cloudfs/1)
+
+    {:ok, %CloudFs.ResultsMeta{results: results, meta: result_meta}}
   end
 
   def file_download(dbx, path, dbx_api_args \\ %{}) do
