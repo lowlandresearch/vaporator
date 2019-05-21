@@ -349,7 +349,7 @@ defmodule Vaporator.Dropbox do
   end
 
   defp list_folder(
-    dbx, result_meta, %{"has_more" => "true"}, results
+    dbx, result_meta, %{"has_more" => true}, results
   ) do
 
     body = Map.take(result_meta, ["cursor"])
@@ -362,11 +362,14 @@ defmodule Vaporator.Dropbox do
           Map.take(result_meta, ["has_more"]),
           [entries | results]
         )
+
+      {:error, error} ->
+        {:error, error}
     end
   end
 
   defp list_folder(
-    _, result_meta, %{"has_more" => "false"}, results
+    _, result_meta, %{"has_more" => false}, results
   ) do
     results = 
       [result_meta["entries"] | results]

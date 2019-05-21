@@ -36,7 +36,7 @@ defmodule Vaporator.ClientFs.EventMonitor do
         "  paths: #{paths}"
     )
 
-    monitor(paths)
+    GenServer.cast({:monitor, paths})
     {:ok, paths}
   end
 
@@ -165,6 +165,10 @@ defmodule Vaporator.ClientFs.EventMonitor do
     {:ok, @cloudfs_root}
 
     Logger.info("#{__MODULE__} COMPLETED cloudfs cache of '#{@cloudfs_root}'")
+  end
+
+  def handle_cast({:monitor, paths}, state) do
+    {:noreply, monitor(paths), state}
   end
 
 end
