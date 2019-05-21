@@ -9,7 +9,7 @@ defmodule Vaporator do
     - ClientFs.EventProducer
     - ClientFs.EventConsumer
 
-  https://hexdocs.pm/elixir/Application.html
+  https://hexdocs.pm/elixir/Application.html`
   
   """
   use Application
@@ -18,8 +18,6 @@ defmodule Vaporator do
   def start(_type, _args) do
     Logger.info(
       "#{__MODULE__} starting...\n" <>
-        "  type: #{type}\n" <>
-        "  args: #{args}\n" <>
         "  env: #{Mix.env}"
     )
 
