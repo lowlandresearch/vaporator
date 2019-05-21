@@ -15,7 +15,7 @@ defmodule Vaporator do
   use Application
   require Logger
 
-  def start(_type, _args) do
+  def start(type, args) do
     Logger.info(
       "#{__MODULE__} starting...\n" <>
         "  type: #{type}\n" <>
