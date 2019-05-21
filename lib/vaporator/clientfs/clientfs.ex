@@ -124,7 +124,6 @@ defmodule Vaporator.ClientFs do
     sync_dirs (list): List of absolute paths to directories
   """
   def sync_dirs do
-    Logger.info("#{__MODULE__} getting sync_dirs")
 
     case Application.get_env(:vaporator, :clientfs_sync_dirs) do
       nil ->
@@ -132,7 +131,6 @@ defmodule Vaporator.ClientFs do
         []
 
       dirs ->
-        Logger.info("#{__MODULE__} sync_dirs set: #{dirs}")
         dirs
     end
   end
