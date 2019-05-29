@@ -35,7 +35,7 @@ defmodule Vaporator.MixProject do
     [
       {:httpoison, "~> 1.5.0"},
       {:poison, "~> 4.0.1"},
-      {:json, "~> 1.2.1"},
+      {:json, "~> 1.3.0"},
       {:timex, "~> 3.5"},
       {:ets, "~> 0.7.0"},
       {:dir_walker, "~> 0.0.8"},
