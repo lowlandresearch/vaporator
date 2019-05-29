@@ -5,7 +5,7 @@
   "dir_walker": {:hex, :dir_walker, "0.0.8", "5332225074e4887e6e60ca0242af490215f296511ded4df18d554ae25394f727", [:mix], [], "hexpm"},
   "erlexec": {:hex, :erlexec, "1.2.2", "122edf6be532475dd44d2c99653439528e3b3799e2ee0125f2560bcca60a6716", [:rebar3], [], "hexpm"},
   "eternal": {:hex, :eternal, "1.2.1", "d5b6b2499ba876c57be2581b5b999ee9bdf861c647401066d3eeed111d096bc4", [:mix], [], "hexpm"},
-  "ets": {:hex, :ets, "0.7.0", "524786ed60e29485fd039dce03f5f9eaba54cf732c7e70139843fa85f50c109e", [:mix], [], "hexpm"},
+  "ets": {:hex, :ets, "0.7.3", "60862855af5ae89bb631c787ab9ba946509d59fa632442ef33947b18ac288101", [:mix], [], "hexpm"},
   "ex2ms": {:hex, :ex2ms, "1.5.0", "19e27f9212be9a96093fed8cdfbef0a2b56c21237196d26760f11dfcfae58e97", [:mix], [], "hexpm"},
   "exactor": {:hex, :exactor, "2.2.4", "5efb4ddeb2c48d9a1d7c9b465a6fffdd82300eb9618ece5d34c3334d5d7245b1", [:mix], [], "hexpm"},
   "excoveralls": {:hex, :excoveralls, "0.10.6", "e2b9718c9d8e3ef90bc22278c3f76c850a9f9116faf4ebe9678063310742edc2", [:mix], [{:hackney, "~> 1.13", [hex: :hackney, repo: "hexpm", optional: false]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm"},
