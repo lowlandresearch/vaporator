@@ -1,0 +1,156 @@
+#------------------------------------------
+# Python
+#------------------------------------------
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+# lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+
+#------------------------------------------
+# Elixir
+#------------------------------------------
+
+# The directory Mix will write compiled artifacts to.
+/_build
+# If you run "mix test --cover", coverage assets end up here.
+/cover
+# The directory Mix downloads your dependencies sources to.
+/deps
+# Where third-party dependencies like ExDoc output generated docs.
+/doc
+# Ignore .fetch files in case you like to edit your project deps locally.
+/.fetch
+# If the VM crashes, it generates a dump, let's ignore it too.
+erl_crash.dump
+# Also ignore archive artifacts (built via "mix archive.build").
+*.ez
+*.beam
+# Ignore package tarball (built via "mix hex.build").
+filesync-*.tar
+
+/config/*.secret.exs
+.elixir_ls/
+
+#------------------------------------------
+# Misc
+#------------------------------------------
+
+# Emacs/vim
+*~
+
+# macOS
+.DS_Store
+
+IElixir/
+Pipfile
+Pipfile.lock
+copy-test.txt
+dbx-hash-test.txt
+jupyter-ielixir/
+move-test.txt
+remove-test.txt
+sync-test-dir/
+update-test.txt
+upload-test.txt
+upload-test2.txt
