@@ -1,12 +1,12 @@
-defmodule Filesync.ClientFs.EventMonitorTest do
+defmodule Filesync.Client.EventMonitorTest do
   use ExUnit.Case, async: true
 
-  alias Filesync.ClientFs.EventMonitor
+  alias Filesync.Client.EventMonitor
 
-  @sync_dirs Filesync.ClientFs.sync_dirs()
+  @sync_dirs Filesync.Client.sync_dirs()
 
   setup_all do
-    Filesync.ClientFs.EventMonitor.start_link(["./test"])
+    Filesync.Client.EventMonitor.start_link(["./test"])
     :ok
   end
 
@@ -15,14 +15,14 @@ defmodule Filesync.ClientFs.EventMonitorTest do
     assert Process.alive?(pid)
   end
 
-  test "cache_clientfs" do
-    assert {:ok, _} = EventMonitor.cache_clientfs(@sync_dirs)
-    assert {:error, _} = EventMonitor.cache_clientfs("/fake")
+  test "cache_client" do
+    assert {:ok, _} = EventMonitor.cache_client(@sync_dirs)
+    assert {:error, _} = EventMonitor.cache_client("/fake")
   end
 
-  test "cache_cloudfs" do
-    assert {:ok, _} = EventMonitor.cache_cloudfs(@sync_dirs)
-    assert {:error, _} = EventMonitor.cache_cloudfs("/fake")
+  test "cache_cloud" do
+    assert {:ok, _} = EventMonitor.cache_cloud(@sync_dirs)
+    assert {:error, _} = EventMonitor.cache_cloud("/fake")
   end
 
 end

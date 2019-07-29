@@ -1,4 +1,4 @@
-defprotocol Filesync.CloudFs do
+defprotocol Filesync.Cloud do
   @moduledoc """
   Protocol for the most basic set of Cloud file-system operations
 
@@ -13,49 +13,49 @@ defprotocol Filesync.CloudFs do
   """
 
   @doc """
-  Need to be able to get the file's hash based on the destination CloudFs
+  Need to be able to get the file's hash based on the destination Cloud
   hashing method.  This can be different for each cloud provider.
 
-  Used when comparing ClientFs and CloudFs versions of a file.
+  Used when comparing Client and Cloud versions of a file.
 
   Args:
-  - fs (Filesync.CloudFs impl): Cloud file system
+  - fs (Filesync.Cloud impl): Cloud file system
   - local_path (binary): Path of file on client file system
 
   Returns:
-    cloudfs_hash (binary)
+    cloud_hash (binary)
   """
   def get_hash!(fs, local_path)
 
   @doc """
-  Need to be able to get the destination CloudFs path from a local_path
+  Need to be able to get the destination Cloud path from a local_path
 
   Args:
-  - fs (Filesync.CloudFs impl): Cloud file system
+  - fs (Filesync.Cloud impl): Cloud file system
   - local_root (binary): Path of root folder on client file
     system. That is, the given local_path should be within the given
     root, and it is this root that will be "replaced" with the
-    cloudfs_root when transfering the file.
+    cloud_root when transfering the file.
   - local_path (binary): Path of folder on client file system
-  - cloudfs_root (binary): Path of root folder on cloud file system
+  - cloud_root (binary): Path of root folder on cloud file system
 
   Returns:
-    cloudfs_path (binary)
+    cloud_path (binary)
   """
-  def get_path(fs, local_root, local_path, cloudfs_root)
+  def get_path(fs, local_root, local_path, cloud_root)
 
   @doc """
   Need to be able to get the contents of a folder.
 
   Args:
-  - fs (Filesync.CloudFs impl): Cloud file system
+  - fs (Filesync.Cloud impl): Cloud file system
   - path (binary): Path of folder on cloud file system to list
   - args (Map): File-system-specific arguments to pass to the
       underlying subsystem. In a perfect world, this would be
       unnecessary, but "let it fail..." and all that.
 
   Returns:
-    {:ok, Filesync.CloudFs.ResultsMeta}
+    {:ok, Filesync.Cloud.ResultsMeta}
       or
     {:error, {:cloud_path_not_found, path error (binary)}
       or 
@@ -72,14 +72,14 @@ defprotocol Filesync.CloudFs do
   path.
   
   Args:
-  - fs (Filesync.CloudFs impl): Cloud file system
+  - fs (Filesync.Cloud impl): Cloud file system
   - path (binary): Path of file/folder on cloud file system to get
       metadata for
   - args (Map): File-system-specific arguments to pass to the
       underlying subsystem. 
   
   Returns:
-    {:ok, Filesync.CloudFS.Meta}
+    {:ok, Filesync.Cloud.Meta}
       or
     {:error, {:cloud_path_not_found, path error (binary)}
       or 
@@ -96,13 +96,13 @@ defprotocol Filesync.CloudFs do
   path.
   
   Args:
-  - fs (Filesync.CloudFs impl): Cloud file system
+  - fs (Filesync.Cloud impl): Cloud file system
   - path (binary): Path of file on cloud file system to download
   - args (Map): File-system-specific arguments to pass to the
       underlying subsystem. 
   
   Returns:
-    {:ok, Filesync.CloudFs.FileContent}
+    {:ok, Filesync.Cloud.FileContent}
       or
     {:error, {:cloud_path_not_found, path error (binary)}
       or 
@@ -122,7 +122,7 @@ defprotocol Filesync.CloudFs do
   whatever is (might be) already there.
   
   Args:
-  - fs (Filesync.CloudFs impl): Cloud file system
+  - fs (Filesync.Cloud impl): Cloud file system
   - local_path (binary): Path of file on local file system to upload
   - fs_path (binary): Path on cloud file system to place uploaded
       content. If this path ends with a "/" then it should be
@@ -131,7 +131,7 @@ defprotocol Filesync.CloudFs do
       underlying subsystem. 
   
   Returns:
-    {:ok, Filesync.CloudFs.Meta}
+    {:ok, Filesync.Cloud.Meta}
       or
     {:error, :local_path_not_found}
       or
@@ -152,7 +152,7 @@ defprotocol Filesync.CloudFs do
   content is different from the local content.
   
   Args:
-  - fs (Filesync.CloudFs impl): Cloud file system
+  - fs (Filesync.Cloud impl): Cloud file system
   - local_path (binary): Path of file on local file system to upload
   - fs_path (binary): Path on cloud file system to place uploaded
       content. If this path ends with a "/" then it should be
@@ -161,7 +161,7 @@ defprotocol Filesync.CloudFs do
       underlying subsystem. 
   
   Returns:
-    {:ok, Filesync.CloudFs.Meta}
+    {:ok, Filesync.Cloud.Meta}
       or
     {:error, :local_path_not_found}
       or
@@ -178,13 +178,13 @@ defprotocol Filesync.CloudFs do
   system.
   
   Args:
-  - fs (Filesync.CloudFs impl): Cloud file system
+  - fs (Filesync.Cloud impl): Cloud file system
   - path (binary): Path on cloud file system to remove. 
   - args (Map): File-system-specific arguments to pass to the
       underlying subsystem. 
   
   Returns:
-    {:ok, Filesync.CloudFs.FileContent}
+    {:ok, Filesync.Cloud.FileContent}
       or
     {:error, {:cloud_path_not_found, path error (binary)}
       or 
@@ -202,7 +202,7 @@ defprotocol Filesync.CloudFs do
   another place in the cloud file system.
   
   Args:
-  - fs (Filesync.CloudFs impl): Cloud file system
+  - fs (Filesync.Cloud impl): Cloud file system
   - from_path (binary): Path of file/folder on cloud file system to
       copy
   - to_path (binary): Path of file/folder on cloud file system to
@@ -212,7 +212,7 @@ defprotocol Filesync.CloudFs do
       underlying subsystem. 
   
   Returns:
-    {:ok, Filesync.CloudFS.Meta}
+    {:ok, Filesync.Cloud.Meta}
       or
     {:error, {:cloud_path_not_found, path error (binary)}
       or 
@@ -229,7 +229,7 @@ defprotocol Filesync.CloudFs do
   another place in the cloud file system.
   
   Args:
-  - fs (Filesync.CloudFs impl): Cloud file system
+  - fs (Filesync.Cloud impl): Cloud file system
   - from_path (binary): Path of file/folder on cloud file system to
       move
   - to_path (binary): Path of file/folder on cloud file system to
@@ -239,7 +239,7 @@ defprotocol Filesync.CloudFs do
       underlying subsystem. 
   
   Returns:
-    {:ok, Filesync.CloudFS.Meta}
+    {:ok, Filesync.Cloud.Meta}
       or
     {:error, {:cloud_path_not_found, path error (binary)}
       or 
@@ -252,9 +252,9 @@ defprotocol Filesync.CloudFs do
   def file_move(dbx, from_path, to_path, args \\ %{})
 end
 
-defmodule Filesync.CloudFs.Meta do
+defmodule Filesync.Cloud.Meta do
   @moduledoc """
-  CloudFs file/folder (i.e. inode) metadata
+  Cloud file/folder (i.e. inode) metadata
   """
   # Every file on any file-system (Dropbox, GDrive, S3, etc.) should
   # have at least these attributes
@@ -274,14 +274,14 @@ defmodule Filesync.CloudFs.Meta do
     :meta
     # to be used internally by the
     # particular file-system (i.e. the
-    # implementation of the CloudFs
+    # implementation of the Cloud
     # protocol)
   ]
 end
 
-defmodule Filesync.CloudFs.ResultsMeta do
+defmodule Filesync.Cloud.ResultsMeta do
   @moduledoc """
-  CloudFs result set/list metadata.
+  Cloud result set/list metadata.
 
   Keeps track of a list of results that matter (usually file/folder
   metadata), but also keeps a reference to the original
@@ -299,7 +299,7 @@ defmodule Filesync.CloudFs.ResultsMeta do
   @enforce_keys [:results]
   defstruct results: [],
 
-            # List of CloudFs.Meta objects
+            # List of Cloud.Meta objects
 
             # File-system-specific metadata for this
             meta: %{}
@@ -307,9 +307,9 @@ defmodule Filesync.CloudFs.ResultsMeta do
   # result set
 end
 
-defmodule Filesync.CloudFs.FileContent do
+defmodule Filesync.Cloud.FileContent do
   @moduledoc """
-  CloudFs file content struct
+  Cloud file content struct
 
   Basically a thin type wrapping the Map data returned by HTTPoison's
   HTTP methods (POST generally)

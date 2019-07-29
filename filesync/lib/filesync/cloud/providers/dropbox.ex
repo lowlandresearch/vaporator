@@ -1,4 +1,4 @@
-defmodule Filesync.Dropbox do
+defmodule FileSync.Cloud.Dropbox do
   use Timex
   require Logger
 
@@ -10,7 +10,7 @@ defmodule Filesync.Dropbox do
   - Better, more descriptive error messaging/routing
   """
 
-  alias Filesync.CloudFs
+  alias Filesync.Cloud
 
   @enforce_keys [:access_token]
   defstruct [:access_token]
@@ -48,7 +48,7 @@ defmodule Filesync.Dropbox do
 
   Args:
 
-  - dbx (Filesync.Dropbox): Dropbox client
+  - dbx (FileSync.Cloud.Dropbox): Dropbox client
   - url_path (binary): URL path to be added to @content_url base URL
   - local_path (binary): Local file system path
   - api_args (Map): Dropbox API file transfer arguments to be
@@ -78,7 +78,7 @@ defmodule Filesync.Dropbox do
 
   Args:
 
-  - dbx (Filesync.Dropbox): Dropbox client
+  - dbx (FileSync.Cloud.Dropbox): Dropbox client
   - url_path (binary): URL path to be added to @content_url base URL
   - data (Map): POST body data
   - api_args (Map): Dropbox API file transfer arguments to be
@@ -251,7 +251,7 @@ defmodule Filesync.Dropbox do
   Process a binary response from the REST API for downloaded files
 
   - Decodes and returns body binary content and headers (as
-    Filesync.CloudFs.FileContent) if status code is 200
+    Filesync.Cloud.FileContent) if status code is 200
 
   - Returns the following error "signals"
       - :bad_status for status codes >= 400 and <= 599
@@ -262,7 +262,7 @@ defmodule Filesync.Dropbox do
         body: body,
         headers: headers
       }) do
-    {:ok, %CloudFs.FileContent{content: body, headers: headers}}
+    {:ok, %Cloud.FileContent{content: body, headers: headers}}
   end
 
   def process_download_response(response) do
@@ -271,10 +271,10 @@ defmodule Filesync.Dropbox do
 
   @doc """
   Convert a Dropbox file/folder metadata element into a
-  Filesync.CloudFs.Meta element
+  Filesync.Cloud.Meta element
   """
-  def dropbox_meta_to_cloudfs(meta) do
-    %CloudFs.Meta{
+  def dropbox_meta_to_cloud(meta) do
+    %Cloud.Meta{
       meta: meta,
       type: meta |> Map.get(".tag", "none") |> String.to_atom(),
       name: meta["name"],
@@ -322,23 +322,23 @@ defmodule Filesync.Dropbox do
     body = Map.merge(%{:path => prep_path(path)}, args)
 
     case post_api(dbx, "/files/get_metadata", body) do
-      {:ok, meta} -> {:ok, dropbox_meta_to_cloudfs(meta)}
+      {:ok, meta} -> {:ok, dropbox_meta_to_cloud(meta)}
       {:error, error} -> {:error, error}
     end
   end
 
   @doc """
-  Lists the contents of a directory on CloudFs.
+  Lists the contents of a directory on Cloud.
 
   Supports recursive by passing %{recursive: true} in args
 
   Args:
-    dbx (struct): Specifies CloudFs provider and access token
-    path (binary): CloudFs root directory
+    dbx (struct): Specifies Cloud provider and access token
+    path (binary): Cloud root directory
     args (map): additional arguments to be passed in the body
 
   Returns:
-    CloudFs.ResultsMeta (struct): all files and folders found in directory
+    Cloud.ResultsMeta (struct): all files and folders found in directory
   """
   def list_folder(dbx, path, args \\ %{}) do
     body = Map.merge(%{:path => prep_path(path)}, args)
@@ -387,9 +387,9 @@ defmodule Filesync.Dropbox do
     results = 
       [result_meta["entries"] | results]
       |> List.flatten()
-      |> Enum.map(&dropbox_meta_to_cloudfs/1)
+      |> Enum.map(&dropbox_meta_to_cloud/1)
 
-    {:ok, %CloudFs.ResultsMeta{results: results, meta: result_meta}}
+    {:ok, %Cloud.ResultsMeta{results: results, meta: result_meta}}
   end
 
   def file_download(dbx, path, dbx_api_args \\ %{}) do
@@ -412,7 +412,7 @@ defmodule Filesync.Dropbox do
            ),
            %{}
          ) do
-      {:ok, meta} -> {:ok, dropbox_meta_to_cloudfs(meta)}
+      {:ok, meta} -> {:ok, dropbox_meta_to_cloud(meta)}
       {:error, error} -> {:error, error}
     end
   end
@@ -454,7 +454,7 @@ defmodule Filesync.Dropbox do
   content is different from the local content.
 
   Args:
-  - fs (Filesync.CloudFs impl): Cloud file system
+  - fs (Filesync.Cloud impl): Cloud file system
   - local_path (binary): Path of file on local file system to upload
   - dbx_path (binary): Path on cloud file system to place uploaded
       content. If this path ends with a "/" then it should be
@@ -463,7 +463,7 @@ defmodule Filesync.Dropbox do
       underlying subsystem. 
 
   Returns:
-    {:ok, Filesync.CloudFs.FileContent}
+    {:ok, Filesync.Cloud.FileContent}
       or
     {:error, {:bad_decode, decode error (any)}
       or 
@@ -490,7 +490,7 @@ defmodule Filesync.Dropbox do
 
   def file_remove(dbx, path, args \\ %{}) do
     case post_api(dbx, "/files/delete_v2", Map.merge(%{"path" => path}, args)) do
-      {:ok, %{"metadata" => meta}} -> {:ok, dropbox_meta_to_cloudfs(meta)}
+      {:ok, %{"metadata" => meta}} -> {:ok, dropbox_meta_to_cloud(meta)}
       {:error, error} -> {:error, error}
     end
   end
@@ -508,7 +508,7 @@ defmodule Filesync.Dropbox do
              args
            )
          ) do
-      {:ok, %{"metadata" => meta}} -> {:ok, dropbox_meta_to_cloudfs(meta)}
+      {:ok, %{"metadata" => meta}} -> {:ok, dropbox_meta_to_cloud(meta)}
       {:error, error} -> {:error, error}
     end
   end
@@ -522,7 +522,7 @@ defmodule Filesync.Dropbox do
              args
            )
          ) do
-      {:ok, meta} -> {:ok, dropbox_meta_to_cloudfs(meta)}
+      {:ok, meta} -> {:ok, dropbox_meta_to_cloud(meta)}
       {:error, error} -> {:error, error}
     end
   end
@@ -546,51 +546,51 @@ defmodule Filesync.Dropbox do
 end
 
 # ----------------------------------------------------------------------
-# CloudFs implementation
+# Cloud implementation
 # ----------------------------------------------------------------------
 
-defimpl Filesync.CloudFs, for: Filesync.Dropbox do
+defimpl Filesync.Cloud, for: FileSync.Cloud.Dropbox do
   require Logger
 
   def get_hash!(_dbx, local_path) do
-    Filesync.Dropbox.dbx_hash!(local_path)
+    FileSync.Cloud.Dropbox.dbx_hash!(local_path)
   end
 
   def get_path(_dbx, local_root, local_path, dbx_root) do
-    Filesync.Dropbox.get_dbx_path(local_root, local_path, dbx_root)
+    FileSync.Cloud.Dropbox.get_dbx_path(local_root, local_path, dbx_root)
   end
 
   def list_folder(dbx, path, args \\ %{}) do
-    Filesync.Dropbox.list_folder(dbx, path, args)
+    FileSync.Cloud.Dropbox.list_folder(dbx, path, args)
   end
 
   def get_metadata(dbx, path, args \\ %{}) do
-    Filesync.Dropbox.get_metadata(dbx, path, args)
+    FileSync.Cloud.Dropbox.get_metadata(dbx, path, args)
   end
 
   def file_download(dbx, path, dbx_api_args \\ %{}) do
-    Filesync.Dropbox.file_download(dbx, path, dbx_api_args)
+    FileSync.Cloud.Dropbox.file_download(dbx, path, dbx_api_args)
   end
 
   def file_upload(dbx, local_path, dbx_path, args \\ %{}) do
-    Filesync.Dropbox.file_upload(dbx, local_path, dbx_path, args)
+    FileSync.Cloud.Dropbox.file_upload(dbx, local_path, dbx_path, args)
   end
 
   def file_update(dbx, local_path, dbx_path, args \\ %{}) do
-    Filesync.Dropbox.file_update(dbx, local_path, dbx_path, args)
+    FileSync.Cloud.Dropbox.file_update(dbx, local_path, dbx_path, args)
   end
 
   def file_remove(dbx, path, args \\ %{}) do
-    Filesync.Dropbox.file_remove(dbx, path, args)
+    FileSync.Cloud.Dropbox.file_remove(dbx, path, args)
   end
 
   def folder_remove(dbx, path, args \\ %{}), do: file_remove(dbx, path, args)
 
   def file_copy(dbx, from_path, to_path, args \\ %{}) do
-    Filesync.Dropbox.file_copy(dbx, from_path, to_path, args)
+    FileSync.Cloud.Dropbox.file_copy(dbx, from_path, to_path, args)
   end
 
   def file_move(dbx, from_path, to_path, args \\ %{}) do
-    Filesync.Dropbox.file_move(dbx, from_path, to_path, args)
+    FileSync.Cloud.Dropbox.file_move(dbx, from_path, to_path, args)
   end
 end

@@ -1,9 +1,9 @@
 # BDO: Most of these tests feel like we're unit-testing GenStage's
 # innards. What am I missing here?
 
-defmodule Filesync.ClientFs.EventProducerTest do
+defmodule Filesync.Client.EventProducerTest do
   use ExUnit.Case, async: false
-  alias Filesync.ClientFs.EventProducer
+  alias Filesync.Client.EventProducer
 
   @test_event {:created, {"fake/", "fake/test.txt"}}
 

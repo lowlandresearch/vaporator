@@ -1,5 +1,5 @@
 use Mix.Config
 
-config :filesync, clientfs_sync_dirs: []
+config :filesync, client_sync_dirs: []
 
 import_config "instance.exs"

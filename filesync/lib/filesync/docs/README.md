@@ -5,11 +5,11 @@
 ### Configuration variables
 
 - `:dbx_token` - the API key for Dropbox
-- `:clientfs_sync_dirs` - the local client directories to be synchronized by
+- `:client_sync_dirs` - the local client directories to be synchronized by
   Filesync
-- `:cloudfs_root` - the cloud filesystem path into which all files
+- `:cloud_root` - the cloud filesystem path into which all files
   will be synchronized
-- `:poll_interval` - number of seconds between polling clientfs and cloudfs state.
+- `:poll_interval` - number of seconds between polling client and cloud state.
 
 ### Separate environment config files
 
@@ -28,22 +28,22 @@ for instance-specific settings. It will contain at least the following
 application environment variables:
 
 - `:dbx_token`
-- `:clientfs_sync_dirs`
-- `:cloudfs_root`
+- `:client_sync_dirs`
+- `:cloud_root`
 - `:poll_interval`
 
 ## Architecture
 <img src="./architecture.svg">
 
-## Filesync.ClientFs
+## Filesync.Client
 
 Receives and processes events from the client filesystem to a cloud filesystem
 
-### ClientFs.EventMonitor
+### Client.EventMonitor
 **Type:**
 [GenServer](hexdocs.pm/elixir/GenServer.html)
 
-`ClientFs.EventMonitor` polls the current state of `clientfs` and `cloudfs` and updates `cloudfs` where states differ.
+`Client.EventMonitor` polls the current state of `client` and `cloud` and updates `cloud` where states differ.
 
 Directories that will be monitored can be provided as a list of
 binaries of **absolute paths** in the application variable
@@ -58,32 +58,32 @@ instance-specific environment config, `instance.exs`.
 
 `Filesync.Cache` provides an interface to the ets file hash cache.
 
-### ClientFs.EventProducer
+### Client.EventProducer
 **Type:**
 [GenStage.BroadcastDispatcher
 ](https://hexdocs.pm/gen_stage/GenStage.Dispatcher.html) (Producer)
 
 #### Event Queue
-Receives file events from `ClientFs.EventMonitor` and stores them using an 
+Receives file events from `Client.EventMonitor` and stores them using an 
 [erlang queue](http://erlang.org/doc/man/queue.html).
 
 #### Event Demand
-When `ClientFs.EventConsumer` requests events for processing, 
-`ClientFs.EventProducer` dequeues the number of requested 
+When `Client.EventConsumer` requests events for processing, 
+`Client.EventProducer` dequeues the number of requested 
 events and responds with the events.
 
-### ClientFs.EventConsumer
+### Client.EventConsumer
 **Type:**
 [GenStage ConsumerSupervisor
 ](https://hexdocs.pm/gen_stage/ConsumerSupervisor.html)
 
-`ClientFs.EventConsumer` receives events from `ClientFs.EventProducer` and 
-spawns one `ClientFs.EventProcessor` per event for concurrent processing.
+`Client.EventConsumer` receives events from `Client.EventProducer` and 
+spawns one `Client.EventProcessor` per event for concurrent processing.
 
-### ClientFs.EventProcessor
+### Client.EventProcessor
 **Type:**
 [Task](https://hexdocs.pm/elixir/Task.html)
 
-`ClientFs.EventProcessor` is spawned by `ClientFs.EventConsumer` to process 
-a single event using `Filesync.ClientFs.process_event/1` to call the necessary 
-`Filesync.CloudFs` sync function.
+`Client.EventProcessor` is spawned by `Client.EventConsumer` to process 
+a single event using `Filesync.Client.process_event/1` to call the necessary 
+`Filesync.Cloud` sync function.

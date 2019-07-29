@@ -113,7 +113,7 @@
 		</g>
 		<g id="shape1-5" v:mID="1" v:groupContext="shape" v:layerMember="0" transform="translate(246.375,-310.073)">
 			<title>Process</title>
-			<desc>ClientFs.EventProducer GenStage Producer</desc>
+			<desc>Client.EventProducer GenStage Producer</desc>
 			<v:custProps>
 				<v:cp v:nameU="Cost" v:lbl="Cost" v:prompt="" v:type="7" v:format="@" v:sortKey="" v:invis="false" v:ask="false"
 						v:langID="1033" v:cal="0"/>
@@ -140,11 +140,11 @@
 			<v:textBlock v:margins="rect(2,2,2,2)"/>
 			<v:textRect cx="54" cy="585" width="108.01" height="54"/>
 			<rect x="0" y="558" width="108" height="54" class="st3"/>
-			<text x="6.68" y="582" class="st4" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>ClientFs.EventProducer<v:newlineChar/><tspan
+			<text x="6.68" y="582" class="st4" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Client.EventProducer<v:newlineChar/><tspan
 						x="22.89" dy="1.5em" class="st5">GenStage Producer</tspan></text>		</g>
 		<g id="shape2-9" v:mID="2" v:groupContext="shape" v:layerMember="0" transform="translate(459,-54)">
 			<title>Object</title>
-			<desc>CloudFs</desc>
+			<desc>Cloud</desc>
 			<v:custProps>
 				<v:cp v:nameU="Cost" v:lbl="Cost" v:type="7" v:format="@" v:langID="1033"/>
 				<v:cp v:nameU="Duration" v:lbl="Duration" v:type="2" v:langID="1033"/>
@@ -160,10 +160,10 @@
 						 20.8884 -140.03 0 0 114.14 563.04 A83.1498 72.4801 -41.99 0 0 130.47 542.49 A33.1954 30.2416 -180 0 0 113.27
 						 514.8 A19.8279 18.0636 -180 0 0 75.35 523.44 A16.9942 14.1022 -14.72 0 0 46.88 524.24 A24.3607 21.1009 -165.21
 						 0 0 16.09 553.68 A19.2969 17.5798 -180 0 0 18.76 588.58 Z" class="st3"/>
-			<text x="49.29" y="561" class="st4" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>CloudFs</text>		</g>
+			<text x="49.29" y="561" class="st4" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Cloud</text>		</g>
 		<g id="shape4-12" v:mID="4" v:groupContext="shape" v:layerMember="0" transform="translate(435.375,-310.073)">
 			<title>Process.4</title>
-			<desc>ClientFs.EventConsumer GenStage ConsumerSupervisor</desc>
+			<desc>Client.EventConsumer GenStage ConsumerSupervisor</desc>
 			<v:custProps>
 				<v:cp v:nameU="Cost" v:lbl="Cost" v:prompt="" v:type="7" v:format="@" v:sortKey="" v:invis="false" v:ask="false"
 						v:langID="1033" v:cal="0"/>
@@ -190,7 +190,7 @@
 			<v:textBlock v:margins="rect(2,2,2,2)"/>
 			<v:textRect cx="54" cy="585" width="108.01" height="54"/>
 			<rect x="0" y="558" width="108" height="54" class="st3"/>
-			<text x="4.51" y="582" class="st4" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>ClientFs.EventConsumer<v:newlineChar/><tspan
+			<text x="4.51" y="582" class="st4" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Client.EventConsumer<v:newlineChar/><tspan
 						x="4.29" dy="1.5em" class="st5">GenStage ConsumerSupervisor</tspan></text>		</g>
 		<g id="shape7-16" v:mID="7" v:groupContext="shape" v:layerMember="1" transform="translate(354.375,-337.073)">
 			<title>Center to center 1</title>
@@ -210,11 +210,11 @@
 		</g>
 		<g id="shape20-27" v:mID="20" v:groupContext="shape" transform="translate(164.25,-342)">
 			<title>Sheet.20</title>
-			<desc>clientfs != cloudfs generate file_event</desc>
+			<desc>client != cloud generate file_event</desc>
 			<v:textBlock v:margins="rect(2,2,2,2)"/>
 			<v:textRect cx="38.25" cy="598.5" width="76.51" height="27"/>
 			<rect x="0" y="585" width="76.5" height="27" class="st8"/>
-			<text x="6.13" y="595.8" class="st9" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>clientfs != cloudfs<v:newlineChar/><tspan
+			<text x="6.13" y="595.8" class="st9" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>client != cloud<v:newlineChar/><tspan
 						x="2.5" dy="1.2em" class="st10">generate file_event</tspan></text>		</g>
 		<g id="shape41-31" v:mID="41" v:groupContext="shape" transform="translate(361.125,-287.573)">
 			<title>Sheet.41</title>
@@ -286,7 +286,7 @@
 		</g>
 		<g id="shape45-41" v:mID="45" v:groupContext="shape" v:layerMember="0" transform="translate(616.5,-297)">
 			<title>Process.45</title>
-			<desc>ClientFs.EventProcessor Task</desc>
+			<desc>Client.EventProcessor Task</desc>
 			<v:custProps>
 				<v:cp v:nameU="Cost" v:lbl="Cost" v:prompt="" v:type="7" v:format="@" v:sortKey="" v:invis="false" v:ask="false"
 						v:langID="1033" v:cal="0"/>
@@ -313,7 +313,7 @@
 			<v:textBlock v:margins="rect(2,2,2,2)"/>
 			<v:textRect cx="54" cy="585" width="108.01" height="54"/>
 			<rect x="0" y="558" width="108" height="54" class="st3"/>
-			<text x="5.39" y="582" class="st4" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>ClientFs.EventProcessor<v:newlineChar/><tspan
+			<text x="5.39" y="582" class="st4" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Client.EventProcessor<v:newlineChar/><tspan
 						x="46.62" dy="1.5em" class="st5">Task</tspan></text>		</g>
 		<g id="shape46-45" v:mID="46" v:groupContext="shape" v:layerMember="1" transform="translate(543.375,-328.179)">
 			<title>Dynamic connector.46</title>
@@ -499,11 +499,11 @@
 		</g>
 		<g id="shape1002-110" v:mID="1002" v:groupContext="shape" transform="translate(43.875,-253.823)">
 			<title>Sheet.1002</title>
-			<desc>cache ClientFs state</desc>
+			<desc>cache Client state</desc>
 			<v:textBlock v:margins="rect(2,2,2,2)"/>
 			<v:textRect cx="45" cy="598.5" width="90.01" height="27"/>
 			<rect x="0" y="585" width="90" height="27" class="st8"/>
-			<text x="8.83" y="601.2" class="st9" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>cache ClientFs state</text>		</g>
+			<text x="8.83" y="601.2" class="st9" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>cache Client state</text>		</g>
 		<g id="group1003-113" transform="translate(58.5,-45)" v:mID="1003" v:groupContext="group">
 			<v:custProps>
 				<v:cp v:nameU="AssetNumber" v:lbl="Asset Number" v:prompt="" v:type="0" v:format="" v:sortKey="Asset"
@@ -11468,7 +11468,7 @@
 		</g>
 		<g id="shape114-176" v:mID="114" v:groupContext="shape" v:layerMember="0" transform="translate(34.875,-310.073)">
 			<title>Process.11</title>
-			<desc>ClientFs.EventMonitor GenServer</desc>
+			<desc>Client.EventMonitor GenServer</desc>
 			<v:custProps>
 				<v:cp v:nameU="Cost" v:lbl="Cost" v:prompt="" v:type="7" v:format="@" v:sortKey="" v:invis="false" v:ask="false"
 						v:langID="1033" v:cal="0"/>
@@ -11495,7 +11495,7 @@
 			<v:textBlock v:margins="rect(2,2,2,2)"/>
 			<v:textRect cx="54" cy="585" width="108.01" height="54"/>
 			<rect x="0" y="558" width="108" height="54" class="st3"/>
-			<text x="8.5" y="582" class="st4" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>ClientFs.EventMonitor<v:newlineChar/><tspan
+			<text x="8.5" y="582" class="st4" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>Client.EventMonitor<v:newlineChar/><tspan
 						x="37.36" dy="1.5em" class="st5">GenServer</tspan></text>		</g>
 		<g id="shape1029-180" v:mID="1029" v:groupContext="shape" v:layerMember="1"
 				transform="translate(191.078,1019.75) rotate(-150.709)">
@@ -11517,11 +11517,11 @@
 		</g>
 		<g id="shape1031-190" v:mID="1031" v:groupContext="shape" transform="translate(153,-270)">
 			<title>Sheet.1031</title>
-			<desc>cache CloudFs state</desc>
+			<desc>cache Cloud state</desc>
 			<v:textBlock v:margins="rect(2,2,2,2)"/>
 			<v:textRect cx="45" cy="598.5" width="90.01" height="27"/>
 			<rect x="0" y="585" width="90" height="27" class="st8"/>
-			<text x="8.87" y="601.2" class="st9" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>cache CloudFs state</text>		</g>
+			<text x="8.87" y="601.2" class="st9" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>cache Cloud state</text>		</g>
 		<g id="shape1032-193" v:mID="1032" v:groupContext="shape" v:layerMember="0" transform="translate(97.02,-355.5)">
 			<title>Process.1032</title>
 			<desc>Filesync.Cache GenServer/ETS Table</desc>

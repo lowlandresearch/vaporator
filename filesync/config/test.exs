@@ -1,8 +1,8 @@
 use Mix.Config
 
-config :filesync, cloudfs_root: "/filesync/test/"
+config :filesync, cloud_root: "/filesync/test/"
 
-config :filesync, clientfs_sync_dirs: []
+config :filesync, client_sync_dirs: []
 
 config :filesync, test_dir: "/filesync/test/"
 config :filesync, test_file: "test.txt"

@@ -1,4 +1,4 @@
-defmodule Filesync.ClientFs.EventProducer do
+defmodule Filesync.Client.EventProducer do
   @moduledoc """
   Receives events from FileSystem and provides events
   to EventConsumer
@@ -30,7 +30,7 @@ defmodule Filesync.ClientFs.EventProducer do
   end
 
   @doc """
-  Checks for event duplicates or conflicts to avoid unecessary CloudFs api
+  Checks for event duplicates or conflicts to avoid unecessary Cloud api
   calls
 
   Scenarios Checked:

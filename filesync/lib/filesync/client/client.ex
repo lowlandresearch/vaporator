@@ -1,26 +1,26 @@
-defmodule Filesync.ClientFs do
+defmodule Filesync.Client do
   require Logger
 
   @moduledoc """
   Provides a single interface for:
-    - Receiving events streamed from ClientFs and queues them into
+    - Receiving events streamed from Client and queues them into
       EventQueue
-    - Processing events in EventQueue to determine necessary CloudFs
+    - Processing events in EventQueue to determine necessary Cloud
       sync action
 
   Events supported:
-    - :created -> Uploads file to CloudFs
-    - :updated -> Updates file in CloudFs
-    - :removed -> Removes file from CloudFs
+    - :created -> Uploads file to Cloud
+    - :updated -> Updates file in Cloud
+    - :removed -> Removes file from Cloud
   """
 
-  @cloudfs %Filesync.Dropbox{
+  @cloud %FileSync.Cloud.Dropbox{
     access_token: Application.get_env(:filesync, :dbx_token)
   }
-  @cloudfs_root Application.get_env(:filesync, :cloudfs_root)
+  @cloud_root Application.get_env(:filesync, :cloud_root)
 
   @doc """
-  Determines CloudFs sync action for the ClientFs generated event
+  Determines Cloud sync action for the Client generated event
 
   Args:
     - event (tuple): description of event action
@@ -28,19 +28,19 @@ defmodule Filesync.ClientFs do
   """
   def process_event({:created, {root, path}}) do
     if not File.dir?(path) and File.exists?(path) do
-      cloudfs_path = Filesync.CloudFs.get_path(
-        @cloudfs, root, path, @cloudfs_root
+      cloud_path = Filesync.Cloud.get_path(
+        @cloud, root, path, @cloud_root
       )
       Logger.info(
         "#{__MODULE__} CREATED event:\n" <>
           "  local path: #{path}\n" <>
-          "  cloud path: #{cloudfs_path}"
+          "  cloud path: #{cloud_path}"
       )
 
-      case Filesync.CloudFs.file_upload(
-            @cloudfs,
+      case Filesync.Cloud.file_upload(
+            @cloud,
             path,
-            cloudfs_path
+            cloud_path
           ) do
         {:ok, meta} ->
           Logger.info(
@@ -58,18 +58,18 @@ defmodule Filesync.ClientFs do
 
   def process_event({:updated, {root, path}}) do
     if not File.dir?(path) and File.exists?(path) do
-      cloudfs_path = Filesync.CloudFs.get_path(
-        @cloudfs, root, path, @cloudfs_root
+      cloud_path = Filesync.Cloud.get_path(
+        @cloud, root, path, @cloud_root
       )
       Logger.info("#{__MODULE__} MODIFIED event:\n" <>
         "  local path: #{path}\n" <>
-        "  cloud path: #{cloudfs_path}"
+        "  cloud path: #{cloud_path}"
       )
 
-      case Filesync.CloudFs.file_update(
-            @cloudfs,
+      case Filesync.Cloud.file_update(
+            @cloud,
             path,
-            cloudfs_path
+            cloud_path
           ) do
         {:ok, meta} ->
           Logger.info(
@@ -86,23 +86,23 @@ defmodule Filesync.ClientFs do
   end
 
   def process_event({:removed, {root, path}}) do
-    cloudfs_path = Filesync.CloudFs.get_path(
-      @cloudfs, root, path, @cloudfs_root
+    cloud_path = Filesync.Cloud.get_path(
+      @cloud, root, path, @cloud_root
     )
     Logger.info("#{__MODULE__} DELETED event:\n" <>
       "  local path: #{path}\n" <>
-      "  cloud path: #{cloudfs_path}"
+      "  cloud path: #{cloud_path}"
     )
 
     if File.dir?(path) do
-      Filesync.CloudFs.folder_remove(
-        @cloudfs,
-        cloudfs_path
+      Filesync.Cloud.folder_remove(
+        @cloud,
+        cloud_path
       )
     else
-      Filesync.CloudFs.file_remove(
-        @cloudfs,
-        cloudfs_path
+      Filesync.Cloud.file_remove(
+        @cloud,
+        cloud_path
       )
     end
   end
@@ -113,7 +113,7 @@ defmodule Filesync.ClientFs do
 
   @doc """
   Currently, retrieves List of absolute paths from Application
-  variable :clientfs_sync_dirs.
+  variable :client_sync_dirs.
 
   TODO: pull these from a runtime configuration database of some sort.
 
@@ -125,9 +125,9 @@ defmodule Filesync.ClientFs do
   """
   def sync_dirs do
 
-    case Application.get_env(:filesync, :clientfs_sync_dirs) do
+    case Application.get_env(:filesync, :client_sync_dirs) do
       nil ->
-        Logger.error(":clientfs_sync_dirs NOT configured")
+        Logger.error(":client_sync_dirs NOT configured")
         []
 
       dirs ->
@@ -150,13 +150,13 @@ defmodule Filesync.ClientFs do
   end
 
   @doc """
-  Given a cloudfs_root, the cloudfs_path within it, and a local_root, what
+  Given a cloud_root, the cloud_path within it, and a local_root, what
   is the local_path?
   """
-  def get_local_path!(cloudfs_root, cloudfs_path) do
+  def get_local_path!(cloud_root, cloud_path) do
     path = Path.relative_to(
-              cloudfs_path |> Path.absname,
-              cloudfs_root |> Path.absname
+              cloud_path |> Path.absname,
+              cloud_root |> Path.absname
             )
 
 

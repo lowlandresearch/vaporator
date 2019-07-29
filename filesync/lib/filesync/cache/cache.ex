@@ -2,13 +2,13 @@ defmodule FileHashes do
   @moduledoc """
   Struct for file hashes
   """
-  defstruct [:clientfs, :cloudfs]
+  defstruct [:client, :cloud]
 end
 
 defmodule Filesync.Cache do
   @moduledoc """
-  Cache for storing ClientFs and CloudFs file hashes that will be
-  used to determine what should be synced to CloudFs.
+  Cache for storing Client and Cloud file hashes that will be
+  used to determine what should be synced to Cloud.
   """
   use GenServer
 
@@ -44,7 +44,7 @@ defmodule Filesync.Cache do
   If local_path doesn't exist in cache, a new record is inserted.
   Args:
     update (tuple): {local_path, Map}
-                    Ex: {"/watch/test.txt", %{cloudfs: "1234"}}
+                    Ex: {"/watch/test.txt", %{cloud: "1234"}}
 
   Returns:
     result (tuple): {:ok, local_path} when update success

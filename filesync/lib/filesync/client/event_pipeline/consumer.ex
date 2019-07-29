@@ -1,8 +1,8 @@
-defmodule Filesync.ClientFs.EventConsumer do
+defmodule Filesync.Client.EventConsumer do
   @moduledoc """
   GenStage ConsumerSupervisor that subscribes to EventProducer and spawns a
-  ClientFs.EventProcessor task process for each received event that updates
-  CloudFs.
+  Client.EventProcessor task process for each received event that updates
+  Cloud.
 
   https://hexdocs.pm/gen_stage/ConsumerSupervisor.html
   """
@@ -19,9 +19,9 @@ defmodule Filesync.ClientFs.EventConsumer do
 
     children = [
       %{
-        id: ClientFs.EventProcessor,
+        id: Client.EventProcessor,
         start: {
-          Filesync.ClientFs.EventProcessor,
+          Filesync.Client.EventProcessor,
           :start_link,
           []
         },
@@ -34,7 +34,7 @@ defmodule Filesync.ClientFs.EventConsumer do
     GenStage.async_subscribe(
       __MODULE__,
       [
-        to: Filesync.ClientFs.EventProducer,
+        to: Filesync.Client.EventProducer,
         max_demand: 2,          # until we can fix parallel upload
         min_demand: 1
       ]
@@ -44,15 +44,15 @@ defmodule Filesync.ClientFs.EventConsumer do
   end
 end
 
-defmodule Filesync.ClientFs.EventProcessor do
+defmodule Filesync.Client.EventProcessor do
   @moduledoc """
   Task that is spawned by EventConsumer whose only purpose is to
-  call the required ClientFs.process_event function to update CloudFs
+  call the required Client.process_event function to update Cloud
   https://hexdocs.pm/elixir/Task.html
   """
 
   @doc """
-  Starts Task for CloudFs update
+  Starts Task for Cloud update
 
   Task is started asychronously and then awaited.  Once the await returns,
   the task dies.
@@ -75,7 +75,7 @@ defmodule Filesync.ClientFs.EventProcessor do
     )
 
     Task.start_link(fn ->
-      Filesync.ClientFs.process_event(event)
+      Filesync.Client.process_event(event)
     end)
   end
 end

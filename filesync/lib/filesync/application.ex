@@ -5,15 +5,17 @@ defmodule Filesync do
   Starts and supervises all of the application processes.
 
   Child Processes:
-    - ClientFs.EventMonitor.Supervisor
-    - ClientFs.EventProducer
-    - ClientFs.EventConsumer
+    - Client.EventMonitor.Supervisor
+    - Client.EventProducer
+    - Client.EventConsumer
 
   https://hexdocs.pm/elixir/Application.html`
   
   """
   use Application
   require Logger
+
+  alias Filesync.Client
 
   def start(_type, _args) do
     Logger.info(
@@ -25,7 +27,7 @@ defmodule Filesync do
       %{
         id: EventProducer,
         start: {
-          Filesync.ClientFs.EventProducer,
+          Client.EventProducer,
           :start_link,
           [{:queue.new(), 0}]
         },
@@ -34,7 +36,7 @@ defmodule Filesync do
       %{
         id: EventConsumer,
         start: {
-          Filesync.ClientFs.EventConsumer,
+          Client.EventConsumer,
           :start_link,
           []
         },
@@ -42,11 +44,11 @@ defmodule Filesync do
       },
       {Filesync.Cache, name: Filesync.Cache},
       %{
-        id: ClientFs.EventMonitor,
+        id: Client.EventMonitor,
         start: {
-          Filesync.ClientFs.EventMonitor,
+          Client.EventMonitor,
           :start_link,
-          [Filesync.ClientFs.sync_dirs]
+          [Client.sync_dirs]
         }
       }
     ]

@@ -30,7 +30,7 @@ config :logger,
 #     - :dbx_content_url
 # - TODO :onedrive
 # - TODO :googledrive
-config :filesync, cloudfs_provider: :dropbox
+config :filesync, cloud_provider: :dropbox
 
 # Dropbox global configurations
 config :filesync, dbx_api_url: "https://api.dropboxapi.com/2"
@@ -50,10 +50,10 @@ config :filesync, dbx_content_url: "https://content.dropboxapi.com/2/"
 #
 # 
 # config :filesync, dbx_token: "dropbox_access_token" 
-# config :filesync, clientfs_sync_dirs: [
+# config :filesync, client_sync_dirs: [
 #   "/list", "/of", "/absolute", "/paths"
 # ]
-# config :filesync, cloudfs_root: "/path/in/cloudfs/"
+# config :filesync, cloud_root: "/path/in/cloud/"
 #
 
 import_config "#{Mix.env()}.exs"

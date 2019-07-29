@@ -1,13 +1,13 @@
-defmodule Filesync.ClientFs.EventConsumerTest do
+defmodule Filesync.Client.EventConsumerTest do
   use ExUnit.Case, async: false
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
 
-  alias Filesync.ClientFs.EventConsumer
+  alias Filesync.Client.EventConsumer
 
-  @cloudfs %Filesync.Dropbox{
+  @cloud %FileSync.Cloud.Dropbox{
     access_token: Application.get_env(:filesync, :dbx_token)
   }
-  @cloudfs_root Application.get_env(:filesync, :cloudfs_root)
+  @cloud_root Application.get_env(:filesync, :cloud_root)
 
   setup_all do 
     consumer_pid = Process.whereis(EventConsumer)
@@ -15,24 +15,24 @@ defmodule Filesync.ClientFs.EventConsumerTest do
     :ok
   end
 
-  test "event received from EventProducer processed to CloudFs" do
+  test "event received from EventProducer processed to Cloud" do
     test_file = "/consumer_test.txt"
     File.write(test_file, "testing consumer")
     test_event = {:created, {"/", test_file}}
 
-    Filesync.ClientFs.EventProducer.enqueue(test_event)
+    Filesync.Client.EventProducer.enqueue(test_event)
     :timer.sleep(1500) # Give event time to process
 
-    use_cassette "clientfs/event_pipeline/consumer" do
-      {:ok, %{results: [file | _]}} = Filesync.CloudFs.list_folder(
-                                        @cloudfs,
-                                        @cloudfs_root
+    use_cassette "client/event_pipeline/consumer" do
+      {:ok, %{results: [file | _]}} = Filesync.Cloud.list_folder(
+                                        @cloud,
+                                        @cloud_root
                                       )
 
       assert file.name == Path.basename(test_file)
     end
 
-    Filesync.ClientFs.EventProducer.enqueue({:deleted, {"/", test_file}})
+    Filesync.Client.EventProducer.enqueue({:deleted, {"/", test_file}})
     :timer.sleep(1500) # Give event time to process
   end
 

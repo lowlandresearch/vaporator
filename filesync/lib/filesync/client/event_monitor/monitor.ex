@@ -1,21 +1,21 @@
-defmodule Filesync.ClientFs.EventMonitor do
+defmodule Filesync.Client.EventMonitor do
   @moduledoc """
   GenServer that spawns and subscribes to a file_system process to
   monitor :file_events for a local directory provided by the
   EventMonitor.Supervisor.  When a :file_event is received, it is
-  cast to ClientFs.EventProducer.
+  cast to Client.EventProducer.
   """
   use GenServer
   require Logger
 
-  alias Filesync.CloudFs
-  alias Filesync.ClientFs
+  alias Filesync.Cloud
+  alias Filesync.Client
   alias Filesync.Cache
 
-  @cloudfs %Filesync.Dropbox{
+  @cloud %FileSync.Cloud.Dropbox{
     access_token: Application.get_env(:filesync, :dbx_token)
   }
-  @cloudfs_root Application.get_env(:filesync, :cloudfs_root)
+  @cloud_root Application.get_env(:filesync, :cloud_root)
   @poll_interval Application.get_env(:filesync, :poll_interval)
 
   def start_link(paths) do
@@ -25,7 +25,7 @@ defmodule Filesync.ClientFs.EventMonitor do
 
   @doc """
   Initializes EventMonitor by completing initial_sync of all files
-  that exist in the specified path to CloudFs and then
+  that exist in the specified path to Cloud and then
   start_maintenence for subsequent file event processing.
 
   https://hexdocs.pm/file_system/readme.html --> Example with GenServer
@@ -56,9 +56,9 @@ defmodule Filesync.ClientFs.EventMonitor do
   """
   def monitor(paths) do
     paths
-    |> Enum.map(&cache_clientfs/1)
+    |> Enum.map(&cache_client/1)
     |> Enum.map(fn {:ok, path} -> path end)
-    |> Enum.map(&cache_cloudfs/1)
+    |> Enum.map(&cache_cloud/1)
 
     sync_files()
 
@@ -67,14 +67,14 @@ defmodule Filesync.ClientFs.EventMonitor do
   end
 
   @doc """
-  Checks for local file updates and syncs the changes to CloudFs
+  Checks for local file updates and syncs the changes to Cloud
   """
   def sync_files do
 
-    Logger.info("#{__MODULE__} STARTED clientfs and cloudfs sync")
+    Logger.info("#{__MODULE__} STARTED client and cloud sync")
 
     match_spec = [
-      {{:"$1", %{clientfs: :"$2", cloudfs: :"$3"}},
+      {{:"$1", %{client: :"$2", cloud: :"$3"}},
       [{:andalso, {:"/=", :"$2", :"$3"}, {:"/=", :"$2", nil}}],
       [:"$1"]}
     ]
@@ -84,12 +84,12 @@ defmodule Filesync.ClientFs.EventMonitor do
     records
     |> Enum.map(
           fn path ->
-            {:created, {ClientFs.which_sync_dir!(path), path}}
+            {:created, {Client.which_sync_dir!(path), path}}
           end
         )
-    |> Enum.map(&ClientFs.EventProducer.enqueue/1)
+    |> Enum.map(&Client.EventProducer.enqueue/1)
 
-    Logger.info("#{__MODULE__} COMPLETED clientfs and cloudfs sync")
+    Logger.info("#{__MODULE__} COMPLETED client and cloud sync")
   end
 
   @doc """
@@ -103,10 +103,10 @@ defmodule Filesync.ClientFs.EventMonitor do
       {:ok, local_root} -> successful cache
       {:error, :bad_local_path} -> invalid directory
   """
-  def cache_clientfs(path) do
+  def cache_client(path) do
     local_root = Path.absname(path)
 
-    Logger.info("#{__MODULE__} STARTED clientfs cache of '#{local_root}'")
+    Logger.info("#{__MODULE__} STARTED client cache of '#{local_root}'")
 
     case File.stat(local_root) do
       {:ok, %{access: access}} when access in [:read_write, :read] ->
@@ -114,14 +114,14 @@ defmodule Filesync.ClientFs.EventMonitor do
         |> Enum.map(fn path ->
             hashes = Map.merge(
                         %FileHashes{},
-                        %{clientfs: CloudFs.get_hash!(@cloudfs, path)}
+                        %{client: Cloud.get_hash!(@cloud, path)}
                     )
 
             {path, hashes}
            end)
         |> Enum.map(&Cache.update/1)
 
-        Logger.info("#{__MODULE__} COMPLETED clientfs cache of '#{path}'")
+        Logger.info("#{__MODULE__} COMPLETED client cache of '#{path}'")
         {:ok, local_root}
 
       {:error, :enoent} ->
@@ -131,7 +131,7 @@ defmodule Filesync.ClientFs.EventMonitor do
   end
 
   @doc """
-  Updates Filesync.Cache with file hashes found in CloudFs
+  Updates Filesync.Cache with file hashes found in Cloud
 
   Args:
     path (binary): absolute path of local fs
@@ -140,14 +140,14 @@ defmodule Filesync.ClientFs.EventMonitor do
     result (tuple):
       {:ok, local_root} -> successful cache
   """
-  def cache_cloudfs(path) do
+  def cache_cloud(path) do
 
-    Logger.info("#{__MODULE__} STARTED cloudfs cache of '#{@cloudfs_root}'")
+    Logger.info("#{__MODULE__} STARTED cloud cache of '#{@cloud_root}'")
 
-    {:ok, %{results: meta}} = CloudFs.list_folder(
-                                @cloudfs,
+    {:ok, %{results: meta}} = Cloud.list_folder(
+                                @cloud,
                                 Path.join(
-                                  @cloudfs_root,
+                                  @cloud_root,
                                   Path.basename(path)
                                 ),
                                 %{recursive: true}
@@ -157,15 +157,15 @@ defmodule Filesync.ClientFs.EventMonitor do
     |> Enum.filter(fn %{type: t} -> t == :file end)
     |> Enum.map(fn %{path: p, meta: m} ->
         {
-          ClientFs.get_local_path!(@cloudfs_root, p),
-          %{cloudfs: m["content_hash"]}
+          Client.get_local_path!(@cloud_root, p),
+          %{cloud: m["content_hash"]}
         }
       end)
     |> Enum.map(&Cache.update/1)
 
-    {:ok, @cloudfs_root}
+    {:ok, @cloud_root}
 
-    Logger.info("#{__MODULE__} COMPLETED cloudfs cache of '#{@cloudfs_root}'")
+    Logger.info("#{__MODULE__} COMPLETED cloud cache of '#{@cloud_root}'")
   end
 
   @doc """
