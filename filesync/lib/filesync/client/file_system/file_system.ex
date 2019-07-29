@@ -12,9 +12,9 @@ defmodule Filesync.Client.FileSystem do
   defp parse_options([{:filesystem_type, :cifs} | t], result) do
     parse_options(t, ["-t", "cifs" | result])
   end
-  defp parse_options([{:filesystem_type, value} | t], result) do
+  defp parse_options([{:filesystem_type, value} | _t], _result) do
     Logger.error("unknown value `#{inspect(value)}` for filesystem_type")
-    parse_options(t, result)
+    {:error, :unknown_filesystem_type}
   end
   defp parse_options([{key, value} | t], result) do
     option_pair = "#{Atom.to_string(key)}=#{value}"

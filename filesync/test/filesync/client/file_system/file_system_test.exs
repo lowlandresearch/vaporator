@@ -12,4 +12,11 @@ defmodule Filesync.Client.FileSystemTest do
     assert actual == expected 
   end
 
+  test "Parse options with unknown filesystem_type" do
+    expected = {:error, :unknown_filesystem_type}
+
+    actual = FileSystem.parse_options([filesystem_type: :foo])
+    assert actual == expected
+  end
+
 end
