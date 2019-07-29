@@ -1,4 +1,4 @@
-defmodule Filesync do
+defmodule Filesync.Supervisor do
   @moduledoc """
   Entry point for application
   
@@ -12,16 +12,15 @@ defmodule Filesync do
   https://hexdocs.pm/elixir/Application.html`
   
   """
-  use Application
-  require Logger
+  use Supervisor
 
   alias Filesync.Client
 
-  def start(_type, _args) do
-    Logger.info(
-      "#{__MODULE__} starting...\n" <>
-        "  env: #{Mix.env}"
-    )
+  def start_link(_args) do
+    Supervisor.start_link(__MODULE__, [], name: __MODULE__)
+  end
+
+  def init(_args) do
 
     children = [
       %{
@@ -53,9 +52,6 @@ defmodule Filesync do
       }
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Filesync.Supervisor]
-    Supervisor.start_link(children, opts)
+   Supervisor.init(children, strategy: :one_for_one)
   end
 end

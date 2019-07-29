@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :filesync, client_sync_dirs: []
 

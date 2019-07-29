@@ -2,7 +2,7 @@ defmodule Firmware.MixProject do
   use Mix.Project
 
   @app :vaporator
-  @version "0.1.1"
+  @version "0.1.0"
   @all_targets [:rpi3]
 
   def project do
@@ -45,7 +45,7 @@ defmodule Firmware.MixProject do
       {:ring_logger, "~> 0.8.0"},
       {:toolshed, "~> 0.2.10"},
       {:dhcp_server, "~> 0.7.0"},
-      # {:frontend, path: "../frontend"},
+      {:filesync, path: "../filesync"},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.10.2"},

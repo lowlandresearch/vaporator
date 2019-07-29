@@ -1,6 +1,6 @@
 # This file is responsible for configuring your application
 # and its dependencies with the aid of the Mix.Config module.
-use Mix.Config
+import Config
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
@@ -20,9 +20,6 @@ use Mix.Config
 #
 #     config :logger, level: :info
 #
-
-config :logger,
-  level: :info
 
 # Providers:
 # - :dropbox
@@ -57,5 +54,3 @@ config :filesync, dbx_content_url: "https://content.dropboxapi.com/2/"
 #
 
 import_config "#{Mix.env()}.exs"
-
-

@@ -39,5 +39,5 @@ config :logger, backends: [RingLogger]
 
 if Mix.target() != :host do
   import_config "target.exs"
-  # import_config "../../frontend/config/config.exs"
+  import_config "../../filesync/config/config.exs"
 end

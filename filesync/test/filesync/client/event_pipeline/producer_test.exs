@@ -16,7 +16,7 @@ defmodule Filesync.Client.EventProducerTest do
     pid = Process.whereis(EventProducer)
     assert Process.alive?(pid)
     # The application starts EventConsumer with a demand of 2
-    assert {queue, 2} = :sys.get_state(pid).state
+    assert {queue, 0} = :sys.get_state(pid).state
   end
 
   test "enqueue api for an event" do

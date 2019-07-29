@@ -18,8 +18,9 @@ defmodule Firmware.Application do
     opts = [strategy: :one_for_one, name: Firmware.Supervisor]
     children =
       [
+        {DHCPServer, ["eth0", dhcp_options]},
         NervesHub.Supervisor,
-        {DHCPServer, ["eth0", dhcp_options]}
+        Filesync.Supervisor
       ]
 
     Supervisor.start_link(children, opts)

@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :filesync, cloud_root: ""
 config :filesync, dbx_token: ""
