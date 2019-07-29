@@ -1,7 +1,7 @@
 [
   {
     "request": {
-      "body": "{\"path\":\"/filesync/test\"}",
+      "body": "{\"path\":\"/vaporator/test\"}",
       "headers": {
         "Authorization": "<<DROPBOX_ACCESS_TOKEN>>",
         "Content-Type": "application/json"
@@ -13,7 +13,7 @@
     },
     "response": {
       "binary": false,
-      "body": "{\".tag\": \"folder\", \"name\": \"test\", \"path_lower\": \"/filesync/test\", \"path_display\": \"/filesync/test\", \"parent_shared_folder_id\": \"4778881600\", \"id\": \"id:x6l0-pRfLB4AAAAAAAACEQ\", \"sharing_info\": {\"read_only\": false, \"parent_shared_folder_id\": \"4778881600\", \"traverse_only\": false, \"no_access\": false}}",
+      "body": "{\".tag\": \"folder\", \"name\": \"test\", \"path_lower\": \"/vaporator/test\", \"path_display\": \"/vaporator/test\", \"parent_shared_folder_id\": \"4778881600\", \"id\": \"id:x6l0-pRfLB4AAAAAAAACEQ\", \"sharing_info\": {\"read_only\": false, \"parent_shared_folder_id\": \"4778881600\", \"traverse_only\": false, \"no_access\": false}}",
       "headers": {
         "Server": "nginx",
         "Date": "Sat, 26 Jan 2019 04:19:24 GMT",

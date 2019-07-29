@@ -1,7 +1,7 @@
 [
   {
     "request": {
-      "body": "{\"path\":\"/filesync/test/test.txt\"}",
+      "body": "{\"path\":\"/vaporator/test/test.txt\"}",
       "headers": {
         "Authorization": "<<DROPBOX_ACCESS_TOKEN>>",
         "Content-Type": "application/json"
@@ -13,7 +13,7 @@
     },
     "response": {
       "binary": false,
-      "body": "{\".tag\": \"file\", \"name\": \"test.txt\", \"path_lower\": \"/filesync/test/test.txt\", \"path_display\": \"/filesync/test/test.txt\", \"parent_shared_folder_id\": \"4778881600\", \"id\": \"id:x6l0-pRfLB4AAAAAAAACFA\", \"client_modified\": \"2019-01-24T13:27:29Z\", \"server_modified\": \"2019-01-24T13:27:29Z\", \"rev\": \"015000000011cd7f240\", \"size\": 9, \"sharing_info\": {\"read_only\": false, \"parent_shared_folder_id\": \"4778881600\", \"modified_by\": \"dbid:AACwr4JNsAU6W_XvT98U7oG6lipM2LoOgYc\"}, \"content_hash\": \"149078105941cd1edda0ec5a568fc1d178661b6441831c3647d88f41f7dfc886\"}",
+      "body": "{\".tag\": \"file\", \"name\": \"test.txt\", \"path_lower\": \"/vaporator/test/test.txt\", \"path_display\": \"/vaporator/test/test.txt\", \"parent_shared_folder_id\": \"4778881600\", \"id\": \"id:x6l0-pRfLB4AAAAAAAACFA\", \"client_modified\": \"2019-01-24T13:27:29Z\", \"server_modified\": \"2019-01-24T13:27:29Z\", \"rev\": \"015000000011cd7f240\", \"size\": 9, \"sharing_info\": {\"read_only\": false, \"parent_shared_folder_id\": \"4778881600\", \"modified_by\": \"dbid:AACwr4JNsAU6W_XvT98U7oG6lipM2LoOgYc\"}, \"content_hash\": \"149078105941cd1edda0ec5a568fc1d178661b6441831c3647d88f41f7dfc886\"}",
       "headers": {
         "Server": "nginx",
         "Date": "Sat, 26 Jan 2019 04:19:25 GMT",
