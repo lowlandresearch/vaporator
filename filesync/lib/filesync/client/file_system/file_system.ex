@@ -24,6 +24,16 @@ defmodule Filesync.Client.FileSystem do
     |> fn x -> x == Enum.sort(@required_arguments) end.()
   end
 
+  @doc """
+  Parses options and builds command for `udisksctl`
+
+  Returns `{:ok, options}`
+
+  ## Examples
+
+    iex> Filesync.Client.FileSystem.parse_options([filesystem_type: :win_xp, username: "chaz"])
+    {:ok, options}
+  """
   def parse_options(opts) do 
     if contains_required_arguments?(opts) do
       parse_options(opts, [])
@@ -66,6 +76,7 @@ defmodule Filesync.Client.FileSystem do
     {:ok, opts} = parse_options(opts, [])
     udisksctl(["mount", "-p", mount_point | opts])
   end
+
   @doc """
   Unmounts a mounted filesystem.
 
