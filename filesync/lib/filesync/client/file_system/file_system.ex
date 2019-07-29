@@ -5,7 +5,7 @@ defmodule Filesync.Client.FileSystem do
 
   require Logger
 
-  defp parse_options(opts) do
+  def parse_options(opts) do
     parse_options(opts, [])
   end
   defp parse_options([], result), do: {:ok, ["-o" | result]}
