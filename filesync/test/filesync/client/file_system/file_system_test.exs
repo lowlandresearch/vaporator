@@ -9,13 +9,20 @@ defmodule Filesync.Client.FileSystemTest do
     opts = [filesystem_type: :cifs, username: "foo", password: "bar"]
     {:ok, actual} = FileSystem.parse_options(opts)
 
-    assert actual == expected 
+    assert actual == expected
   end
 
   test "Parse options with unknown filesystem_type" do
     expected = {:error, :unknown_filesystem_type}
 
     actual = FileSystem.parse_options([filesystem_type: :foo])
+    assert actual == expected
+  end
+
+  test "Parse options with no options passed" do
+    expected = {:error, :missing_required_arguments}
+
+    actual = FileSystem.parse_options([])
     assert actual == expected
   end
 

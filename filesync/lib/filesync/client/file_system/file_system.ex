@@ -5,20 +5,51 @@ defmodule Filesync.Client.FileSystem do
 
   require Logger
 
-  def parse_options(opts) do
-    parse_options(opts, [])
+  @required_arguments [:filesystem_type]
+  @supported_filesystem_types [:cifs]
+
+  defp supported_filesystem_type?(filesystem_type) do
+    Enum.member?(@supported_filesystem_types, filesystem_type)
   end
-  defp parse_options([], result), do: {:ok, ["-o" | result]}
-  defp parse_options([{:filesystem_type, :cifs} | t], result) do
-    parse_options(t, ["-t", "cifs" | result])
+
+  defp required_argument?(arg) do
+    Enum.member?(@required_arguments, arg)
   end
-  defp parse_options([{:filesystem_type, value} | _t], _result) do
-    Logger.error("unknown value `#{inspect(value)}` for filesystem_type")
-    {:error, :unknown_filesystem_type}
+
+  defp contains_required_arguments?(opts) do
+    opts
+    |> Keyword.keys()
+    |> Enum.filter(&required_argument?/1)
+    |> Enum.sort()
+    |> fn x -> x == Enum.sort(@required_arguments) end.()
   end
+
+  def parse_options(opts) do 
+    if contains_required_arguments?(opts) do
+      parse_options(opts, [])
+    else
+      {:error, :missing_required_arguments}
+    end
+  end
+
+  defp parse_options([], result), do: {:ok, result}
+
+  defp parse_options([{:filesystem_type, type} | t], result) do
+    if supported_filesystem_type?(type) do
+      parse_options(t, ["-t", Atom.to_string(type) | result])
+    else
+      {:error, :unknown_filesystem_type}
+    end
+  end
+
   defp parse_options([{key, value} | t], result) do
     option_pair = "#{Atom.to_string(key)}=#{value}"
-    parse_options(t, [option_pair | result])
+
+    if t == [] do
+      parse_options(t, ["-o", option_pair | result])
+    else
+      parse_options(t, [option_pair | result])
+    end
   end
 
   @doc """
