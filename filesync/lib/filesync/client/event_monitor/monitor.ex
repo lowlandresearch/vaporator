@@ -25,11 +25,6 @@ defmodule Filesync.Client.EventMonitor do
   https://hexdocs.pm/file_system/readme.html --> Example with GenServer
   """
   def init(paths) do
-    Logger.info(
-      "#{__MODULE__} initializing for:\n" <>
-        "  paths: #{paths}"
-    )
-
     # Added to ensure module finishes initialization
     GenServer.cast(__MODULE__, {:monitor, paths})
     {:ok, paths}
@@ -49,6 +44,7 @@ defmodule Filesync.Client.EventMonitor do
     None
   """
   def monitor(paths) do
+
     paths
     |> Enum.map(&cache_client/1)
     |> Enum.map(fn {:ok, path} -> path end)
@@ -59,6 +55,8 @@ defmodule Filesync.Client.EventMonitor do
     poll_interval = SettingStore.get!(:client, :poll_interval)
 
     Process.sleep(poll_interval)
+
+    paths = SettingStore.get!(:client, :sync_dirs)
     monitor(paths)
   end
 
