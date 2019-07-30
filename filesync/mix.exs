@@ -40,7 +40,10 @@ defmodule Filesync.MixProject do
       {:dir_walker, "~> 0.0.8"},
       {:gen_stage, "~> 0.11"},
       {:excoveralls, "~> 0.10", only: :test},
-      {:exvcr, "~> 0.10", only: :test}
+      {:exvcr, "~> 0.10", only: :test},
+
+      # Intra-Project Dependencies
+      {:setting_store, path: "../setting_store"}
     ]
   end
 end

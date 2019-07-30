@@ -14,8 +14,6 @@ defmodule Filesync.Client do
 
   require Logger
 
-  alias Vaporator.Settings
-
   @doc """
   Determines Cloud sync action for the Client generated event
 
@@ -26,7 +24,7 @@ defmodule Filesync.Client do
   def process_event({:created, {root, path}}) do
     if not File.dir?(path) and File.exists?(path) do
 
-      cloud = Settings.get(:cloud)
+      cloud = SettingStore.get(:cloud)
 
       cloud_path = Filesync.Cloud.get_path(
         cloud.provider, root, path, cloud.root_path
@@ -59,7 +57,7 @@ defmodule Filesync.Client do
   def process_event({:updated, {root, path}}) do
     if not File.dir?(path) and File.exists?(path) do
 
-      cloud = Settings.get(:cloud)
+      cloud = SettingStore.get(:cloud)
 
       cloud_path = Filesync.Cloud.get_path(
         cloud.provider, root, path, cloud.root_path
@@ -90,7 +88,7 @@ defmodule Filesync.Client do
 
   def process_event({:removed, {root, path}}) do
 
-    cloud = Settings.get(:cloud)
+    cloud = SettingStore.get(:cloud)
 
     cloud_path = Filesync.Cloud.get_path(
       cloud.provider, root, path, cloud.root_path
@@ -125,7 +123,7 @@ defmodule Filesync.Client do
   """
   def which_sync_dir!(path) do
 
-    sync_dirs = Settings.get!(:client, :sync_dirs)
+    sync_dirs = SettingStore.get!(:client, :sync_dirs)
 
     sync_dirs
     |> Enum.filter(
@@ -149,7 +147,9 @@ defmodule Filesync.Client do
                 |> Path.split()
                 |> List.first()
 
-    sync_dirs()
+    sync_dirs = SettingStore.get!(:client, :sync_dirs)
+
+    sync_dirs
     |> Enum.filter(fn x ->
         String.ends_with?(x, path_root)
       end)

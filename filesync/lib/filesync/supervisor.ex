@@ -15,7 +15,7 @@ defmodule Filesync.Supervisor do
   use Supervisor
 
   alias Filesync.Client
-  alias Vaporator.Settings
+  alias Filesync.Settings
 
   def start_link(_args) do
     Supervisor.start_link(__MODULE__, [], name: __MODULE__)
@@ -24,7 +24,7 @@ defmodule Filesync.Supervisor do
   def init(_args) do
 
     Settings.init()
-    sync_dirs = Settings.get!(:client, :sync_dirs)
+    sync_dirs = SettingStore.get!(:client, :sync_dirs)
 
     children = [
       %{

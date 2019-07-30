@@ -11,7 +11,6 @@ defmodule Filesync.Client.EventMonitor do
   alias Filesync.Cloud
   alias Filesync.Client
   alias Filesync.Cache
-  alias Vaporator.Settings
 
   def start_link(paths) do
     Logger.info("#{__MODULE__} starting")
@@ -57,7 +56,7 @@ defmodule Filesync.Client.EventMonitor do
 
     sync_files()
 
-    poll_interval = Settings.get!(:client, :poll_interval)
+    poll_interval = SettingStore.get!(:client, :poll_interval)
 
     Process.sleep(poll_interval)
     monitor(paths)
@@ -103,7 +102,7 @@ defmodule Filesync.Client.EventMonitor do
   def cache_client(path) do
     local_root = Path.absname(path)
 
-    cloud = Settings.get!(:cloud)
+    cloud = SettingStore.get(:cloud)
 
     Logger.info("#{__MODULE__} STARTED client cache of '#{local_root}'")
 
@@ -141,7 +140,7 @@ defmodule Filesync.Client.EventMonitor do
   """
   def cache_cloud(path) do
 
-    cloud = Settings.get(:cloud)
+    cloud = SettingStore.get(:cloud)
 
     Logger.info("#{__MODULE__} STARTED cloud cache of '#{cloud.root_path}'")
 

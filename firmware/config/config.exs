@@ -19,10 +19,6 @@ config :nerves_hub,
   org: "lowland_research",
   remote_iex: true
 
-config :persistent_storage, tables: [
-  settings: [path: "/root/storage/settings"]
-]
-
 config :tzdata, :data_dir, "/root/etc/elixir_tzdata_data"
 
 # Use shoehorn to start the main application. See the shoehorn
@@ -33,8 +29,7 @@ config :shoehorn,
   init: [
     :nerves_runtime,
     :nerves_init_gadget,
-    :nerves_firmware_ssh,
-    :persistent_storage
+    :nerves_firmware_ssh
   ],
   app: Mix.Project.config()[:app]
 
@@ -46,5 +41,6 @@ config :logger, backends: [RingLogger]
 
 if Mix.target() != :host do
   import_config "target.exs"
+  import_config "../../setting_store/config/config.exs"
   import_config "../../filesync/config/config.exs"
 end

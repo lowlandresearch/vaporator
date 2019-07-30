@@ -3,7 +3,7 @@ defmodule Filesync.Client.EventMonitorTest do
 
   alias Filesync.Client.EventMonitor
 
-  @sync_dirs Settings.get!(:client, :sync_dirs)
+  @sync_dirs SettingStore.get!(:client, :sync_dirs)
 
   setup_all do
     Filesync.Client.EventMonitor.start_link(["./test"])

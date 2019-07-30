@@ -45,13 +45,9 @@ defmodule Firmware.MixProject do
       {:ring_logger, "~> 0.8.0"},
       {:toolshed, "~> 0.2.10"},
       {:dhcp_server, "~> 0.7.0"},
-      {
-        :persistent_storage,
-        github: "cellulose/persistent_storage",
-        tag: "v0.10.1"
-      },
 
       # Intra-Project Dependencies
+      {:setting_store, path: "../setting_store"},
       {:filesync, path: "../filesync"},
 
       # Dependencies for all targets except :host
