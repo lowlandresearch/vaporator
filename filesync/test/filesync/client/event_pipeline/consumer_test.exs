@@ -4,7 +4,7 @@ defmodule Filesync.Client.EventConsumerTest do
 
   alias Filesync.Client.EventConsumer
 
-  @cloud %FileSync.Cloud.Dropbox{
+  @cloud %Filesync.Cloud.Dropbox{
     access_token: Application.get_env(:filesync, :dbx_token)
   }
   @cloud_root Application.get_env(:filesync, :cloud_root)

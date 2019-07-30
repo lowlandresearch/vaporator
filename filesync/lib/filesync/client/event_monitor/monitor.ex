@@ -8,14 +8,12 @@ defmodule Filesync.Client.EventMonitor do
   use GenServer
   require Logger
 
+  import PersistentStorage, only: [get: 3]
+
   alias Filesync.Cloud
   alias Filesync.Client
   alias Filesync.Cache
 
-  @cloud %FileSync.Cloud.Dropbox{
-    access_token: Application.get_env(:filesync, :dbx_token)
-  }
-  @cloud_root Application.get_env(:filesync, :cloud_root)
   @poll_interval Application.get_env(:filesync, :poll_interval)
 
   def start_link(paths) do
@@ -106,6 +104,8 @@ defmodule Filesync.Client.EventMonitor do
   def cache_client(path) do
     local_root = Path.absname(path)
 
+    cloud = PersistentStorage.get(:settings, :cloud)
+
     Logger.info("#{__MODULE__} STARTED client cache of '#{local_root}'")
 
     case File.stat(local_root) do
@@ -114,7 +114,7 @@ defmodule Filesync.Client.EventMonitor do
         |> Enum.map(fn path ->
             hashes = Map.merge(
                         %FileHashes{},
-                        %{client: Cloud.get_hash!(@cloud, path)}
+                        %{client: Cloud.get_hash!(cloud.provider, path)}
                     )
 
             {path, hashes}
@@ -142,12 +142,14 @@ defmodule Filesync.Client.EventMonitor do
   """
   def cache_cloud(path) do
 
-    Logger.info("#{__MODULE__} STARTED cloud cache of '#{@cloud_root}'")
+    cloud = PersistentStorage.get(:settings, :cloud)
+
+    Logger.info("#{__MODULE__} STARTED cloud cache of '#{cloud.root_path}'")
 
     {:ok, %{results: meta}} = Cloud.list_folder(
-                                @cloud,
+                                cloud.provider,
                                 Path.join(
-                                  @cloud_root,
+                                  cloud.root_path,
                                   Path.basename(path)
                                 ),
                                 %{recursive: true}
@@ -157,15 +159,15 @@ defmodule Filesync.Client.EventMonitor do
     |> Enum.filter(fn %{type: t} -> t == :file end)
     |> Enum.map(fn %{path: p, meta: m} ->
         {
-          Client.get_local_path!(@cloud_root, p),
+          Client.get_local_path!(cloud.root_path, p),
           %{cloud: m["content_hash"]}
         }
       end)
     |> Enum.map(&Cache.update/1)
 
-    {:ok, @cloud_root}
+    {:ok, cloud.root_path}
 
-    Logger.info("#{__MODULE__} COMPLETED cloud cache of '#{@cloud_root}'")
+    Logger.info("#{__MODULE__} COMPLETED cloud cache of '#{cloud.root_path}'")
   end
 
   @doc """

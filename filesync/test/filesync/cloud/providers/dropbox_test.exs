@@ -1,8 +1,8 @@
-defmodule FileSync.Cloud.DropboxTest do
+defmodule Filesync.Cloud.DropboxTest do
   use ExUnit.Case, async: false
   use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
 
-  @dbx %FileSync.Cloud.Dropbox{
+  @dbx %Filesync.Cloud.Dropbox{
     access_token: Application.get_env(:filesync, :dbx_token)
   }
   @test_dir Application.get_env(:filesync, :test_dir)
@@ -116,7 +116,7 @@ defmodule FileSync.Cloud.DropboxTest do
     File.write(@test_files.client.created_file, "test data")
 
     hash = "824979ede959fefe53082bc14502f8bf041d53997ffb65cbbe3ade5803f7fb76"
-    assert FileSync.Cloud.Dropbox.dbx_hash!(@test_files.client.created_file) == hash
+    assert Filesync.Cloud.Dropbox.dbx_hash!(@test_files.client.created_file) == hash
   end
 
   test "update a file" do

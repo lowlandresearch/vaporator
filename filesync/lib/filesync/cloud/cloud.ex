@@ -250,6 +250,7 @@ defprotocol Filesync.Cloud do
     {:error, {:unhandled_status, {:status_code, code (int)}, body (binary)}}
   """
   def file_move(dbx, from_path, to_path, args \\ %{})
+
 end
 
 defmodule Filesync.Cloud.Meta do

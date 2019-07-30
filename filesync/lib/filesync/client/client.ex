@@ -1,6 +1,4 @@
 defmodule Filesync.Client do
-  require Logger
-
   @moduledoc """
   Provides a single interface for:
     - Receiving events streamed from Client and queues them into
@@ -14,10 +12,9 @@ defmodule Filesync.Client do
     - :removed -> Removes file from Cloud
   """
 
-  @cloud %FileSync.Cloud.Dropbox{
-    access_token: Application.get_env(:filesync, :dbx_token)
-  }
-  @cloud_root Application.get_env(:filesync, :cloud_root)
+  require Logger
+
+  import PersistentStorage, only: [get: 3]
 
   @doc """
   Determines Cloud sync action for the Client generated event
@@ -28,8 +25,11 @@ defmodule Filesync.Client do
   """
   def process_event({:created, {root, path}}) do
     if not File.dir?(path) and File.exists?(path) do
+
+      cloud = PersistentStorage.get(:settings, :cloud)
+
       cloud_path = Filesync.Cloud.get_path(
-        @cloud, root, path, @cloud_root
+        cloud.provider, root, path, cloud.root_path
       )
       Logger.info(
         "#{__MODULE__} CREATED event:\n" <>
@@ -38,7 +38,7 @@ defmodule Filesync.Client do
       )
 
       case Filesync.Cloud.file_upload(
-            @cloud,
+            cloud.provider,
             path,
             cloud_path
           ) do
@@ -58,8 +58,11 @@ defmodule Filesync.Client do
 
   def process_event({:updated, {root, path}}) do
     if not File.dir?(path) and File.exists?(path) do
+
+      cloud = PersistentStorage.get(:settings, :cloud)
+
       cloud_path = Filesync.Cloud.get_path(
-        @cloud, root, path, @cloud_root
+        cloud.provider, root, path, cloud.root_path
       )
       Logger.info("#{__MODULE__} MODIFIED event:\n" <>
         "  local path: #{path}\n" <>
@@ -67,7 +70,7 @@ defmodule Filesync.Client do
       )
 
       case Filesync.Cloud.file_update(
-            @cloud,
+            cloud.provider,
             path,
             cloud_path
           ) do
@@ -86,8 +89,11 @@ defmodule Filesync.Client do
   end
 
   def process_event({:removed, {root, path}}) do
+
+    cloud = PersistentStorage.get(:settings, :cloud)
+
     cloud_path = Filesync.Cloud.get_path(
-      @cloud, root, path, @cloud_root
+      cloud.provider, root, path, cloud.root_path
     )
     Logger.info("#{__MODULE__} DELETED event:\n" <>
       "  local path: #{path}\n" <>
@@ -96,12 +102,12 @@ defmodule Filesync.Client do
 
     if File.dir?(path) do
       Filesync.Cloud.folder_remove(
-        @cloud,
+        cloud.provider,
         cloud_path
       )
     else
       Filesync.Cloud.file_remove(
-        @cloud,
+        cloud.provider,
         cloud_path
       )
     end

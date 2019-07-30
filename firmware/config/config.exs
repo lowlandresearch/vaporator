@@ -19,6 +19,12 @@ config :nerves_hub,
   org: "lowland_research",
   remote_iex: true
 
+config :persistent_storage, tables: [
+  settings: [path: "/root/storage/settings"]
+]
+
+config :tzdata, :data_dir, "/root/etc/elixir_tzdata_data"
+
 # Use shoehorn to start the main application. See the shoehorn
 # docs for separating out critical OTP applications such as those
 # involved with firmware updates.
@@ -27,7 +33,8 @@ config :shoehorn,
   init: [
     :nerves_runtime,
     :nerves_init_gadget,
-    :nerves_firmware_ssh
+    :nerves_firmware_ssh,
+    :persistent_storage
   ],
   app: Mix.Project.config()[:app]
 

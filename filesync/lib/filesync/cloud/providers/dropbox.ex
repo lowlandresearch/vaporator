@@ -1,4 +1,4 @@
-defmodule FileSync.Cloud.Dropbox do
+defmodule Filesync.Cloud.Dropbox do
   use Timex
   require Logger
 
@@ -48,7 +48,7 @@ defmodule FileSync.Cloud.Dropbox do
 
   Args:
 
-  - dbx (FileSync.Cloud.Dropbox): Dropbox client
+  - dbx (Filesync.Cloud.Dropbox): Dropbox client
   - url_path (binary): URL path to be added to @content_url base URL
   - local_path (binary): Local file system path
   - api_args (Map): Dropbox API file transfer arguments to be
@@ -78,7 +78,7 @@ defmodule FileSync.Cloud.Dropbox do
 
   Args:
 
-  - dbx (FileSync.Cloud.Dropbox): Dropbox client
+  - dbx (Filesync.Cloud.Dropbox): Dropbox client
   - url_path (binary): URL path to be added to @content_url base URL
   - data (Map): POST body data
   - api_args (Map): Dropbox API file transfer arguments to be
@@ -549,48 +549,48 @@ end
 # Cloud implementation
 # ----------------------------------------------------------------------
 
-defimpl Filesync.Cloud, for: FileSync.Cloud.Dropbox do
+defimpl Filesync.Cloud, for: Filesync.Cloud.Dropbox do
   require Logger
 
   def get_hash!(_dbx, local_path) do
-    FileSync.Cloud.Dropbox.dbx_hash!(local_path)
+    Filesync.Cloud.Dropbox.dbx_hash!(local_path)
   end
 
   def get_path(_dbx, local_root, local_path, dbx_root) do
-    FileSync.Cloud.Dropbox.get_dbx_path(local_root, local_path, dbx_root)
+    Filesync.Cloud.Dropbox.get_dbx_path(local_root, local_path, dbx_root)
   end
 
   def list_folder(dbx, path, args \\ %{}) do
-    FileSync.Cloud.Dropbox.list_folder(dbx, path, args)
+    Filesync.Cloud.Dropbox.list_folder(dbx, path, args)
   end
 
   def get_metadata(dbx, path, args \\ %{}) do
-    FileSync.Cloud.Dropbox.get_metadata(dbx, path, args)
+    Filesync.Cloud.Dropbox.get_metadata(dbx, path, args)
   end
 
   def file_download(dbx, path, dbx_api_args \\ %{}) do
-    FileSync.Cloud.Dropbox.file_download(dbx, path, dbx_api_args)
+    Filesync.Cloud.Dropbox.file_download(dbx, path, dbx_api_args)
   end
 
   def file_upload(dbx, local_path, dbx_path, args \\ %{}) do
-    FileSync.Cloud.Dropbox.file_upload(dbx, local_path, dbx_path, args)
+    Filesync.Cloud.Dropbox.file_upload(dbx, local_path, dbx_path, args)
   end
 
   def file_update(dbx, local_path, dbx_path, args \\ %{}) do
-    FileSync.Cloud.Dropbox.file_update(dbx, local_path, dbx_path, args)
+    Filesync.Cloud.Dropbox.file_update(dbx, local_path, dbx_path, args)
   end
 
   def file_remove(dbx, path, args \\ %{}) do
-    FileSync.Cloud.Dropbox.file_remove(dbx, path, args)
+    Filesync.Cloud.Dropbox.file_remove(dbx, path, args)
   end
 
   def folder_remove(dbx, path, args \\ %{}), do: file_remove(dbx, path, args)
 
   def file_copy(dbx, from_path, to_path, args \\ %{}) do
-    FileSync.Cloud.Dropbox.file_copy(dbx, from_path, to_path, args)
+    Filesync.Cloud.Dropbox.file_copy(dbx, from_path, to_path, args)
   end
 
   def file_move(dbx, from_path, to_path, args \\ %{}) do
-    FileSync.Cloud.Dropbox.file_move(dbx, from_path, to_path, args)
+    Filesync.Cloud.Dropbox.file_move(dbx, from_path, to_path, args)
   end
 end
