@@ -6,6 +6,11 @@ defmodule Firmware.Application do
   use Application
 
   def start(_type, _args) do
+
+    alias Filesync.Settings
+
+    Settings.init()
+    
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     dhcp_options = [

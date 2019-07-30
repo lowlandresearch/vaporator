@@ -1,12 +1,23 @@
 defmodule SettingStore do
 
+  def exists?(table) do
+    case PersistentStorage.get(:settings, table) do
+      nil -> false
+      _ -> true
+    end
+  end
+
   def create(table, value) do
-    PersistentStorage.put(
-      :settings,
-      table,
-      value
-    )
-    {:ok, :setting_created}
+    if not exists?(table) do
+      PersistentStorage.put(
+        :settings,
+        table,
+        value
+      )
+      {:ok, :setting_created}
+    else
+      {:ok, :settings_exist}
+    end
   end
   
   @doc """
