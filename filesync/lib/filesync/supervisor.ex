@@ -15,12 +15,16 @@ defmodule Filesync.Supervisor do
   use Supervisor
 
   alias Filesync.Client
+  alias Vaporator.Settings
 
   def start_link(_args) do
     Supervisor.start_link(__MODULE__, [], name: __MODULE__)
   end
 
   def init(_args) do
+
+    Settings.init()
+    sync_dirs = Settings.get!(:client, :sync_dirs)
 
     children = [
       %{
@@ -47,11 +51,11 @@ defmodule Filesync.Supervisor do
         start: {
           Client.EventMonitor,
           :start_link,
-          [Client.sync_dirs]
+          [sync_dirs]
         }
       }
     ]
 
-   Supervisor.init(children, strategy: :one_for_one)
+    Supervisor.init(children, strategy: :one_for_one)
   end
 end

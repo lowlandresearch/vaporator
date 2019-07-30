@@ -14,7 +14,7 @@ defmodule Filesync.Client do
 
   require Logger
 
-  import PersistentStorage, only: [get: 3]
+  alias Vaporator.Settings
 
   @doc """
   Determines Cloud sync action for the Client generated event
@@ -26,7 +26,7 @@ defmodule Filesync.Client do
   def process_event({:created, {root, path}}) do
     if not File.dir?(path) and File.exists?(path) do
 
-      cloud = PersistentStorage.get(:settings, :cloud)
+      cloud = Settings.get(:cloud)
 
       cloud_path = Filesync.Cloud.get_path(
         cloud.provider, root, path, cloud.root_path
@@ -59,7 +59,7 @@ defmodule Filesync.Client do
   def process_event({:updated, {root, path}}) do
     if not File.dir?(path) and File.exists?(path) do
 
-      cloud = PersistentStorage.get(:settings, :cloud)
+      cloud = Settings.get(:cloud)
 
       cloud_path = Filesync.Cloud.get_path(
         cloud.provider, root, path, cloud.root_path
@@ -90,7 +90,7 @@ defmodule Filesync.Client do
 
   def process_event({:removed, {root, path}}) do
 
-    cloud = PersistentStorage.get(:settings, :cloud)
+    cloud = Settings.get(:cloud)
 
     cloud_path = Filesync.Cloud.get_path(
       cloud.provider, root, path, cloud.root_path
@@ -118,37 +118,16 @@ defmodule Filesync.Client do
   end
 
   @doc """
-  Currently, retrieves List of absolute paths from Application
-  variable :client_sync_dirs.
-
-  TODO: pull these from a runtime configuration database of some sort.
-
-  Args:
-    None
-
-  Returns:
-    sync_dirs (list): List of absolute paths to directories
-  """
-  def sync_dirs do
-
-    case Application.get_env(:filesync, :client_sync_dirs) do
-      nil ->
-        Logger.error(":client_sync_dirs NOT configured")
-        []
-
-      dirs ->
-        dirs
-    end
-  end
-
-  @doc """
   To which sync directory does this path belong?
 
   Args:
     - path (binary): 
   """
   def which_sync_dir!(path) do
-    sync_dirs()
+
+    sync_dirs = Settings.get!(:client, :sync_dirs)
+
+    sync_dirs
     |> Enum.filter(
       fn root -> String.starts_with?(path, root) end
     )

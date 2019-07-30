@@ -8,13 +8,10 @@ defmodule Filesync.Client.EventMonitor do
   use GenServer
   require Logger
 
-  import PersistentStorage, only: [get: 3]
-
   alias Filesync.Cloud
   alias Filesync.Client
   alias Filesync.Cache
-
-  @poll_interval Application.get_env(:filesync, :poll_interval)
+  alias Vaporator.Settings
 
   def start_link(paths) do
     Logger.info("#{__MODULE__} starting")
@@ -60,7 +57,9 @@ defmodule Filesync.Client.EventMonitor do
 
     sync_files()
 
-    Process.sleep(@poll_interval)
+    poll_interval = Settings.get!(:client, :poll_interval)
+
+    Process.sleep(poll_interval)
     monitor(paths)
   end
 
@@ -104,7 +103,7 @@ defmodule Filesync.Client.EventMonitor do
   def cache_client(path) do
     local_root = Path.absname(path)
 
-    cloud = PersistentStorage.get(:settings, :cloud)
+    cloud = Settings.get!(:cloud)
 
     Logger.info("#{__MODULE__} STARTED client cache of '#{local_root}'")
 
@@ -142,7 +141,7 @@ defmodule Filesync.Client.EventMonitor do
   """
   def cache_cloud(path) do
 
-    cloud = PersistentStorage.get(:settings, :cloud)
+    cloud = Settings.get(:cloud)
 
     Logger.info("#{__MODULE__} STARTED cloud cache of '#{cloud.root_path}'")
 
