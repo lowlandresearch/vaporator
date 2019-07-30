@@ -14,6 +14,29 @@ defmodule Filesync.Client do
 
   require Logger
 
+  def set_poll_interval(interval) when is_integer(interval) do
+    if interval < 10000 do
+      {:error, "interval must be >= 10 seconds"}
+    else
+      SettingStore.update(:client, :poll_interval, interval)
+    end
+  end
+
+  def set_poll_interval(_) do
+    {:error, "interval must be an integer"}
+  end
+
+  def add_sync_dir(path) do
+    setting = SettingStore.get!(:client, :sync_dirs)
+    SettingStore.update(:client, :sync_dirs, [path | setting])
+  end
+
+  def remove_sync_dir(path) do
+    setting = SettingStore.get!(:client, :sync_dirs)
+    new_setting = List.delete(setting, path)
+    SettingStore.update(:client, :sync_dirs, new_setting)
+  end
+
   @doc """
   Determines Cloud sync action for the Client generated event
 
@@ -27,7 +50,7 @@ defmodule Filesync.Client do
       cloud = SettingStore.get(:cloud)
 
       cloud_path = Filesync.Cloud.get_path(
-        cloud.provider, root, path, cloud.root_path
+        cloud.provider, root, path, cloud.provider.root_path
       )
       Logger.info(
         "#{__MODULE__} CREATED event:\n" <>
@@ -60,7 +83,7 @@ defmodule Filesync.Client do
       cloud = SettingStore.get(:cloud)
 
       cloud_path = Filesync.Cloud.get_path(
-        cloud.provider, root, path, cloud.root_path
+        cloud.provider, root, path, cloud.provider.root_path
       )
       Logger.info("#{__MODULE__} MODIFIED event:\n" <>
         "  local path: #{path}\n" <>
@@ -91,7 +114,7 @@ defmodule Filesync.Client do
     cloud = SettingStore.get(:cloud)
 
     cloud_path = Filesync.Cloud.get_path(
-      cloud.provider, root, path, cloud.root_path
+      cloud.provider, root, path, cloud.provider.root_path
     )
     Logger.info("#{__MODULE__} DELETED event:\n" <>
       "  local path: #{path}\n" <>
