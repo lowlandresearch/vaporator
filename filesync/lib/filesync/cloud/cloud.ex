@@ -251,6 +251,11 @@ defprotocol Filesync.Cloud do
   """
   def file_move(dbx, from_path, to_path, args \\ %{})
 
+  @doc """
+  Updates Cloud settings
+  """
+  def update_setting(dbx, key, value)
+
 end
 
 defmodule Filesync.Cloud.Meta do

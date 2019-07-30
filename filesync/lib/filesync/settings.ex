@@ -3,12 +3,10 @@ defmodule Filesync.Settings.Client do
 end
 
 defmodule Filesync.Settings.Cloud do
+
   alias Filesync.Cloud.Dropbox
 
-  defstruct [
-      root_path: nil,
-      provider: %Dropbox{access_token: nil}
-    ]
+  defstruct [provider: %Dropbox{}]
 end
 
 defmodule Filesync.Settings do
@@ -20,9 +18,3 @@ defmodule Filesync.Settings do
     SettingStore.create(:cloud, %Cloud{})
   end
 end
-
-
-
-# defmodule Filesync.Settings.Cloud do
-
-# end

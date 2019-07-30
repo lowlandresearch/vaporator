@@ -12,8 +12,7 @@ defmodule Filesync.Cloud.Dropbox do
 
   alias Filesync.Cloud
 
-  @enforce_keys [:access_token]
-  defstruct [:access_token]
+  defstruct [access_token: nil, root_path: nil]
 
   @api_url Application.get_env(:filesync, :dbx_api_url)
   @content_url Application.get_env(:filesync, :dbx_content_url)
@@ -543,6 +542,19 @@ defmodule Filesync.Cloud.Dropbox do
       )
     )
   end
+
+  def update_setting(dbx, key, value) do
+    setting = SettingStore.get!(:cloud, :provider) 
+
+    new_setting = Map.replace!(setting, key, value)
+
+    SettingStore.update(
+      :cloud,
+      :provider,
+      Map.merge(dbx, new_setting)
+    )
+  end
+
 end
 
 # ----------------------------------------------------------------------
@@ -592,5 +604,9 @@ defimpl Filesync.Cloud, for: Filesync.Cloud.Dropbox do
 
   def file_move(dbx, from_path, to_path, args \\ %{}) do
     Filesync.Cloud.Dropbox.file_move(dbx, from_path, to_path, args)
+  end
+
+  def update_setting(dbx, key, value) do
+    Filesync.Cloud.Dropbox.update_setting(dbx, key, value)
   end
 end
