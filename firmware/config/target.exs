@@ -41,7 +41,7 @@ key_mgmt = System.get_env("NERVES_NETWORK_KEY_MGMT") || "WPA-PSK"
 
 config :nerves_network, :default,
   eth0: [
-    ipv4_address: "192.168.254.1",
+    ipv4_address: "10.0.0.1",
     ipv4_subnet_mask: "255.255.255.0"
   ],
   wlan0: [

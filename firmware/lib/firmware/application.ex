@@ -14,10 +14,10 @@ defmodule Firmware.Application do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     dhcp_options = [
-      gateway: "192.168.254.0",
+      gateway: "10.0.0.1",
       netmask: "255.255.255.0",
-      range: {"192.168.254.1", "192.168.254.10"},
-      domain_servers: ["192.168.254.1"]
+      range: {"10.0.0.1", "10.0.0.10"},
+      domain_servers: ["10.0.0.1"]
     ]
 
     opts = [strategy: :one_for_one, name: Firmware.Supervisor]
