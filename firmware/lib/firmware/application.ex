@@ -25,7 +25,8 @@ defmodule Firmware.Application do
       [
         {DHCPServer, ["eth0", dhcp_options]},
         NervesHub.Supervisor,
-        Filesync.Supervisor
+        Filesync.Supervisor,
+        Firmware.StatusMonitor
       ]
 
     Supervisor.start_link(children, opts)

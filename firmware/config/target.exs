@@ -30,6 +30,9 @@ config :nerves_firmware_ssh,
 # Only enable this for prod if you understand the risks.
 node_name = if Mix.env() != :prod, do: "firmware"
 
+config :nerves_leds,
+  names: [connected: "led0", alert: "led1"]
+
 # Configure wifi connection
 config :nerves_network,
   regulatory_domain: "US"
