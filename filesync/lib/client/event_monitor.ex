@@ -8,9 +8,7 @@ defmodule Filesync.Client.EventMonitor do
   use GenServer
   require Logger
 
-  alias Filesync.Cloud
-  alias Filesync.Client
-  alias Filesync.Cache
+  alias Filesync.{Client, Cloud, Cache, Cache.FileHashes}
 
   def start_link(paths) do
     Logger.info("#{__MODULE__} starting")

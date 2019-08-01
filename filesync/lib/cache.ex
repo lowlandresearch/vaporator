@@ -1,16 +1,11 @@
-defmodule FileHashes do
-  @moduledoc """
-  Struct for file hashes
-  """
-  defstruct [:client, :cloud]
-end
-
 defmodule Filesync.Cache do
   @moduledoc """
   Cache for storing Client and Cloud file hashes that will be
   used to determine what should be synced to Cloud.
   """
   use GenServer
+
+  alias Filesync.Cache.FileHashes
 
   def start_link(opts) do
     GenServer.start_link(__MODULE__, [], opts)

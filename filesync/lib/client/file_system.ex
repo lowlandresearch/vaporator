@@ -62,37 +62,8 @@ defmodule Filesync.Client.FileSystem do
     end
   end
 
-  @doc """
-  Mounts a filesystem.
-
-  Returns `{:ok, stdio}`
-
-  ## Examples
-
-    iex> Filesync.Client.FileSystem.mount([os_type: :win_xp, mount_point: "/path/dir"])
-    {:ok, stdio}
-  """
-  def mount(mount_point, opts) do
-    {:ok, opts} = parse_options(opts, [])
-    udisksctl(["mount", "-p", mount_point | opts])
-  end
-
-  @doc """
-  Unmounts a mounted filesystem.
-
-  Returns `{:ok, stdio}`
-
-  ## Examples
-
-    iex> Filesync.Client.FileSystem.unmount("/path/dir")
-    {:ok, stdio}
-  """
-  def unmount(mount_point) do
-    udisksctl(["unmount", "-p" | mount_point])
-  end
-
-  def udisksctl(opts) do
-    case System.cmd("udisksctl", opts, stderr_to_stdout: true) do
+  def smbclient(server, share, opts) do
+    case System.cmd("smclient", opts, stderr_to_stdout: true) do
       {response, 0} -> {:ok, response}
       {response, _} -> {:error, response}
     end
