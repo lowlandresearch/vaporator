@@ -3,7 +3,7 @@ defmodule Firmware.StatusMonitor do
 
   require Logger
 
-  alias Nerves.{Network, Leds}
+  alias Firmware.Network
 
   @interval 500
 
@@ -16,29 +16,6 @@ defmodule Firmware.StatusMonitor do
 
     Process.send_after(self(), :monitor, @interval)
     {:ok, state}
-  end
-
-  defp network_interface_up?(interface) do
-    case Network.status(interface) do
-      %{is_up: true, operstate: :down} -> false
-      %{is_up: false} -> false
-      _ -> true
-    end
-  end
-
-  defp ethernet_interface_up? do
-    network_interface_up?("eth0")
-  end
-
-  defp wireless_interface_up? do
-    network_interface_up?("wlan0")
-  end
-
-  defp internet_reachable? do
-    match?(
-      {:ok, {:hostent, 'google.com', [], :inet, 4, _}},
-      :inet_res.gethostbyname('google.com')
-    )
   end
 
   defp filesync_settings_set? do
@@ -66,9 +43,9 @@ defmodule Firmware.StatusMonitor do
 
   defp system_ok? do
     system_settings_set?()
-    and ethernet_interface_up?()
-    and wireless_interface_up?()
-    and internet_reachable?()
+    and Network.Ethernet.interface_up?()
+    and Network.Wireless.interface_up?()
+    and Network.internet_reachable?()
   end
 
   @doc """
@@ -94,7 +71,7 @@ defmodule Firmware.StatusMonitor do
 
     status = get_system_status()
 
-    Leds.set(status)
+    Nerves.Leds.set(status)
 
     Process.send_after(self(), :monitor, @interval)
 
