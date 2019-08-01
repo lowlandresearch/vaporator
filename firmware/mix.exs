@@ -58,7 +58,7 @@ defmodule Firmware.MixProject do
       {:nerves_leds, "~> 0.8.0"},
       
       # Dependencies for specific targets
-      {:vaporator_system_rpi3, path: "../../vaporator_system_rpi3", runtime: false, targets: :rpi3}
+      {:vaporator_system_rpi3,"~> 0.1.0", runtime: false, targets: :rpi3}
     ]
   end
 
