@@ -12,13 +12,15 @@ defmodule Filesync.Client do
     - :removed -> Removes file from Cloud
   """
 
+  alias Filesync.Client.Settings
+
   require Logger
 
   def set_poll_interval(interval) when is_integer(interval) do
     if interval < 10000 do
       {:error, "interval must be >= 10 seconds"}
     else
-      SettingStore.put(:client, :poll_interval, interval)
+      Settings.put(:poll_interval, interval)
     end
   end
 
@@ -28,13 +30,13 @@ defmodule Filesync.Client do
 
   def add_sync_dir(path) do
     setting = SettingStore.get!(:client, :sync_dirs)
-    SettingStore.put(:client, :sync_dirs, [path | setting])
+    Settings.put(:sync_dirs, [path | setting])
   end
 
   def remove_sync_dir(path) do
-    setting = SettingStore.get!(:client, :sync_dirs)
+    setting = Settings
     new_setting = List.delete(setting, path)
-    SettingStore.put(:client, :sync_dirs, new_setting)
+    Settings.put(:sync_dirs, new_setting)
   end
 
   @doc """

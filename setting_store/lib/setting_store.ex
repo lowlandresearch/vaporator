@@ -48,7 +48,7 @@ defmodule SettingStore do
     put(table, new_setting)
   end
 
-  defp put(table, setting) do
+  def put(table, setting) do
     PersistentStorage.put(:settings, table, setting)
   end
 

@@ -543,18 +543,6 @@ defmodule Filesync.Cloud.Dropbox do
     )
   end
 
-  def update_setting(dbx, key, value) do
-    setting = SettingStore.get!(:cloud, :provider) 
-
-    new_setting = Map.replace!(setting, key, value)
-
-    SettingStore.put(
-      :cloud,
-      :provider,
-      Map.merge(dbx, new_setting)
-    )
-  end
-
 end
 
 # ----------------------------------------------------------------------
@@ -607,6 +595,6 @@ defimpl Filesync.Cloud, for: Filesync.Cloud.Dropbox do
   end
 
   def update_setting(dbx, key, value) do
-    Filesync.Cloud.Dropbox.update_setting(dbx, key, value)
+    Filesync.Cloud.Settings.put(dbx, key, value)
   end
 end

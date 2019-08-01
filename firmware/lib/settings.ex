@@ -1,8 +1,12 @@
 defmodule Firmware.Settings do
 
-  alias Firmware.Network.Wireless
+  alias Firmware.Network
 
   def init do
-    SettingStore.create(:network, %Wireless{})
+    Network.Settings.init()
+  end
+
+  def set? do
+    Network.Settings.set?()
   end
 end
