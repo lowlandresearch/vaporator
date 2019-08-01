@@ -7,7 +7,7 @@ defmodule Firmware.Application do
 
   def start(_type, _args) do
 
-    alias Filesync.Settings
+    alias Firmware.Settings
 
     Settings.init()
     
