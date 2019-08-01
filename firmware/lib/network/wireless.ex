@@ -1,13 +1,40 @@
 defmodule Firmware.Network.Wireless do
+  @moduledoc """
+  Manages Nerves.Network wireless interface.
 
-  defstruct ssid: nil, psk: nil, key_mgmt: :"NONE"
+  key_mgmt types: 
+    - "WPA-PSK"
+    - "NONE"
+  """
+
+  alias Firmware.Network.Wireless.Settings
+
+  @interface "wlan0"
+
+  def init do
+    if Settings.set?() do
+      opts = Settings.get()
+      setup(opts)
+    end
+  end
 
   def setup(opts) do
-    Nerves.Network.setup("wlan0", opts)
-    SettingStore.put(:network, :wireless, opts)
+    case Nerves.Network.setup(@interface, Map.to_list(opts)) do
+      :ok ->
+        Settings.put(opts)
+        {:ok, opts.ssid}
+      _ ->
+        {:error, :bad_settings}
+    end
   end
 
-  def interface_up? do
-    Firmware.Network.interface_up?("wlan0")
+  def scan do
+    Nerves.Network.scan(@interface)
   end
+
+  def up? do
+    Firmware.Network.interface_up?(@interface)
+  end
+
+
 end

@@ -1,11 +1,19 @@
 defmodule Firmware.Network do
 
+  alias Firmware.Network.{Ethernet, Wireless}
+
   def interface_up?(interface) do
     case Nerves.Network.status(interface) do
       %{is_up: true, operstate: :down} -> false
       %{is_up: false} -> false
       _ -> true
     end
+  end
+
+  def up? do
+    Ethernet.up?()
+    and Wireless.up?()
+    and internet_reachable?()
   end
 
   def internet_reachable? do
