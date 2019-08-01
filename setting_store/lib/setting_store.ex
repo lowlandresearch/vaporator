@@ -37,7 +37,11 @@ defmodule SettingStore do
   Retrives current settings
   """
   def get(setting) do
-    PersistentStorage.get(:settings, setting)
+    if exists?(setting) do
+      PersistentStorage.get(:settings, setting)
+    else
+      []
+    end
   end
 
   def get(setting, key) do

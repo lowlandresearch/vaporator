@@ -5,7 +5,12 @@ defmodule Firmware.Settings do
   ]
 
   def init do
-    Enum.map(@default_settings, &SettingStore.put(&1, &2, [overwrite: false]))
+    Enum.map(
+      @default_settings,
+      fn {k, v} ->
+        SettingStore.put(k, v, [overwrite: false])
+      end
+    )
   end
 
   def set? do
