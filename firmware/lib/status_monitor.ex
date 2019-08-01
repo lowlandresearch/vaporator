@@ -90,15 +90,15 @@ defmodule Firmware.StatusMonitor do
 
   # Server
 
-  def handle_info(:monitor, state) do
+  def handle_info(:monitor, _state) do
 
-    current_status = get_system_status()
+    status = get_system_status()
 
-    Leds.set(current_status)
+    Leds.set(status)
 
     Process.send_after(self(), :monitor, @interval)
 
-    {:noreply, current_status}
+    {:noreply, status}
   end
 
 end
