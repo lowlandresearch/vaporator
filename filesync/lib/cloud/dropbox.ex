@@ -548,7 +548,7 @@ defmodule Filesync.Cloud.Dropbox do
 
     new_setting = Map.replace!(setting, key, value)
 
-    SettingStore.update(
+    SettingStore.put(
       :cloud,
       :provider,
       Map.merge(dbx, new_setting)

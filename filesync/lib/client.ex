@@ -18,7 +18,7 @@ defmodule Filesync.Client do
     if interval < 10000 do
       {:error, "interval must be >= 10 seconds"}
     else
-      SettingStore.update(:client, :poll_interval, interval)
+      SettingStore.put(:client, :poll_interval, interval)
     end
   end
 
@@ -28,13 +28,13 @@ defmodule Filesync.Client do
 
   def add_sync_dir(path) do
     setting = SettingStore.get!(:client, :sync_dirs)
-    SettingStore.update(:client, :sync_dirs, [path | setting])
+    SettingStore.put(:client, :sync_dirs, [path | setting])
   end
 
   def remove_sync_dir(path) do
     setting = SettingStore.get!(:client, :sync_dirs)
     new_setting = List.delete(setting, path)
-    SettingStore.update(:client, :sync_dirs, new_setting)
+    SettingStore.put(:client, :sync_dirs, new_setting)
   end
 
   @doc """

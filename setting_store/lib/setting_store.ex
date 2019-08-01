@@ -42,13 +42,13 @@ defmodule SettingStore do
 
   Returns `:ok`
   """
-  def update(table, key, value) do
+  def put(table, key, value) do
     setting = PersistentStorage.get(:settings, table)
     new_setting = Map.replace!(setting, key, value)
-    update(table, new_setting)
+    put(table, new_setting)
   end
 
-  defp update(table, setting) do
+  defp put(table, setting) do
     PersistentStorage.put(:settings, table, setting)
   end
 
