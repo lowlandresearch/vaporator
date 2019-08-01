@@ -22,9 +22,6 @@ defmodule Filesync.Supervisor do
 
   def init(_args) do
 
-    Filesync.Settings.init()
-    sync_dirs = Client.Settings.get(:sync_dirs)
-
     children = [
       %{
         id: EventProducer,
@@ -50,9 +47,10 @@ defmodule Filesync.Supervisor do
         start: {
           Client.EventMonitor,
           :start_link,
-          [sync_dirs]
+          [[]]
         }
-      }
+      },
+      {Task, fn -> Filesync.Settings.init() end}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
