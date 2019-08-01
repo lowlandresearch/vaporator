@@ -7,22 +7,22 @@ defmodule Firmware.Network.Wireless do
     - "NONE"
   """
 
-  alias Firmware.Network.Wireless.Settings
+  alias Firmware.Settings
 
   @interface "wlan0"
 
   def init do
     if Settings.set?() do
-      opts = Settings.get()
+      opts = Settings.get(:wireless)
       setup(opts)
     end
   end
 
   def setup(opts) do
-    case Nerves.Network.setup(@interface, Map.to_list(opts)) do
+    case Nerves.Network.setup(@interface, opts) do
       :ok ->
-        Settings.put(opts)
-        {:ok, opts.ssid}
+        Settings.put(:wireless, opts)
+        {:ok, Keyword.fetch!(opts, :ssid)}
       _ ->
         {:error, :bad_settings}
     end
@@ -35,6 +35,5 @@ defmodule Firmware.Network.Wireless do
   def up? do
     Firmware.Network.interface_up?(@interface)
   end
-
 
 end

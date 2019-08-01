@@ -543,6 +543,12 @@ defmodule Filesync.Cloud.Dropbox do
     )
   end
 
+  def update_setting(_, key, value) do
+    Filesync.Settings.get!(:cloud, :provider)
+    |> Map.replace!(key, value)
+    |> fn x -> Filesync.Settings.put(:cloud, x) end.()
+  end
+
 end
 
 # ----------------------------------------------------------------------
@@ -595,6 +601,6 @@ defimpl Filesync.Cloud, for: Filesync.Cloud.Dropbox do
   end
 
   def update_setting(dbx, key, value) do
-    Filesync.Cloud.Settings.put(dbx, key, value)
+    Filesync.Cloud.Dropbox.update_setting(dbx, key, value)
   end
 end

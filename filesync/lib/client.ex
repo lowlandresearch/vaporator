@@ -12,7 +12,7 @@ defmodule Filesync.Client do
     - :removed -> Removes file from Cloud
   """
 
-  alias Filesync.Client.Settings
+  alias Filesync.Settings
 
   require Logger
 
@@ -29,7 +29,7 @@ defmodule Filesync.Client do
   end
 
   def add_sync_dir(path) do
-    setting = SettingStore.get!(:client, :sync_dirs)
+    setting = Settings.get(:sync_dirs)
     Settings.put(:sync_dirs, [path | setting])
   end
 
