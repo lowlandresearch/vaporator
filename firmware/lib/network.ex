@@ -1,7 +1,7 @@
 defmodule Firmware.Network do
 
   def interface_up?(interface) do
-    case Network.status(interface) do
+    case Nerves.Network.status(interface) do
       %{is_up: true, operstate: :down} -> false
       %{is_up: false} -> false
       _ -> true
