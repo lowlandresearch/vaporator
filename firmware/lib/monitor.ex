@@ -1,4 +1,4 @@
-defmodule Firmware.StatusMonitor do
+defmodule Firmware.Monitor do
   use GenServer
 
   require Logger
@@ -18,34 +18,17 @@ defmodule Firmware.StatusMonitor do
     {:ok, state}
   end
 
-  defp filesync_settings_set? do
-    client_settings_set?() and cloud_settings_set?()
-  end
-
-  defp client_settings_set? do
-    client = SettingStore.get(:client)
-    client.sync_dirs != []
-  end
-
-  defp cloud_settings_set? do
-    cloud = SettingStore.get!(:cloud, :provider)
-    cloud.access_token != nil and cloud.root_path != nil
-  end
-
   @doc """
   Checks if all required settings are set for the system to run.
   
   Returns `boolean`
   """
   def system_settings_set? do
-    filesync_settings_set?()
+    Filesync.Settings.set?() and Firmware.Settings.set?()
   end
 
   defp system_ok? do
-    system_settings_set?()
-    and Network.Ethernet.interface_up?()
-    and Network.Wireless.interface_up?()
-    and Network.internet_reachable?()
+    system_settings_set?() and Network.up?()
   end
 
   @doc """
@@ -68,13 +51,9 @@ defmodule Firmware.StatusMonitor do
   # Server
 
   def handle_info(:monitor, _state) do
-
     status = get_system_status()
-
     Nerves.Leds.set(status)
-
     Process.send_after(self(), :monitor, @interval)
-
     {:noreply, status}
   end
 
