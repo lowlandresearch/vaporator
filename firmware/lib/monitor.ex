@@ -5,7 +5,7 @@ defmodule Firmware.Monitor do
 
   alias Firmware.Network
 
-  @interval 500
+  @interval 5000
 
   def start_link(state) do
     GenServer.start_link(__MODULE__, state)
