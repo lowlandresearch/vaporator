@@ -35,11 +35,11 @@ defmodule Filesync.MixProject do
       {:httpoison, "~> 1.5.0"},
       {:poison, "~> 4.0.1"},
       {:json, "~> 1.3.0"},
-      {:timex, "~> 3.5"},
-      {:ets, "~> 0.7.0"},
+      {:timex, "~> 3.6"},
+      {:ets, "~> 0.7"},
       {:dir_walker, "~> 0.0.8"},
-      {:gen_stage, "~> 0.11"},
-      {:excoveralls, "~> 0.10", only: :test},
+      {:gen_stage, "~> 0.14"},
+      {:excoveralls, "~> 0.11", only: :test},
       {:exvcr, "~> 0.10", only: :test},
 
       # Intra-Project Dependencies
