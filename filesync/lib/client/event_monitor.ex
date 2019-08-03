@@ -8,11 +8,10 @@ defmodule Filesync.Client.EventMonitor do
   use GenServer
   require Logger
 
-  alias Filesync.{Client, Cloud, Cache, Cache.FileHashes}
+  alias Filesync.{Client, Cloud, Cache, Cache.FileHashes, Settings}
 
-  def start_link(paths) do
-    Logger.info("#{__MODULE__} starting")
-    GenServer.start_link(__MODULE__, paths, name: __MODULE__)
+  def start_link(state) do
+    GenServer.start_link(__MODULE__, state, name: __MODULE__)
   end
 
   @doc """
@@ -22,46 +21,20 @@ defmodule Filesync.Client.EventMonitor do
 
   https://hexdocs.pm/file_system/readme.html --> Example with GenServer
   """
-  def init(paths) do
-    # Added to ensure module finishes initialization
-    GenServer.cast(__MODULE__, {:monitor, paths})
-    {:ok, paths}
+  def init(state) do
+    Logger.info("#{__MODULE__} initializing")
+    Process.send_after(self(), :monitor, 1000)
+    {:ok, state}
   end
 
-  ############
-  # API
-  ###########
-
-  @doc """
-  Starts maintenance monitoring of specified path
-
-  Args:
-    path (binary): abspath on local file system to sync
-
-  Returns:
-    None
-  """
-  def monitor(paths) do
-
-    paths
-    |> Enum.map(&cache_client/1)
-    |> Enum.map(fn {:ok, path} -> path end)
-    |> Enum.map(&cache_cloud/1)
-
-    sync_files()
-
-    poll_interval = SettingStore.get!(:client, :poll_interval)
-
-    Process.sleep(poll_interval)
-
-    paths = SettingStore.get!(:client, :sync_dirs)
-    monitor(paths)
+  defp sync? do
+    Settings.get!(:client, :sync_enabled?) and Settings.set?()
   end
 
   @doc """
   Checks for local file updates and syncs the changes to Cloud
   """
-  def sync_files do
+  defp sync_files do
 
     Logger.info("#{__MODULE__} STARTED client and cloud sync")
 
@@ -84,6 +57,13 @@ defmodule Filesync.Client.EventMonitor do
     Logger.info("#{__MODULE__} COMPLETED client and cloud sync")
   end
 
+  defp cache_files do
+    SettingStore.get!(:client, :sync_dirs)
+    |> Enum.map(&cache_client/1)
+    |> Enum.map(fn {:ok, path} -> path end)
+    |> Enum.map(&cache_cloud/1)
+  end
+
   @doc """
   Updates Filesync.Cache with file hashes found in sync_dir
 
@@ -95,7 +75,7 @@ defmodule Filesync.Client.EventMonitor do
       {:ok, local_root} -> successful cache
       {:error, :bad_local_path} -> invalid directory
   """
-  def cache_client(path) do
+  defp cache_client(path) do
     local_root = Path.absname(path)
 
     cloud = SettingStore.get(:cloud)
@@ -134,7 +114,7 @@ defmodule Filesync.Client.EventMonitor do
     result (tuple):
       {:ok, local_root} -> successful cache
   """
-  def cache_cloud(path) do
+  defp cache_cloud(path) do
 
     cloud = SettingStore.get(:cloud)
 
@@ -164,11 +144,19 @@ defmodule Filesync.Client.EventMonitor do
     Logger.info("#{__MODULE__} COMPLETED cloud cache of '#{cloud.root_path}'")
   end
 
-  @doc """
-  Starts the monitoring process
-  """
-  def handle_cast({:monitor, paths}, state) do
-    {:noreply, monitor(paths), state}
+  def handle_info(:monitor, state) do
+
+    if sync?() do
+      cache_files()
+      sync_files()
+    else
+      Logger.warn("#{__MODULE__} sync is not enabled")
+    end
+
+    poll_interval = SettingStore.get!(:client, :poll_interval)
+    Process.sleep(poll_interval)
+    Process.send_after(self(), :monitor, poll_interval)
+    {:noreply, state}
   end
 
 end

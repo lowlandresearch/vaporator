@@ -1,7 +1,7 @@
 defmodule Filesync.Settings do
 
   @default_settings [
-    client: [sync_dirs: [], poll_interval: 30000],
+    client: [sync_dirs: [], poll_interval: 600000, sync_enabled?: true],
     cloud: [provider: %Filesync.Cloud.Dropbox{}]
   ]
 
