@@ -14,7 +14,7 @@ defmodule Firmware.Monitor do
   def init(state) do
     Logger.info("Initializing #{__MODULE__}")
 
-    Process.send_after(self(), :monitor, @interval)
+    Process.send_after(self(), :monitor, 500)
     {:ok, state}
   end
 
