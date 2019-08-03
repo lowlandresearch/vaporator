@@ -1,5 +1,4 @@
 defmodule SettingStore do
-
   def exists?(setting) do
     case PersistentStorage.get(:settings, setting) do
       nil -> false
@@ -65,9 +64,9 @@ defmodule SettingStore do
     PersistentStorage.put(:settings, setting, value)
   end
 
-  def put(setting, value, [overwrite: true]), do: put(setting, value)
+  def put(setting, value, overwrite: true), do: put(setting, value)
 
-  def put(setting, value, [overwrite: false]) do
+  def put(setting, value, overwrite: false) do
     if exists?(setting) do
       :noop
     else
@@ -76,13 +75,10 @@ defmodule SettingStore do
   end
 
   def put(setting, key, value) do
-    new_value = 
+    new_value =
       PersistentStorage.get(:settings, setting)
       |> Keyword.replace!(key, value)
 
     put(setting, new_value)
   end
-
-
-
 end

@@ -24,6 +24,7 @@
   "metrics": {:hex, :metrics, "1.0.1", "25f094dea2cda98213cecc3aeff09e940299d950904393b2a29d191c346a8486", [:rebar3], [], "hexpm"},
   "mimerl": {:hex, :mimerl, "1.2.0", "67e2d3f571088d5cfd3e550c383094b47159f3eee8ffa08e64106cdf5e981be3", [:rebar3], [], "hexpm"},
   "parse_trans": {:hex, :parse_trans, "3.3.0", "09765507a3c7590a784615cfd421d101aec25098d50b89d7aa1d66646bc571c1", [:rebar3], [], "hexpm"},
+  "persistent_storage": {:git, "https://github.com/cellulose/persistent_storage.git", "e2a7895685378ae78d8fa26fd9d7bd3af30e256e", [tag: "v0.10.1"]},
   "poison": {:hex, :poison, "4.0.1", "bcb755a16fac91cad79bfe9fc3585bb07b9331e50cfe3420a24bcc2d735709ae", [:mix], [], "hexpm"},
   "sentix": {:hex, :sentix, "1.0.3", "f8c8b6bc5e1f12a4df8952710bf12a29075937742fc7101b1fea7ba1cee7af79", [:mix], [{:cachex, "~> 2.0", [hex: :cachex, repo: "hexpm", optional: false]}, {:erlexec, "1.2.2", [hex: :erlexec, repo: "hexpm", optional: false]}], "hexpm"},
   "ssl_verify_fun": {:hex, :ssl_verify_fun, "1.1.4", "f0eafff810d2041e93f915ef59899c923f4568f4585904d010387ed74988e77b", [:make, :mix, :rebar3], [], "hexpm"},

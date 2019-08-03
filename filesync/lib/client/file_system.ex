@@ -21,7 +21,7 @@ defmodule Filesync.Client.FileSystem do
     |> Keyword.keys()
     |> Enum.filter(&required_argument?/1)
     |> Enum.sort()
-    |> fn x -> x == Enum.sort(@required_arguments) end.()
+    |> (fn x -> x == Enum.sort(@required_arguments) end).()
   end
 
   @doc """
@@ -34,7 +34,7 @@ defmodule Filesync.Client.FileSystem do
     iex> Filesync.Client.FileSystem.parse_options([filesystem_type: :win_xp, username: "chaz"])
     {:ok, options}
   """
-  def parse_options(opts) do 
+  def parse_options(opts) do
     if contains_required_arguments?(opts) do
       parse_options(opts, [])
     else
@@ -68,5 +68,4 @@ defmodule Filesync.Client.FileSystem do
       {response, _} -> {:error, response}
     end
   end
-
 end

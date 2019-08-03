@@ -32,4 +32,6 @@ import Config
 config :filesync, dbx_api_url: "https://api.dropboxapi.com/2"
 config :filesync, dbx_content_url: "https://content.dropboxapi.com/2/"
 
-import_config "#{Mix.env()}.exs"
+if Mix.env() == :test do
+  import_config "#{Mix.env()}.exs"
+end

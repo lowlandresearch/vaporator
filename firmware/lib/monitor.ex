@@ -20,7 +20,7 @@ defmodule Firmware.Monitor do
 
   @doc """
   Checks if all required settings are set for the system to run.
-  
+
   Returns `boolean`
   """
   def system_settings_set? do
@@ -56,5 +56,4 @@ defmodule Firmware.Monitor do
     Process.send_after(self(), :monitor, @interval)
     {:noreply, status}
   end
-
 end

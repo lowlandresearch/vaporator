@@ -48,12 +48,16 @@ defmodule Filesync.Client do
   """
   def process_event({:created, {root, path}}) do
     if not File.dir?(path) and File.exists?(path) do
-
       cloud = SettingStore.get(:cloud)
 
-      cloud_path = Filesync.Cloud.get_path(
-        cloud.provider, root, path, cloud.provider.root_path
-      )
+      cloud_path =
+        Filesync.Cloud.get_path(
+          cloud.provider,
+          root,
+          path,
+          cloud.provider.root_path
+        )
+
       Logger.info(
         "#{__MODULE__} CREATED event:\n" <>
           "  local path: #{path}\n" <>
@@ -61,19 +65,16 @@ defmodule Filesync.Client do
       )
 
       case Filesync.Cloud.file_upload(
-            cloud.provider,
-            path,
-            cloud_path
-          ) do
+             cloud.provider,
+             path,
+             cloud_path
+           ) do
         {:ok, meta} ->
-          Logger.info(
-            "#{__MODULE__} upload SUCCESS."
-          )
+          Logger.info("#{__MODULE__} upload SUCCESS.")
           {:ok, meta}
+
         {:error, reason} ->
-          Logger.error(
-            "#{__MODULE__} upload FAILURE: #{reason}"
-          )
+          Logger.error("#{__MODULE__} upload FAILURE: #{reason}")
           {:error, reason}
       end
     end
@@ -81,46 +82,53 @@ defmodule Filesync.Client do
 
   def process_event({:updated, {root, path}}) do
     if not File.dir?(path) and File.exists?(path) do
-
       cloud = SettingStore.get(:cloud)
 
-      cloud_path = Filesync.Cloud.get_path(
-        cloud.provider, root, path, cloud.provider.root_path
-      )
-      Logger.info("#{__MODULE__} MODIFIED event:\n" <>
-        "  local path: #{path}\n" <>
-        "  cloud path: #{cloud_path}"
+      cloud_path =
+        Filesync.Cloud.get_path(
+          cloud.provider,
+          root,
+          path,
+          cloud.provider.root_path
+        )
+
+      Logger.info(
+        "#{__MODULE__} MODIFIED event:\n" <>
+          "  local path: #{path}\n" <>
+          "  cloud path: #{cloud_path}"
       )
 
       case Filesync.Cloud.file_update(
-            cloud.provider,
-            path,
-            cloud_path
-          ) do
+             cloud.provider,
+             path,
+             cloud_path
+           ) do
         {:ok, meta} ->
-          Logger.info(
-            "#{__MODULE__} update SUCCESS."
-          )
+          Logger.info("#{__MODULE__} update SUCCESS.")
           {:ok, meta}
+
         {:error, reason} ->
-          Logger.error(
-            "#{__MODULE__} update FAILURE: #{reason}"
-          )
+          Logger.error("#{__MODULE__} update FAILURE: #{reason}")
           {:error, reason}
       end
     end
   end
 
   def process_event({:removed, {root, path}}) do
-
     cloud = SettingStore.get(:cloud)
 
-    cloud_path = Filesync.Cloud.get_path(
-      cloud.provider, root, path, cloud.provider.root_path
-    )
-    Logger.info("#{__MODULE__} DELETED event:\n" <>
-      "  local path: #{path}\n" <>
-      "  cloud path: #{cloud_path}"
+    cloud_path =
+      Filesync.Cloud.get_path(
+        cloud.provider,
+        root,
+        path,
+        cloud.provider.root_path
+      )
+
+    Logger.info(
+      "#{__MODULE__} DELETED event:\n" <>
+        "  local path: #{path}\n" <>
+        "  cloud path: #{cloud_path}"
     )
 
     if File.dir?(path) do
@@ -147,13 +155,10 @@ defmodule Filesync.Client do
     - path (binary): 
   """
   def which_sync_dir!(path) do
-
     sync_dirs = SettingStore.get!(:client, :sync_dirs)
 
     sync_dirs
-    |> Enum.filter(
-      fn root -> String.starts_with?(path, root) end
-    )
+    |> Enum.filter(fn root -> String.starts_with?(path, root) end)
     |> Enum.fetch!(0)
   end
 
@@ -162,24 +167,24 @@ defmodule Filesync.Client do
   is the local_path?
   """
   def get_local_path!(cloud_root, cloud_path) do
-    path = Path.relative_to(
-              cloud_path |> Path.absname,
-              cloud_root |> Path.absname
-            )
+    path =
+      Path.relative_to(
+        cloud_path |> Path.absname(),
+        cloud_root |> Path.absname()
+      )
 
-
-    path_root = path
-                |> Path.split()
-                |> List.first()
+    path_root =
+      path
+      |> Path.split()
+      |> List.first()
 
     sync_dirs = SettingStore.get!(:client, :sync_dirs)
 
     sync_dirs
     |> Enum.filter(fn x ->
-        String.ends_with?(x, path_root)
-      end)
+      String.ends_with?(x, path_root)
+    end)
     |> Path.dirname()
     |> Path.join(path)
   end
-
 end

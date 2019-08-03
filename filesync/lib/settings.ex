@@ -1,7 +1,6 @@
 defmodule Filesync.Settings do
-
   @default_settings [
-    client: [sync_dirs: [], poll_interval: 600000, sync_enabled?: true],
+    client: [sync_dirs: [], poll_interval: 600_000, sync_enabled?: true],
     cloud: [provider: %Filesync.Cloud.Dropbox{}]
   ]
 
@@ -9,7 +8,7 @@ defmodule Filesync.Settings do
     Enum.map(
       @default_settings,
       fn {k, v} ->
-        SettingStore.put(k, v, [overwrite: false])
+        SettingStore.put(k, v, overwrite: false)
       end
     )
   end

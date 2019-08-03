@@ -24,5 +24,4 @@ defmodule Filesync.Client.EventMonitorTest do
     assert {:ok, _} = EventMonitor.cache_cloud(@sync_dirs)
     assert {:error, _} = EventMonitor.cache_cloud("/fake")
   end
-
 end

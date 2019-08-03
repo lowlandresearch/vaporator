@@ -56,9 +56,9 @@ defmodule Firmware.MixProject do
       {:nerves_time, "~> 0.2.1"},
       {:nerves_init_gadget, "~> 0.6.0", targets: @all_targets},
       {:nerves_leds, "~> 0.8.0"},
-      
+
       # Dependencies for specific targets
-      {:vaporator_system_rpi3,"~> 0.1.0", runtime: false, targets: :rpi3}
+      {:vaporator_system_rpi3, "~> 0.1.0", runtime: false, targets: :rpi3}
     ]
   end
 

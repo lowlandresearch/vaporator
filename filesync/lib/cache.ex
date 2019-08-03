@@ -44,7 +44,7 @@ defmodule Filesync.Cache do
   Returns:
     result (tuple): {:ok, local_path} when update success
   """
-  def update({_local_path, %{}}=record) do
+  def update({_local_path, %{}} = record) do
     GenServer.call(__MODULE__, {:update, record})
   end
 
@@ -67,5 +67,4 @@ defmodule Filesync.Cache do
         {:reply, {:ok, local_path}, cache}
     end
   end
-
 end

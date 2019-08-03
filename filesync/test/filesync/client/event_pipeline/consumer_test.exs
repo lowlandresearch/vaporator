@@ -9,7 +9,7 @@ defmodule Filesync.Client.EventConsumerTest do
   }
   @cloud_root Application.get_env(:filesync, :cloud_root)
 
-  setup_all do 
+  setup_all do
     consumer_pid = Process.whereis(EventConsumer)
     Process.monitor(consumer_pid)
     :ok
@@ -21,19 +21,21 @@ defmodule Filesync.Client.EventConsumerTest do
     test_event = {:created, {"/", test_file}}
 
     Filesync.Client.EventProducer.enqueue(test_event)
-    :timer.sleep(1500) # Give event time to process
+    # Give event time to process
+    :timer.sleep(1500)
 
     use_cassette "client/event_pipeline/consumer" do
-      {:ok, %{results: [file | _]}} = Filesync.Cloud.list_folder(
-                                        @cloud,
-                                        @cloud_root
-                                      )
+      {:ok, %{results: [file | _]}} =
+        Filesync.Cloud.list_folder(
+          @cloud,
+          @cloud_root
+        )
 
       assert file.name == Path.basename(test_file)
     end
 
     Filesync.Client.EventProducer.enqueue({:deleted, {"/", test_file}})
-    :timer.sleep(1500) # Give event time to process
+    # Give event time to process
+    :timer.sleep(1500)
   end
-
 end

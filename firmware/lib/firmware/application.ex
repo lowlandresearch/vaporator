@@ -6,7 +6,6 @@ defmodule Firmware.Application do
   use Application
 
   def start(_type, _args) do
-    
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     dhcp_options = [
@@ -17,14 +16,14 @@ defmodule Firmware.Application do
     ]
 
     opts = [strategy: :one_for_one, name: Firmware.Supervisor]
-    children =
-      [
-        {DHCPServer, ["eth0", dhcp_options]},
-        NervesHub.Supervisor,
-        Filesync.Supervisor,
-        {Task, fn -> Firmware.Settings.init() end},
-        Firmware.Monitor
-      ]
+
+    children = [
+      {DHCPServer, ["eth0", dhcp_options]},
+      NervesHub.Supervisor,
+      Filesync.Supervisor,
+      {Task, fn -> Firmware.Settings.init() end},
+      Firmware.Monitor
+    ]
 
     Supervisor.start_link(children, opts)
   end

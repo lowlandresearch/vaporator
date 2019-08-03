@@ -1,7 +1,7 @@
 defmodule Filesync.Supervisor do
   @moduledoc """
   Entry point for application
-  
+
   Starts and supervises all of the application processes.
 
   Child Processes:
@@ -10,7 +10,7 @@ defmodule Filesync.Supervisor do
     - Client.EventConsumer
 
   https://hexdocs.pm/elixir/Application.html`
-  
+
   """
   use Supervisor
 
@@ -21,7 +21,6 @@ defmodule Filesync.Supervisor do
   end
 
   def init(_args) do
-
     children = [
       %{
         id: EventProducer,

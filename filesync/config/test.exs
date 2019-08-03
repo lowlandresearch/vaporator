@@ -18,5 +18,3 @@ config :exvcr,
   filter_url_params: false,
   filter_request_headers: [],
   response_headers_blacklist: ["X-Dropbox-Request-Id"]
-
-import_config "instance.exs"

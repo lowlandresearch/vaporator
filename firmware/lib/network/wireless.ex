@@ -23,6 +23,7 @@ defmodule Firmware.Network.Wireless do
       :ok ->
         Settings.put(:wireless, opts)
         {:ok, Keyword.fetch!(opts, :ssid)}
+
       _ ->
         {:error, :bad_settings}
     end
@@ -35,5 +36,4 @@ defmodule Firmware.Network.Wireless do
   def up? do
     Firmware.Network.interface_up?(@interface)
   end
-
 end

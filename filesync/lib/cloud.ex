@@ -70,14 +70,14 @@ defprotocol Filesync.Cloud do
   @doc """
   Need to be able to get the metadata of an object at a particular
   path.
-  
+
   Args:
   - fs (Filesync.Cloud impl): Cloud file system
   - path (binary): Path of file/folder on cloud file system to get
       metadata for
   - args (Map): File-system-specific arguments to pass to the
       underlying subsystem. 
-  
+
   Returns:
     {:ok, Filesync.Cloud.Meta}
       or
@@ -94,13 +94,13 @@ defprotocol Filesync.Cloud do
   @doc """
   Need to be able to get the binary content of a file at a particular
   path.
-  
+
   Args:
   - fs (Filesync.Cloud impl): Cloud file system
   - path (binary): Path of file on cloud file system to download
   - args (Map): File-system-specific arguments to pass to the
       underlying subsystem. 
-  
+
   Returns:
     {:ok, Filesync.Cloud.FileContent}
       or
@@ -117,10 +117,10 @@ defprotocol Filesync.Cloud do
   @doc """
   Need to be able to upload binary content of a file on the local
   file system to a particular path on the cloud file system.
-  
+
   The file should always be transferred and should overwrite
   whatever is (might be) already there.
-  
+
   Args:
   - fs (Filesync.Cloud impl): Cloud file system
   - local_path (binary): Path of file on local file system to upload
@@ -129,7 +129,7 @@ defprotocol Filesync.Cloud do
       treated as a directory in which to place the local_path
   - args (Map): File-system-specific arguments to pass to the
       underlying subsystem. 
-  
+
   Returns:
     {:ok, Filesync.Cloud.Meta}
       or
@@ -146,11 +146,11 @@ defprotocol Filesync.Cloud do
   @doc """
   Need to be able to update binary content of a file on the cloud
   file system to the version on the local file system.
-  
+
   In the case of file_upload, the file is always transferred. In the
   case of file_update, the file transfer only happens if the cloud
   content is different from the local content.
-  
+
   Args:
   - fs (Filesync.Cloud impl): Cloud file system
   - local_path (binary): Path of file on local file system to upload
@@ -159,7 +159,7 @@ defprotocol Filesync.Cloud do
       treated as a directory in which to place the local_path
   - args (Map): File-system-specific arguments to pass to the
       underlying subsystem. 
-  
+
   Returns:
     {:ok, Filesync.Cloud.Meta}
       or
@@ -176,13 +176,13 @@ defprotocol Filesync.Cloud do
   @doc """
   Need to be able to remove a file or folder on the cloud file
   system.
-  
+
   Args:
   - fs (Filesync.Cloud impl): Cloud file system
   - path (binary): Path on cloud file system to remove. 
   - args (Map): File-system-specific arguments to pass to the
       underlying subsystem. 
-  
+
   Returns:
     {:ok, Filesync.Cloud.FileContent}
       or
@@ -200,7 +200,7 @@ defprotocol Filesync.Cloud do
   @doc """
   Need to be able to copy one file in the cloud file system to
   another place in the cloud file system.
-  
+
   Args:
   - fs (Filesync.Cloud impl): Cloud file system
   - from_path (binary): Path of file/folder on cloud file system to
@@ -210,7 +210,7 @@ defprotocol Filesync.Cloud do
       treated as a directory into which the file should be copied.
   - args (Map): File-system-specific arguments to pass to the
       underlying subsystem. 
-  
+
   Returns:
     {:ok, Filesync.Cloud.Meta}
       or
@@ -227,7 +227,7 @@ defprotocol Filesync.Cloud do
   @doc """
   Need to be able to move one file in the cloud file system to
   another place in the cloud file system.
-  
+
   Args:
   - fs (Filesync.Cloud impl): Cloud file system
   - from_path (binary): Path of file/folder on cloud file system to
@@ -237,7 +237,7 @@ defprotocol Filesync.Cloud do
       treated as a directory into which the file should be moved.
   - args (Map): File-system-specific arguments to pass to the
       underlying subsystem. 
-  
+
   Returns:
     {:ok, Filesync.Cloud.Meta}
       or
@@ -255,7 +255,6 @@ defprotocol Filesync.Cloud do
   Updates Cloud settings
   """
   def update_setting(dbx, key, value)
-
 end
 
 defmodule Filesync.Cloud.Meta do

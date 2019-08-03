@@ -1,14 +1,13 @@
 defmodule Firmware.Settings do
-
   @default_settings [
-    wireless: [ssid: nil, psk: nil, key_mgmt: :"NONE"]
+    wireless: [ssid: nil, psk: nil, key_mgmt: :NONE]
   ]
 
   def init do
     Enum.map(
       @default_settings,
       fn {k, v} ->
-        SettingStore.put(k, v, [overwrite: false])
+        SettingStore.put(k, v, overwrite: false)
       end
     )
   end

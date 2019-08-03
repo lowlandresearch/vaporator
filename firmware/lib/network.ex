@@ -1,5 +1,4 @@
 defmodule Firmware.Network do
-
   alias Firmware.Network.{Ethernet, Wireless}
 
   def interface_up?(interface) do
@@ -11,9 +10,9 @@ defmodule Firmware.Network do
   end
 
   def up? do
-    Ethernet.up?()
-    and Wireless.up?()
-    and internet_reachable?()
+    Ethernet.up?() and
+      Wireless.up?() and
+      internet_reachable?()
   end
 
   def internet_reachable? do
@@ -22,5 +21,4 @@ defmodule Firmware.Network do
       :inet_res.gethostbyname('google.com')
     )
   end
-
 end

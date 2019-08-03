@@ -33,11 +33,10 @@ defmodule Filesync.Client.EventConsumer do
 
     GenStage.async_subscribe(
       __MODULE__,
-      [
-        to: Filesync.Client.EventProducer,
-        max_demand: 2,          # until we can fix parallel upload
-        min_demand: 1
-      ]
+      to: Filesync.Client.EventProducer,
+      # until we can fix parallel upload
+      max_demand: 2,
+      min_demand: 1
     )
 
     ConsumerSupervisor.init(children, opts)
@@ -68,6 +67,7 @@ defmodule Filesync.Client.EventProcessor do
 
   def start_link(event) do
     {action, {root, path}} = event
+
     Logger.info(
       "#{__MODULE__} processing event | #{Atom.to_string(action)}\n" <>
         "  root: #{root}\n" <>

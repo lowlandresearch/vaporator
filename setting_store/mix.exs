@@ -24,8 +24,7 @@ defmodule SettingStore.MixProject do
     [
       {
         :persistent_storage,
-        github: "cellulose/persistent_storage",
-        tag: "v0.10.1"
+        github: "cellulose/persistent_storage", tag: "v0.10.1"
       }
     ]
   end
