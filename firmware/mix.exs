@@ -30,7 +30,7 @@ defmodule Firmware.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      mod: {Firmware.Application, []},
+      mod: {Firmware, []},
       extra_applications: [:logger, :runtime_tools]
     ]
   end

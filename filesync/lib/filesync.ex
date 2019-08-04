@@ -1,4 +1,4 @@
-defmodule Filesync.Supervisor do
+defmodule Filesync do
   @moduledoc """
   Entry point for application
 
@@ -12,15 +12,11 @@ defmodule Filesync.Supervisor do
   https://hexdocs.pm/elixir/Application.html`
 
   """
-  use Supervisor
+  use Application
 
   alias Filesync.Client
 
-  def start_link(_args) do
-    Supervisor.start_link(__MODULE__, [], name: __MODULE__)
-  end
-
-  def init(_args) do
+  def start(_args) do
     children = [
       %{
         id: EventProducer,
@@ -52,6 +48,11 @@ defmodule Filesync.Supervisor do
       {Task, fn -> Filesync.Settings.init() end}
     ]
 
-    Supervisor.init(children, strategy: :one_for_one)
+    Supervisor.start_link(
+      children,
+      strategy: :one_for_one,
+      name: Filesync.Supervisor
+    )
   end
+
 end
