@@ -18,17 +18,8 @@ defmodule Vaporator.Monitor do
     {:ok, state}
   end
 
-  @doc """
-  Checks if all required settings are set for the system to run.
-
-  Returns `boolean`
-  """
-  def system_settings_set? do
-    Vaporator.Settings.set?() and Vaporator.Settings.set?()
-  end
-
-  defp system_ok? do
-    system_settings_set?() and Network.up?()
+  def system_ok? do
+    Vaporator.Settings.set?() and Network.up?()
   end
 
   @doc """
