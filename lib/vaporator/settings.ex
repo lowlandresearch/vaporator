@@ -5,6 +5,8 @@ defmodule Vaporator.Settings do
     cloud: [provider: %Vaporator.Cloud.Dropbox{}]
   ]
 
+  @required_settings [:ssid, :key_mgmt, :sync_dirs, :provider]
+
   def init do
     Enum.map(
       @default_settings,
@@ -21,20 +23,16 @@ defmodule Vaporator.Settings do
     end
   end
 
-  # KeywordList
-  # Take first one, get settings, check equal with default
-  # return result and tail
-
   def set? do
     set?(@default_settings)
   end
 
-  def set?(settings) do
+  defp set?(settings) do
     set?(settings, [])
   end
 
   defp set?([], result) do
-    false in result
+    false not in List.flatten(result)
   end
 
   defp set?(settings, result) do
@@ -42,13 +40,13 @@ defmodule Vaporator.Settings do
     set?(h, t, result)
   end
 
-  defp set?({setting, default}, t, result) do
-    default_setting? =
-      setting
-      |> get()
-      |> Keyword.equal?(default)
-
-    set?(t, [default_setting? | result])
+  defp set?({setting, details}, t, result) do
+    all_set? =
+      details
+      |> Enum.filter(fn {k, _} -> k in @required_settings end)
+      |> Enum.map(fn {k, v} -> v != get!(setting, k) end)
+    
+    set?(t, [all_set? | result])
   end
 
   @doc """
