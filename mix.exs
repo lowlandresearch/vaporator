@@ -42,8 +42,12 @@ defmodule Vaporator.MixProject do
   def application do
     [
       mod: {Vaporator, []},
-      applications: [:persistent_storage],
-      extra_applications: [:logger, :runtime_tools, :gen_stage]
+      extra_applications: [
+        :logger,
+        :runtime_tools,
+        :persistent_storage,
+        :gen_stage
+      ]
     ]
   end
 
