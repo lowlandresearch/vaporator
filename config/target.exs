@@ -82,7 +82,7 @@ config :nerves_init_gadget,
   address_method: :static
 
 config :persistent_storage, tables: [
-  settings: [path: "/root/storage/settings"]
+  settings: [path: "/root/storage/settings"],
   provisioning: [path: "/boot/provisioning"]
 ]
 
