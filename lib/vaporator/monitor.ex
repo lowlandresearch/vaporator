@@ -44,6 +44,7 @@ defmodule Vaporator.Monitor do
   def handle_info(:monitor, _state) do
     status = get_system_status()
     Nerves.Leds.set(status)
+    Network.Wireless.init()
     Process.send_after(self(), :monitor, @interval)
     {:noreply, status}
   end
