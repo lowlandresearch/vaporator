@@ -1,50 +1,66 @@
 defmodule Vaporator.Settings do
-  @default_settings [
-    wireless: [ssid: nil, psk: nil, key_mgmt: :NONE],
-    client: [sync_dirs: [], poll_interval: 600_000, sync_enabled?: true],
-    cloud: [provider: %Vaporator.Cloud.Dropbox{}]
-  ]
 
-  @required_settings [:ssid, :key_mgmt, :sync_dirs, :provider]
+  def defaults do
+    [
+      wireless: [ssid: nil, psk: nil, key_mgmt: :NONE],
+      client: [sync_dirs: [], poll_interval: 600_000, sync_enabled?: true],
+      cloud: [provider: %Vaporator.Cloud.Dropbox{}]
+    ]
+  end
+
+  def default?(record, key) do
+    Keyword.fetch!(defaults(), key) != get!(record, key)
+  end
+
+  def required do
+    [:ssid, :key_mgmt, :sync_dirs, :provider]
+  end
+
+  def required?({key, _}) do
+    key in required()
+  end
 
   def init do
     Enum.map(
-      @default_settings,
+      defaults(),
       fn {k, v} ->
         put(k, v, overwrite: false)
       end
     )
   end
 
-  def exists?(setting) do
-    case PersistentStorage.get(:settings, setting) do
+  def exists?(record) do
+    case PersistentStorage.get(:settings, record) do
       nil -> false
       _ -> true
     end
   end
 
   def set? do
-    set?(@default_settings)
+    set?(defaults(), [])
   end
 
-  defp set?(settings) do
-    set?(settings, [])
+  def set?(record) do
+    defaults()
+    |> Keyword.fetch(record)
+    |> set?([])
   end
 
   defp set?([], result) do
     false not in List.flatten(result)
   end
 
-  defp set?(settings, result) do
-    [h | t] = settings
+  defp set?(records, result) do
+    [h | t] = records
     set?(h, t, result)
   end
 
-  defp set?({setting, details}, t, result) do
+  defp set?({record, settings}, t, result) do
     all_set? =
-      details
-      |> Enum.filter(fn {k, _} -> k in @required_settings end)
-      |> Enum.map(fn {k, v} -> v != get!(setting, k) end)
+    settings
+      |> Enum.filter(&required?/1)
+      |> Keyword.keys()
+      |> Enum.map(&default?(record, &1))
     
     set?(t, [all_set? | result])
   end
@@ -53,29 +69,33 @@ defmodule Vaporator.Settings do
   Retrives current settings
   """
   def get do
-    @default_settings
+    defaults()
     |> Keyword.keys()
     |> get_by_keys()
   end
 
-  def get(setting) do
-    if exists?(setting) do
-      PersistentStorage.get(:settings, setting)
+  def get(record) do
+    if exists?(record) do
+      PersistentStorage.get(:settings, record)
     else
       []
     end
   end
 
-  def get(setting, key) do
-    Keyword.fetch(get(setting), key)
+  def get(record, key) do
+    Keyword.fetch(get(record), key)
   end
 
-  def get!(setting, key) do
-    Keyword.fetch!(get(setting), key)
+  def get!(record, key) do
+    Keyword.fetch!(get(record), key)
+  end
+
+  def get_by_key(key) do
+    get_by_keys([key])
   end
 
   def get_by_keys(keys) when is_list(keys) do
-    Enum.map(keys, fn k -> {k, get(k)} end)
+    Enum.filter(get(), fn {k, v} -> k in keys end)
   end
 
   @doc """
@@ -83,25 +103,25 @@ defmodule Vaporator.Settings do
 
   Returns `:ok`
   """
-  def put(setting, value) do
-    PersistentStorage.put(:settings, setting, value)
+  def put(record, value) do
+    PersistentStorage.put(:settings, record, value)
   end
 
-  def put(setting, value, overwrite: true), do: put(setting, value)
+  def put(record, value, overwrite: true), do: put(record, value)
 
-  def put(setting, value, overwrite: false) do
-    if exists?(setting) do
+  def put(record, value, overwrite: false) do
+    if exists?(record) do
       :noop
     else
-      put(setting, value)
+      put(record, value)
     end
   end
 
-  def put(setting, key, value) do
-    new_value =
-      PersistentStorage.get(:settings, setting)
+  def put(record, key, value) do
+    new_setting =
+      PersistentStorage.get(:settings, record)
       |> Keyword.replace!(key, value)
 
-    put(setting, new_value)
+    put(record, new_setting)
   end
 end

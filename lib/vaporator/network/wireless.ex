@@ -12,8 +12,10 @@ defmodule Vaporator.Network.Wireless do
   @interface "wlan0"
 
   def init do
-    opts = Settings.get(:wireless)
-    setup(opts)
+    if Settings.set?(:wireless) do
+      opts = Settings.get(:wireless)
+      setup(opts)
+    end
   end
 
   def setup(opts) do
