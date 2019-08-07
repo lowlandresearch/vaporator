@@ -546,7 +546,7 @@ defmodule Vaporator.Cloud.Dropbox do
   def update_setting(_, key, value) do
     Vaporator.Settings.get!(:cloud, :provider)
     |> Map.replace!(key, value)
-    |> fn x -> Vaporator.Settings.put(:cloud, x) end.()
+    |> fn x -> Vaporator.Settings.put(:cloud, :provider, x) end.()
   end
 
 end
