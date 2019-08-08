@@ -1,5 +1,4 @@
 defmodule Vaporator.Settings do
-
   def defaults do
     [
       wireless: [ssid: nil, psk: nil, key_mgmt: :NONE],
@@ -9,7 +8,7 @@ defmodule Vaporator.Settings do
   end
 
   def default?(record, key) do
-    default_setting = 
+    default_setting =
       defaults()
       |> Keyword.fetch!(record)
       |> Keyword.fetch!(key)
@@ -63,10 +62,10 @@ defmodule Vaporator.Settings do
   defp set?({record, settings}, t, result) do
     all_set? =
       settings
-        |> Enum.filter(&required?/1)
-        |> Keyword.keys()
-        |> Enum.map(&default?(record, &1))
-    
+      |> Enum.filter(&required?/1)
+      |> Keyword.keys()
+      |> Enum.map(&default?(record, &1))
+
     set?(t, [all_set? | result])
   end
 
@@ -129,13 +128,13 @@ defmodule Vaporator.Settings do
 
   def delete(record) do
     PersistentStorage.delete(:settings, record)
-  end 
+  end
 
   def reset do
     defaults()
     |> Keyword.keys()
     |> Enum.map(&delete/1)
- 
+
     init()
   end
 end

@@ -1,6 +1,6 @@
 defmodule Vaporator do
   @moduledoc """
-  
+
   """
 
   use Application
@@ -11,13 +11,14 @@ defmodule Vaporator do
 
     opts = [strategy: :one_for_one, name: Vaporator.Supervisor]
 
-    children = [
-      Vaporator.Cache,
-      Vaporator.Client.EventProducer,
-      Vaporator.Client.EventConsumer,
-      Vaporator.Client.EventMonitor,
-      {Task, fn -> Vaporator.Settings.init() end}
-    ] ++ children(target())
+    children =
+      [
+        Vaporator.Cache,
+        Vaporator.Client.EventProducer,
+        Vaporator.Client.EventConsumer,
+        Vaporator.Client.EventMonitor,
+        {Task, fn -> Vaporator.Settings.init() end}
+      ] ++ children(target())
 
     Supervisor.start_link(children, opts)
   end
@@ -32,7 +33,6 @@ defmodule Vaporator do
   end
 
   def children(_target) do
-
     dhcp_options = [
       gateway: "10.0.0.1",
       netmask: "255.255.255.0",

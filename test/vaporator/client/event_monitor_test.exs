@@ -9,6 +9,7 @@ defmodule Vaporator.Client.EventMonitorTest do
   setup do
     File.mkdir(@test_path)
     Settings.reset()
+
     Settings.put(
       :cloud,
       :provider,
@@ -18,9 +19,9 @@ defmodule Vaporator.Client.EventMonitorTest do
       }
     )
 
-    on_exit fn ->
+    on_exit(fn ->
       File.rm_rf!(@test_path)
-    end
+    end)
 
     {:ok, [path: @test_path]}
   end

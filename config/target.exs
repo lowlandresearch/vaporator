@@ -81,10 +81,11 @@ config :nerves_init_gadget,
   ifname: "eth0",
   address_method: :static
 
-config :persistent_storage, tables: [
-  settings: [path: "/root/storage/settings"],
-  provisioning: [path: "/boot/provisioning"]
-]
+config :persistent_storage,
+  tables: [
+    settings: [path: "/root/storage/settings"],
+    provisioning: [path: "/boot/provisioning"]
+  ]
 
 config :tzdata, :data_dir, "/root/etc/elixir_tzdata_data"
 

@@ -6,9 +6,11 @@ defmodule Vaporator.SettingsTest do
 
   setup do
     Settings.reset()
-    on_exit fn ->
+
+    on_exit(fn ->
       File.rm_rf!("/tmp/storage/settings")
-    end
+    end)
+
     {:ok, [record_key: record_key(), setting_key: setting_key()]}
   end
 
@@ -82,7 +84,7 @@ defmodule Vaporator.SettingsTest do
 
   test "check if required settings are not still default", ctx do
     Settings.reset()
-    
+
     actual = Settings.set?()
     assert actual == false
 
@@ -136,5 +138,4 @@ defmodule Vaporator.SettingsTest do
   def generate_random_values(settings) do
     Enum.map(settings, fn {k, _} -> {k, :rand.normal()} end)
   end
-
 end

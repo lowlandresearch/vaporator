@@ -12,7 +12,7 @@ defmodule Vaporator.Cloud.Dropbox do
 
   alias Vaporator.Cloud
 
-  defstruct [access_token: nil, root_path: nil]
+  defstruct access_token: nil, root_path: nil
 
   @api_url Application.get_env(:vaporator, :dbx_api_url)
   @content_url Application.get_env(:vaporator, :dbx_content_url)
@@ -27,6 +27,7 @@ defmodule Vaporator.Cloud.Dropbox do
 
   def post_api(dbx, url_path, body \\ %{}) do
     Logger.info("#{__MODULE__} POST to #{url_path}")
+
     case Poison.encode(body) do
       {:ok, encoded_body} ->
         post_request(
@@ -62,6 +63,7 @@ defmodule Vaporator.Cloud.Dropbox do
       {:error, :local_path_not_found}
     else
       Logger.info("#{__MODULE__} POST UPLOAD to #{url_path} for #{local_path}")
+
       post_file_transfer(
         dbx,
         url_path,
@@ -174,7 +176,7 @@ defmodule Vaporator.Cloud.Dropbox do
   def post_request(dbx, url, body, headers, processor) do
     headers = Map.merge(headers, auth_headers(dbx))
 
-    case HTTPoison.post(url, body, headers, [recv_timeout: 10000]) do
+    case HTTPoison.post(url, body, headers, recv_timeout: 10000) do
       {:ok, response} ->
         processor.(response)
 
@@ -184,9 +186,7 @@ defmodule Vaporator.Cloud.Dropbox do
     end
   end
 
-  def process_bad_response(
-    %HTTPoison.Response{status_code: status_code, body: body}
-  ) do
+  def process_bad_response(%HTTPoison.Response{status_code: status_code, body: body}) do
     case {status_code, JSON.decode(body)} do
       # File not found
       {409,
@@ -201,8 +201,7 @@ defmodule Vaporator.Cloud.Dropbox do
        {:ok,
         %{
           "error_summary" => summary,
-          "error" => %{".tag" => "path_lookup",
-                       "path_lookup" => %{".tag" => "not_found"}}
+          "error" => %{".tag" => "path_lookup", "path_lookup" => %{".tag" => "not_found"}}
         }}} ->
         {:error, {:cloud_path_not_found, summary}}
 
@@ -211,9 +210,9 @@ defmodule Vaporator.Cloud.Dropbox do
         %{
           "error_summary" => summary,
           "error" => %{"reason" => %{".tag" => "too_many_write_operations"}}
-          }}} ->
+        }}} ->
         {:error, {:too_many_write_operations, summary}}
-        
+
       # Something else API-related happened
       {status_code, {:ok, body}} when status_code in 400..599 ->
         {:error, {:bad_status, {:status_code, status_code}, body}}
@@ -361,9 +360,11 @@ defmodule Vaporator.Cloud.Dropbox do
   end
 
   defp list_folder(
-    dbx, result_meta, %{"has_more" => true}, results
-  ) do
-
+         dbx,
+         result_meta,
+         %{"has_more" => true},
+         results
+       ) do
     body = Map.take(result_meta, ["cursor"])
 
     case post_api(dbx, "/files/list_folder/continue", body) do
@@ -381,9 +382,12 @@ defmodule Vaporator.Cloud.Dropbox do
   end
 
   defp list_folder(
-    _, result_meta, %{"has_more" => false}, results
-  ) do
-    results = 
+         _,
+         result_meta,
+         %{"has_more" => false},
+         results
+       ) do
+    results =
       [result_meta["entries"] | results]
       |> List.flatten()
       |> Enum.map(&dropbox_meta_to_cloud/1)
@@ -534,11 +538,12 @@ defmodule Vaporator.Cloud.Dropbox do
     Path.join(
       dbx_root,
       Path.relative_to(
-        local_path |> Path.expand |> Path.absname,
+        local_path |> Path.expand() |> Path.absname(),
         local_root
-        |> Path.expand
-        |> Path.absname
-        |> Path.dirname         # multi-root fix 
+        |> Path.expand()
+        |> Path.absname()
+        # multi-root fix 
+        |> Path.dirname()
       )
     )
   end
@@ -546,9 +551,8 @@ defmodule Vaporator.Cloud.Dropbox do
   def update_setting(_, key, value) do
     Vaporator.Settings.get!(:cloud, :provider)
     |> Map.replace!(key, value)
-    |> fn x -> Vaporator.Settings.put(:cloud, :provider, x) end.()
+    |> (fn x -> Vaporator.Settings.put(:cloud, :provider, x) end).()
   end
-
 end
 
 # ----------------------------------------------------------------------

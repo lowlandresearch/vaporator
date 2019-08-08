@@ -71,7 +71,6 @@ defmodule Vaporator.MixProject do
       # Dependencies for specific targets
       {:vaporator_system_rpi3, "~> 0.1.0", runtime: false, targets: :rpi3},
       {:nerves_system_x86_64, "~> 1.8", runtime: false, targets: :x86_64},
-
       {:httpoison, "~> 1.5.0"},
       {:poison, "~> 4.0.1"},
       {:json, "~> 1.3.0"},
