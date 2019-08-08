@@ -34,7 +34,7 @@ defmodule Vaporator.Client.EventMonitor do
   @doc """
   Checks for local file updates and syncs the changes to Cloud
   """
-  defp sync_files do
+  def sync_files do
     Logger.info("#{__MODULE__} STARTED client and cloud sync")
 
     match_spec = [
@@ -71,7 +71,7 @@ defmodule Vaporator.Client.EventMonitor do
       {:ok, local_root} -> successful cache
       {:error, :bad_local_path} -> invalid directory
   """
-  defp cache_client(path) do
+  def cache_client(path) do
     local_root = Path.absname(path)
 
     cloud = Settings.get(:cloud)
@@ -111,7 +111,7 @@ defmodule Vaporator.Client.EventMonitor do
     result (tuple):
       {:ok, local_root} -> successful cache
   """
-  defp cache_cloud(path) do
+  def cache_cloud(path) do
     cloud = Settings.get(:cloud)
 
     Logger.info("#{__MODULE__} STARTED cloud cache of '#{cloud.root_path}'")

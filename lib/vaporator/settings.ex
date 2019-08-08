@@ -9,7 +9,12 @@ defmodule Vaporator.Settings do
   end
 
   def default?(record, key) do
-    Keyword.fetch!(defaults(), key) != get!(record, key)
+    default_setting = 
+      defaults()
+      |> Keyword.fetch!(record)
+      |> Keyword.fetch!(key)
+
+    default_setting != get!(record, key)
   end
 
   def required do
@@ -42,7 +47,7 @@ defmodule Vaporator.Settings do
 
   def set?(record) do
     defaults()
-    |> Keyword.fetch(record)
+    |> Enum.filter(fn {k, _} -> k == record end)
     |> set?([])
   end
 
@@ -57,10 +62,10 @@ defmodule Vaporator.Settings do
 
   defp set?({record, settings}, t, result) do
     all_set? =
-    settings
-      |> Enum.filter(&required?/1)
-      |> Keyword.keys()
-      |> Enum.map(&default?(record, &1))
+      settings
+        |> Enum.filter(&required?/1)
+        |> Keyword.keys()
+        |> Enum.map(&default?(record, &1))
     
     set?(t, [all_set? | result])
   end
@@ -71,31 +76,28 @@ defmodule Vaporator.Settings do
   def get do
     defaults()
     |> Keyword.keys()
-    |> get_by_keys()
+    |> Enum.map(fn k -> {k, get!(k)} end)
   end
 
   def get(record) do
     if exists?(record) do
-      PersistentStorage.get(:settings, record)
+      {:ok, PersistentStorage.get(:settings, record)}
     else
-      []
+      {:error, :record_not_found}
     end
   end
 
+  def get!(record) do
+    {:ok, setting} = get(record)
+    setting
+  end
+
   def get(record, key) do
-    Keyword.fetch(get(record), key)
+    Keyword.fetch(get!(record), key)
   end
 
   def get!(record, key) do
-    Keyword.fetch!(get(record), key)
-  end
-
-  def get_by_key(key) do
-    get_by_keys([key])
-  end
-
-  def get_by_keys(keys) when is_list(keys) do
-    Enum.filter(get(), fn {k, v} -> k in keys end)
+    Keyword.fetch!(get!(record), key)
   end
 
   @doc """
@@ -119,9 +121,21 @@ defmodule Vaporator.Settings do
 
   def put(record, key, value) do
     new_setting =
-      PersistentStorage.get(:settings, record)
+      get!(record)
       |> Keyword.replace!(key, value)
 
     put(record, new_setting)
+  end
+
+  def delete(record) do
+    PersistentStorage.delete(:settings, record)
+  end 
+
+  def reset do
+    defaults()
+    |> Keyword.keys()
+    |> Enum.map(&delete/1)
+ 
+    init()
   end
 end

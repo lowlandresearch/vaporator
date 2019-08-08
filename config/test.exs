@@ -9,6 +9,10 @@ config :vaporator, test_file: "test.txt"
 
 config :logger, level: :warn
 
+config :persistent_storage, tables: [
+  settings: [path: "/tmp/storage/settings"]
+]
+
 config :exvcr,
   vcr_cassette_library_dir: "test/vaporator/fixture/vcr_cassettes",
   custom_cassette_library_dir: "test/vaporator/fixture/custom_cassettes",

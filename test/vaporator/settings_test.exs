@@ -4,26 +4,15 @@ defmodule Vaporator.SettingsTest do
 
   alias Vaporator.Settings
 
-  @record_key Settings.defaults()
-              |> Keyword.keys()
-              |> List.first()
-
-  @setting_key Keyword.fetch!(Settings.defaults(), @record_key)
-              |> Keyword.keys()
-              |> List.first()
-
-  test "init default settings" do
-    expected = Settings.defaults()
-    Settings.init()
-    actual = Settings.get()
-    assert actual == expected
+  setup_all do
+    {:ok, [record_key: record_key(), setting_key: setting_key()]}
   end
 
-  test "check if record exists" do
-    actual = Settings.exists?(@record_key)
+  test "check if record exists", ctx do
+    actual = Settings.exists?(ctx[:record_key])
     assert actual == true
     actual = Settings.exists?(:willneverexist)
-    asset actual == false
+    assert actual == false
   end
 
   test "get all settings" do
@@ -38,75 +27,110 @@ defmodule Vaporator.SettingsTest do
     assert actual_setting_keys == expected_setting_keys
   end
 
-  test "get settings by record" do
-    expected_record_keys = [@record_key]
-    expected_setting_keys =
+  test "get settings by record", ctx do
+    assert {:ok, _} = Settings.get(ctx[:record_key])
+  end
+
+  test "get setting by record and key", ctx do
+    assert {:ok, _} = Settings.get(ctx[:record_key], ctx[:setting_key])
+    assert Settings.get(ctx[:record_key], :fake) == :error
+  end
+
+  test "update a record's settings", ctx do
+    Settings.init()
+    new_setting = generate_settings(ctx[:record_key])
+
+    expected = :noop
+    actual = Settings.put(ctx[:record_key], new_setting, overwrite: false)
+    assert actual == expected
+
+    expected = :ok
+    actual = Settings.put(ctx[:record_key], new_setting, overwrite: true)
+    assert actual == expected
+
+    new_setting = generate_settings(ctx[:record_key])
+    actual = Settings.put(ctx[:record_key], new_setting)
+    assert actual == expected
+
+    actual = Settings.put(ctx[:record_key], ctx[:setting_key], :testing)
+    assert actual == expected
+  end
+
+  test "delete a record", ctx do
+    expected = :ok
+    actual = Settings.delete(ctx[:record_key])
+    assert actual == expected
+  end
+
+  test "reset settings to default", ctx do
+    expected =
       Settings.defaults()
-      |> Keyword.fetch!(@record_key)
-      |> fn x -> [{@record_key, x}] end.()
-      |> get_setting_keys()
+      |> Keyword.fetch!(ctx[:record_key])
 
-    current_settings = Settings.get(@record_key)
+    generate_settings()
+    actual = Settings.get!(ctx[:record_key])
+    assert actual != expected
 
-    actual_record_keys = Keyword.keys(current_settings)
-    actual_setting_keys = get_setting_keys(current_settings)
-    assert actual_record_keys == expected_record_keys
-    assert actual_setting_keys == expected_setting_keys
+    Settings.reset()
+    actual = Settings.get!(ctx[:record_key])
+    assert actual == expected
   end
 
-  test "get setting by record and key" do
-    assert {:ok, _} = Settings.get(@record_key, @setting_key)
-    assert Settings.get(@record_key, :fake) == :error
-  end
-
-  test "get all settings with matching records" do
-    assert Settings.get_by_key(@record_key) != []
-    assert Settings.get_by_key(:fake) == :error
-  end
-
-  test "update a record's settings" do
-    assert Settings.put(@record_key, @setting_key, :testing) == :ok
-
-    expected = Keyword.replace!(Settings.defaults(), @record_key, [change: true])
-    assert Settings.put(@record_key, expected) == :ok
-    assert Settings.get!(@record_key) == expected
-
-    expected = Keyword.replace!(Settings.defaults(), @record_key, [change: false])
-    assert Settings.put(@record_key, expected, overwrite: false) == :noop
-    assert Settings.put(@record_key, expected, overwrite: true) == :ok
-  end
-
-  test "check if required settings are not still default" do
-    actual = Settings.set?(@record_key)
-    assert actual == false
-
+  test "check if required settings are not still default", ctx do
+    Settings.reset()
+    
     actual = Settings.set?()
     assert actual == false
 
-    generate_new_settings()
+    actual = Settings.set?(ctx[:record_key])
+    assert actual == false
 
-    actual = Settings.set?(@record_key)
+    generate_settings()
+
+    actual = Settings.set?(ctx[:record_key])
     assert actual == true
 
     actual = Settings.set?()
     assert actual == true
+  end
+
+  def get_first_key(keyword) do
+    keyword
+    |> Keyword.keys()
+    |> List.first()
+  end
+
+  def record_key do
+    Settings.defaults()
+    |> get_first_key()
+  end
+
+  def setting_key do
+    Settings.defaults()
+    |> Keyword.fetch!(record_key())
+    |> get_first_key()
   end
 
   def get_setting_keys(settings) do
     Enum.map(settings, fn {_, v} -> Keyword.keys(v) end)
   end
 
-  def generate_new_settings do
-    Enum.map(Settings.defaults(), &get_new_settings/1)
+  def generate_settings do
+    Settings.defaults()
+    |> Keyword.keys()
+    |> Enum.map(fn k -> {k, generate_settings(k)} end)
+    |> Enum.map(fn {k, v} -> Settings.put(k, v) end)
   end
 
-  def generate_new_settings({key, settings}) do
-    new_settings = Enum.map(settings, &generate_random_values/1)
-    Settings.put(key, new_settings)
+  def generate_settings(record_key) do
+    Settings.defaults()
+    |> Enum.filter(fn {k, _} -> k == record_key end)
+    |> Enum.map(fn {_, v} -> generate_random_values(v) end)
+    |> List.flatten()
   end
 
-  def generate_random_values({k, _}) do
-    {k, :rand.normal()}
+  def generate_random_values(settings) do
+    Enum.map(settings, fn {k, _} -> {k, :rand.normal()} end)
   end
 
 end
