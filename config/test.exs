@@ -1,8 +1,8 @@
 import Config
 
-config :vaporator, cloud_root: "/vaporator/test/"
-
-config :vaporator, client_sync_dirs: []
+config :vaporator, :cloud,
+  root_path: "/vaporator/test/",
+  access_token: System.get_env("CLOUD_ACCESS_TOKEN")
 
 config :vaporator, test_dir: "/vaporator/test/"
 config :vaporator, test_file: "test.txt"

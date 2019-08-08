@@ -4,7 +4,11 @@ defmodule Vaporator.SettingsTest do
 
   alias Vaporator.Settings
 
-  setup_all do
+  setup do
+    Settings.reset()
+    on_exit fn ->
+      File.rm_rf!("/tmp/storage/settings")
+    end
     {:ok, [record_key: record_key(), setting_key: setting_key()]}
   end
 

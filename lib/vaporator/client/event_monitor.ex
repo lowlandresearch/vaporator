@@ -53,7 +53,7 @@ defmodule Vaporator.Client.EventMonitor do
     Logger.info("#{__MODULE__} COMPLETED client and cloud sync")
   end
 
-  defp cache_files do
+  def cache_files do
     Settings.get!(:client, :sync_dirs)
     |> Enum.map(&cache_client/1)
     |> Enum.map(fn {:ok, path} -> path end)
@@ -112,13 +112,13 @@ defmodule Vaporator.Client.EventMonitor do
       {:ok, local_root} -> successful cache
   """
   def cache_cloud(path) do
-    cloud = Settings.get(:cloud)
+    cloud = Settings.get!(:cloud, :provider)
 
     Logger.info("#{__MODULE__} STARTED cloud cache of '#{cloud.root_path}'")
 
     {:ok, %{results: meta}} =
       Cloud.list_folder(
-        cloud.provider,
+        cloud,
         Path.join(
           cloud.root_path,
           Path.basename(path)
