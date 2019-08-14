@@ -12,8 +12,7 @@ defmodule Vaporator.Cache do
   end
 
   def init(_) do
-    {:ok, table} = Ets.Set.new()
-    {:ok, table}
+    Ets.Set.new()
   end
 
   # Client
