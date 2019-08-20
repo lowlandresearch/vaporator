@@ -1,4 +1,8 @@
 defmodule Vaporator.Monitor do
+  @moduledoc """
+  Monitors the system to ensure all required settings are set,
+  internet is reachable, and has connectivity to host machines.
+  """
   use GenServer
 
   require Logger
@@ -18,6 +22,11 @@ defmodule Vaporator.Monitor do
     {:ok, state}
   end
 
+  @doc """
+  Checks if the system is operational
+
+  Returns `true` or `false`
+  """
   def system_ok? do
     Vaporator.Settings.set?() and Network.up?()
   end
@@ -27,7 +36,9 @@ defmodule Vaporator.Monitor do
 
   Returns ```elixir
           [connected: true, alert: false]
+          ```
           or
+          ```elixir
           [connected: false, alert: true]
           ```
   """
@@ -39,9 +50,7 @@ defmodule Vaporator.Monitor do
     end
   end
 
-  # Server
-
-  def handle_info(:monitor, _state) do
+  defp handle_info(:monitor, _state) do
     status = get_system_status()
     Nerves.Leds.set(status)
     Process.send_after(self(), :monitor, @interval)

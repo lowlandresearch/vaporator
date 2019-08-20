@@ -160,16 +160,14 @@ defprotocol Vaporator.Cloud do
   - args (Map): File-system-specific arguments to pass to the
       underlying subsystem. 
 
-  Returns:
-    {:ok, Vaporator.Cloud.Meta}
-      or
+  Examples
+    ```elixir
+    iex> Vaporator.Cloud.file_update(%Vaporator.Cloud.Dropbox{}, "mnt/windows/foo/bar.txt", "/vaporator/")
+    {:ok, %Vaporator.Cloud.Meta{}}
+
+    iex> Vaporator.Cloud.file_update(%Vaporator.Cloud.Dropbox{}, "mnt/windows/foo/deleted.txt", "/vaporator/")
     {:error, :local_path_not_found}
-      or
-    {:error, {:bad_decode, decode error (any)}
-      or 
-    {:error, {:bad_status, {:status_code, code (int)}, JSON (Map)}}
-      or 
-    {:error, {:unhandled_status, {:status_code, code (int)}, body (binary)}}
+    ```
   """
   def file_update(fs, local_path, fs_path, args \\ %{})
 

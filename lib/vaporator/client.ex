@@ -5,17 +5,29 @@ defmodule Vaporator.Client do
       EventQueue
     - Processing events in EventQueue to determine necessary Cloud
       sync action
-
-  Events supported:
-    - :created -> Uploads file to Cloud
-    - :updated -> Updates file in Cloud
-    - :removed -> Removes file from Cloud
   """
 
   alias Vaporator.Settings
 
   require Logger
 
+  @doc """
+  Sets the poll interval, in milliseconds, for how often the host sync directories are synced.
+
+  Returns `tuple`
+
+  Examples
+    ```elixir
+    iex> Vaporator.Client.set_poll_interval(150000)
+    {:ok, 5000}
+
+    iex> Vaporator.Client.set_poll_interval(5000)
+    {:error, "interval must be >= 10 seconds"}
+
+    iex> Vaporator.Client.set_poll_interval("10000")
+    {:error, "interval must be an integer"}
+    ```
+  """
   def set_poll_interval(interval) when is_integer(interval) do
     if interval < 10000 do
       {:error, "interval must be >= 10 seconds"}
@@ -28,11 +40,33 @@ defmodule Vaporator.Client do
     {:error, "interval must be an integer"}
   end
 
+  @doc """
+  Adds a directory to the list of directories that will be synced.
+
+  Returns `:ok`
+
+  Examples
+    ```elixir
+    iex> Vaporator.Client.add_sync_dir("/path/to/a/dir")
+    :ok
+    ```
+  """
   def add_sync_dir(path) do
     setting = Settings.get(:sync_dirs)
     Settings.put(:sync_dirs, [path | setting])
   end
 
+  @doc """
+  Removes a directory to the list of directories that will be synced.
+
+  Returns `:ok`
+
+  Examples
+    ```elixir
+    iex> Vaporator.Client.remove_sync_dir("/path/to/a/dir")
+    :ok
+    ```
+  """
   def remove_sync_dir(path) do
     setting = Settings
     new_setting = List.delete(setting, path)
@@ -40,11 +74,18 @@ defmodule Vaporator.Client do
   end
 
   @doc """
-  Determines Cloud sync action for the Client generated event
+  Creates a file in Cloud filesystem.
 
-  Args:
-    - event (tuple): description of event action
-                      i.e. {:created, filepath}
+  Returns `tuple`
+
+  Examples
+    ```elixir
+    iex> Vaporator.Client.process_event(:created, {"/mnt/windows", "foo/bar.txt"})
+    {:ok, %Vaporator.Cloud.Meta{...}}
+
+    iex> Vaporator.Client.process_event(:created, {"/mnt/windows", "foo/nofile.txt"})
+    {:error, ...}
+    ```
   """
   def process_event({:created, {root, path}}) do
     if not File.dir?(path) and File.exists?(path) do
@@ -80,6 +121,20 @@ defmodule Vaporator.Client do
     end
   end
 
+  @doc """
+  Updates a file in Cloud filesystem.
+
+  Returns `tuple`
+
+  Examples
+    ```elixir
+    iex> Vaporator.Client.process_event(:updated, {"/mnt/windows", "foo/bar.txt"})
+    {:ok, %Vaporator.Cloud.Meta{...}}
+
+    iex> Vaporator.Client.process_event(:updated, {"/mnt/windows", "foo/nofile.txt"})
+    {:error, ...}
+    ```
+  """
   def process_event({:updated, {root, path}}) do
     if not File.dir?(path) and File.exists?(path) do
       cloud = Settings.get(:cloud)
@@ -114,6 +169,20 @@ defmodule Vaporator.Client do
     end
   end
 
+  @doc """
+  Removes a file from Cloud filesystem.
+
+  Returns `tuple`
+
+  Examples
+    ```elixir
+    iex> Vaporator.Client.process_event(:removed, {"/mnt/windows", "foo/bar.txt"})
+    {:ok, %Vaporator.Cloud.Meta{...}}
+
+    iex> Vaporator.Client.process_event(:removed, {"/mnt/windows", "foo/nofile.txt"})
+    {:error, ...}
+    ```
+  """
   def process_event({:removed, {root, path}}) do
     cloud = Settings.get(:cloud)
 
@@ -149,10 +218,15 @@ defmodule Vaporator.Client do
   end
 
   @doc """
-  To which sync directory does this path belong?
+  Determines to which sync directory does a given path belong.
 
-  Args:
-    - path (binary): 
+  Returns `binary`
+
+  Examples
+    ```elixir
+    iex> Vaporator.Client.which_sync_dir!("/vaporator/foo/bar.txt")
+    "/mnt/windows"
+    ```
   """
   def which_sync_dir!(path) do
     sync_dirs = Settings.get!(:client, :sync_dirs)
@@ -165,6 +239,14 @@ defmodule Vaporator.Client do
   @doc """
   Given a cloud_root, the cloud_path within it, and a local_root, what
   is the local_path?
+
+  Returns `binary`
+
+  Examples
+    ```elixir
+    iex> Vaporator.Client.get_local_path!("/vaporator/foo", /vaporator/foo/bar.txt")
+    "/mnt/windows/foo/bar.txt"
+    ```
   """
   def get_local_path!(cloud_root, cloud_path) do
     path =
