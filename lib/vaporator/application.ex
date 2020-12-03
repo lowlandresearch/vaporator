@@ -1,59 +1,66 @@
-defmodule Vaporator do
-  @moduledoc """
-  Entry point for application
-  
-  Starts and supervises all of the application processes.
+defmodule Vaporator.Application do
+  # See https://hexdocs.pm/elixir/Application.html
+  # for more information on OTP Applications
+  @moduledoc false
 
-  Child Processes:
-    - ClientFs.EventMonitor.Supervisor
-    - ClientFs.EventProducer
-    - ClientFs.EventConsumer
-
-  https://hexdocs.pm/elixir/Application.html`
-  
-  """
   use Application
-  require Logger
 
   def start(_type, _args) do
-    Logger.info(
-      "#{__MODULE__} starting...\n" <>
-        "  env: #{Mix.env}"
-    )
-
-    children = [
-      %{
-        id: EventProducer,
-        start: {
-          Vaporator.ClientFs.EventProducer,
-          :start_link,
-          [{:queue.new(), 0}]
-        },
-        type: :worker
-      },
-      %{
-        id: EventConsumer,
-        start: {
-          Vaporator.ClientFs.EventConsumer,
-          :start_link,
-          []
-        },
-        type: :supervisor
-      },
-      {Vaporator.Cache, name: Vaporator.Cache},
-      %{
-        id: ClientFs.EventMonitor,
-        start: {
-          Vaporator.ClientFs.EventMonitor,
-          :start_link,
-          [Vaporator.ClientFs.sync_dirs]
-        }
-      }
-    ]
+    if target_is_not_host?() do
+      maybe_start_wizard()
+    end
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Vaporator.Supervisor]
+
+    children =
+      [
+        # Children for all targets
+        # Starts a worker by calling: Vaporator.Worker.start_link(arg)
+        # {Vaporator.Worker, arg},
+        Vaporator.Repo
+      ] ++ children(target())
+
     Supervisor.start_link(children, opts)
+  end
+
+  # List all child processes to be supervised
+  def children(:host) do
+    [
+      # Children that only run on the host
+      # Starts a worker by calling: Vaporator.Worker.start_link(arg)
+      # {Vaporator.Worker, arg},
+    ]
+  end
+
+  def children(_target) do
+    [
+      # Children for all targets except host
+      # Starts a worker by calling: Vaporator.Worker.start_link(arg)
+      # {Vaporator.Worker, arg},
+    ]
+  end
+
+  def target() do
+    Application.get_env(:vaporator, :target)
+  end
+
+  defp maybe_start_wizard() do
+    if should_start_wizard?() do
+      VintageNetWizard.run_wizard()
+    end
+  end
+
+  defp should_start_wizard?() do
+    wifi_configured?()
+  end
+
+  defp target_is_not_host?() do
+    target() != :host
+  end
+
+  defp wifi_configured?() do
+    VintageNet.get(["interface", "wlan0", "state"]) == :configured
   end
 end

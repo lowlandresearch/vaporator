@@ -1,61 +1,45 @@
 # This file is responsible for configuring your application
 # and its dependencies with the aid of the Mix.Config module.
-use Mix.Config
-
-# This configuration is loaded before any dependency and is restricted
-# to this project. If another project depends on this project, this
-# file won't be loaded nor affect the parent project. For this reason,
-# if you want to provide default values for your application for
-# third-party users, it should be done in your "mix.exs" file.
-
-# You can configure your application as:
 #
-#     config :vaporator, key: :value
-#
-# and access this configuration in your application as:
-#
-#     Application.get_env(:vaporator, :key)
-#
-# You can also configure a third-party app:
-#
-#     config :logger, level: :info
-#
+# This configuration file is loaded before any dependency and
+# is restricted to this project.
+import Config
 
-config :logger,
-  level: :info
+# Enable the Nerves integration with Mix
+Application.start(:nerves_bootstrap)
 
-# Providers:
-# - :dropbox
-#     - :dbx_api_url
-#     - :dbx_content_url
-# - TODO :onedrive
-# - TODO :googledrive
-config :vaporator, cloudfs_provider: :dropbox
+config :vaporator,
+  target: Mix.target(),
+  supported_os_types: ~w(
+    windows_xp
+    windows_7
+    windows_10
+  )
 
-# Dropbox global configurations
-config :vaporator, dbx_api_url: "https://api.dropboxapi.com/2"
-config :vaporator, dbx_content_url: "https://content.dropboxapi.com/2/"
+# Customize non-Elixir parts of the firmware. See
+# https://hexdocs.pm/nerves/advanced-configuration.html for details.
 
-# Each of the standard environment config files ({test,dev,prod}.exs)
-# will import an "instance.exs" config that will NOT be part of the
-# code distribution. It must be manually created for development as
-# well as deployment.
-# 
-# ----------------------------------------------------------------------
-# 
-# Configurations that MUST be made either in test.exs, dev.exs,
-# prod.exs, or instance.exs
-# 
-# ----------------------------------------------------------------------
-#
-# 
-# config :vaporator, dbx_token: "dropbox_access_token" 
-# config :vaporator, clientfs_sync_dirs: [
-#   "/list", "/of", "/absolute", "/paths"
-# ]
-# config :vaporator, cloudfs_root: "/path/in/cloudfs/"
-#
+config :nerves, :firmware,
+  rootfs_overlay: "rootfs_overlay",
+  provisioning: :nerves_hub_link
 
-import_config "#{Mix.env()}.exs"
+# Set the SOURCE_DATE_EPOCH date for reproducible builds.
+# See https://reproducible-builds.org/docs/source-date-epoch/ for more information
 
+config :nerves, source_date_epoch: "1604546527"
 
+# Use Ringlogger as the logger backend and remove :console.
+# See https://hexdocs.pm/ring_logger/readme.html for more information on
+# configuring ring_logger.
+
+config :logger, backends: [RingLogger]
+
+config :logger, RingLogger,
+  max_size: 1024,
+  color: [enabled: true]
+
+import_config "ecto.exs"
+
+if Mix.target() != :host do
+  import_config "target.exs"
+end
