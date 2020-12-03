@@ -1,9 +1,9 @@
-defmodule Vaporator.Configs do
+defmodule Vaporator.Config do
   import Ecto.Query
 
   alias Vaporator.Repo
 
-  alias Vaporator.Configs.{Client, Cloud, Sync}
+  alias Vaporator.Config.{Client, Cloud, Sync}
 
   def list_clients do
     Repo.all(Client)
