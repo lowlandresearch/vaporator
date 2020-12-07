@@ -17,6 +17,8 @@ defmodule Vaporator.Application do
         # {Vaporator.Worker, arg},
       ] ++ children(target())
 
+    if target_is_not_host?(), do: Vaporator.Network.maybe_start_wizard()
+
     Supervisor.start_link(children, opts)
   end
 
@@ -39,5 +41,9 @@ defmodule Vaporator.Application do
 
   def target() do
     Application.get_env(:vaporator, :target)
+  end
+
+  defp target_is_not_host?() do
+    target() != :host
   end
 end
