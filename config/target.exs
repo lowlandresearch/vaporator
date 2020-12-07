@@ -23,6 +23,14 @@ config :nerves,
     hostname_pattern: "vaporator-%s"
   ]
 
+config :nerves_hub_link,
+  socket: [
+    json_library: Jason,
+    heartbeat_interval: 45_000
+  ],
+  fwup_public_keys: [:devkey],
+  remote_iex: true
+
 # Configure the device for SSH IEx prompt access and firmware updates
 #
 # * See https://hexdocs.pm/nerves_ssh/readme.html for general SSH configuration
