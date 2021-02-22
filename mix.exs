@@ -65,7 +65,7 @@ defmodule Vaporator.MixProject do
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.10.2", targets: @all_targets},
       {:nerves_hub, "~> 0.7.4", targets: @all_targets},
-      {:nerves_init_gadget, "~> 0.6.0", targets: @all_targets},
+      {:nerves_init_gadget, "~> 0.7.0", targets: @all_targets},
       {:nerves_leds, "~> 0.8.0", targets: @all_targets},
 
       # Dependencies for specific targets
