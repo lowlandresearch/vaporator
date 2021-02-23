@@ -77,7 +77,7 @@ defmodule Vaporator.MixProject do
       {:timex, "~> 3.6"},
       {:ets, "~> 0.7"},
       {:dir_walker, "~> 0.0.8"},
-      {:gen_stage, "~> 0.14"},
+      {:gen_stage, "~> 1.1"},
       {:excoveralls, "~> 0.11", only: :test},
       {:exvcr, "~> 0.10", only: :test},
       {
