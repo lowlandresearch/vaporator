@@ -1,0 +1,12 @@
+version: 2
+updates:
+- package-ecosystem: mix
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: nerves_conversion
+  ignore:
+  - dependency-name: toolshed
+    versions:
+    - 0.2.18
